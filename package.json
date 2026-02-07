@@ -1,0 +1,32 @@
+{
+  "name": "app_healthcare",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "homepage": "https://github.com/langvietthanh/App_Healthcare#readme",
+  "bugs": {
+    "url": "https://github.com/langvietthanh/App_Healthcare/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/langvietthanh/App_Healthcare.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon --inspect src/index.js",
+    "watch": "sass --watch src/resource/scss/:src/public/css/"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "express-handlebars": "^8.0.5",
+    "mongoose": "^9.1.6"
+  },
+  "devDependencies": {
+    "morgan": "^1.10.1",
+    "nodemon": "^3.1.11",
+    "sass": "^1.97.3"
+  }
+}
