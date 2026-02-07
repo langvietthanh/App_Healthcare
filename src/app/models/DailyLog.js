@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const {ObjectId} =  mongoose.Schema.Types;
 
-const Log = new Schema({
+const DailyLog = new Schema({
     userId: {type: ObjectId, ref: 'User', required: true},
     date: {type: String, required: true},
     foodEntries: [{
@@ -35,6 +35,6 @@ const Log = new Schema({
     }
 }, { timestamps: true });
 
-dailyLogSchema.index({ userId: 1, date: 1 }, { unique: true });
+DailyLog.index({ userId: 1, date: 1 }, { unique: true });
 
-module.exports = mongoose.model('DailyLog', Log);
+module.exports = mongoose.model('DailyLog', DailyLog);

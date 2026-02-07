@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const { ObjectId } = mongoose.Schema.Types;
 
-const Food = new Schema({
+const FoodLibrary = new Schema({
     name: {type: String, required: true, index: true },
     servingSize: {
         amount: { type: Number, default: 100 },
@@ -18,4 +18,4 @@ const Food = new Schema({
     creatorId: {type: ObjectId, ref: 'User', default: null},
 })
 
-module.exports = mongoose.model('FoodLibrary', Food);
+module.exports = mongoose.model('FoodLibrary', FoodLibrary);
