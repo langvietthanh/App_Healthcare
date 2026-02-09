@@ -1,8 +1,8 @@
-const homeRouter = require("./home");
+const authRouter = require("./authRouter");
 
 
 function router(app){
-    app.use('/', homeRouter);
+    app.use('/api/auth', authRouter);
 
 }
 

@@ -36,4 +36,10 @@ const calculateAge = (birthDate) => {
   return age;
 };
 
-module.exports = { calculateBMR, calculateTDEE, calculateAge };
+const calculateDailyCalories = (goal, tdee) => {
+  if (goal === 'lose_weight') return tdee - 500;
+  else if (goal === 'gain_muscle') return tdee + 300;
+  return tdee;
+}
+
+module.exports = { calculateBMR, calculateTDEE, calculateAge, calculateDailyCalories };
