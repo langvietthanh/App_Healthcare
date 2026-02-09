@@ -20,8 +20,10 @@
     "watch": "sass --watch src/resource/scss/:src/public/css/"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "express": "^5.2.1",
     "express-handlebars": "^8.0.5",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.6"
   },
   "devDependencies": {
