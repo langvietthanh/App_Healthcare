@@ -1,3 +1,4 @@
 document/
 node_modules/
 src/public/
+.env

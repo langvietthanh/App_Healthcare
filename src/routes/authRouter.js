@@ -4,6 +4,7 @@ const authController = require('../app/controllers/authController');
 const authMiddleware = require('../middleware/auth');
 const User = require('../app/models/User');
 
+
 // @route   POST /api/auth/register
 // @desc    Đăng ký người dùng mới
 router.post('/register', authController.register);

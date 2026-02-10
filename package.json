@@ -5,7 +5,7 @@
   "license": "ISC",
   "author": "",
   "type": "commonjs",
-  "main": "src/index.js",
+  "main": "src/server.js",
   "homepage": "https://github.com/langvietthanh/App_Healthcare#readme",
   "bugs": {
     "url": "https://github.com/langvietthanh/App_Healthcare/issues"
@@ -16,11 +16,12 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --inspect src/index.js",
+    "start": "nodemon --inspect src/server.js",
     "watch": "sass --watch src/resource/scss/:src/public/css/"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "dotenv": "^17.2.4",
     "express": "^5.2.1",
     "express-handlebars": "^8.0.5",
     "jsonwebtoken": "^9.0.3",

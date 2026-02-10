@@ -10,7 +10,7 @@ class authController{
         }
         catch (err) {
 
-            if (err == 'Email đã tồn tại') res.status(400).json({msg: err.message});
+            if (err === 'Email đã tồn tại') return res.status(409).json({msg: err.message});
 
             console.error(err);
 

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const path = require('path');
 const express = require ('express');
 const app = express();
@@ -9,8 +10,8 @@ const router = require('./routes/index');
 app.use(express.static(path.join(__dirname,'public')));
 app.use(morgan('common'));
 
-// app.use(express.urlencoded({extended: true}));
-// app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+app.use(express.json());
 
 // Connect DB
 database.connect();

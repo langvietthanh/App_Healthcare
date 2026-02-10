@@ -1,6 +1,6 @@
 const User = require('../app/models/User');
 const bcrypt = require('bcryptjs');
-const jwt = requijre('jsonwebtoken');   
+const jwt = require('jsonwebtoken');   
 const { calculateBMR, calculateTDEE, calculateAge, calculateDailyCalories } = require('../utils/healthCalculations');
 
 class authService {
@@ -66,19 +66,18 @@ class authService {
 
 
     async loginUser(email, password){
+//      Kiem tra tai khoan ton tai hay khong
         const user  = await User.findOne({email});
-        
         if(! user) return new Error('Sai thông tin đăng nhập');
 
+//      Kiem tra mat khau hop le khong
         const isMacth = await bcrypt.compare(password, user.passwordHash);
-
         if(! isMacth) return new Error('Sai mật khẩu');
 
+//      Kiem tra JWT 
         const token = jwt.sign({userID: user._id}, process.env.JWT_SECRET, { expiresIn: '7d'});
-        
         return {token, user}
     }
 }
 
-module.exports = authService;
-
+module.exports = new authService();
