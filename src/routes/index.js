@@ -6,5 +6,4 @@ function router(app){
 
 }
 
-
 module.exports = router;// chuyền cho ../index.js

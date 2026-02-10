@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 
 async function connect() {
     try {
-        await mongoose.connect('mongodb://127.0.0.1:27017/app_healthcare');
-        console.log('success');
+        await mongoose.connect('mongodb://localhost:27017/app_healthcare');
+        console.log('\n-----Kết nối thành công với DB-----\n');
     } catch {
-        console.log('error');
+        console.log('\n-----Kết nối thất bại với DB-----\n');
     }
 }
 
