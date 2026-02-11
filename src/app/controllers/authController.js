@@ -26,11 +26,20 @@ class authController{
             res.json(result);
         }
         catch (err){
-
             if(err === 'Sai thông tin đăng nhập') res.status(400).json({msg: err.message});
-
             console.error(err);
+            res.status(500).send('Server Error');
+        }
+    }
 
+//  GET /api/auth/me
+    async getMe (req, res) {
+        try {
+            const userId = req.user.userId;
+            const user = await authService.getMe(userId);
+            res.json(user);
+        } catch (err) {
+            console.error(err.message);
             res.status(500).send('Server Error');
         }
     }

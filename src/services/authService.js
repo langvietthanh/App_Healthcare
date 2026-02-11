@@ -61,7 +61,6 @@ class authService {
         return { token, user: newUser };
     }
 
-
     async loginUser(email, password){
 //      Kiem tra tai khoan ton tai hay khong
         const user  = await User.findOne({email});
@@ -72,9 +71,11 @@ class authService {
         if(! isMacth) return new Error('Sai mật khẩu');
 
 //      Kiem tra JWT 
-        const token = jwt.sign({userID: user._id}, process.env.JWT_SECRET, { expiresIn: '7d'});
+        const token = jwt.sign({userId: user._id}, process.env.JWT_SECRET, { expiresIn: '7d'});
         return {token, user}
     }
+
+    getMe = async userId => await User.findById(userId).select('-passwordHash');
 }
 
 module.exports = new authService();

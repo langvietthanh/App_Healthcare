@@ -6,8 +6,10 @@ module.exports = function (req, res, next){
     if ( !token ) return res.status(401).json({msg: 'Không có token, từ chối truy cập'});
 
     try{
+//      Giải mã để lấy PAYLOAD
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
+        console.log("\nDECODE SUCCESS\n")
         next();
     }
     catch (err){
