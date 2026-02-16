@@ -9,7 +9,6 @@ module.exports = function (req, res, next){
 //      Giải mã để lấy PAYLOAD
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
-        console.log("\nDECODE SUCCESS\n")
         next();
     }
     catch (err){

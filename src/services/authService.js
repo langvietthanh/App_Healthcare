@@ -1,7 +1,7 @@
 const User = require('../app/models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');   
-const { calculateBMR, calculateTDEE, calculateAge, calculateDailyCalories } = require('../utils/healthCalculations');
+const healthCalculations = require('../utils/healthCalculations');
 const { passwordChecker } = require('../utils/security');
 
 class authService {
@@ -30,11 +30,15 @@ class authService {
         const passwordHash = await bcrypt.hash(password, salt);
 
 //      Tinh toan chi so suc khoe
-        const age = calculateAge(birthDate);
-        const bmr = calculateBMR(gender, weight, height, age);
-        const tdee = calculateTDEE(bmr, activityLevel);
-        let dailyCalories = calculateDailyCalories(goal, tdee);
-        
+        const age = healthCalculations.calculateAge(birthDate);
+        const bmr = healthCalculations.calculateBMR({gender, weight, height, age, });
+        const tdee = healthCalculations.calculateTDEE({bmr, activityLevel, });
+        const bmi = healthCalculations.calculateBMI({weight, height, });
+        const bodyfat = healthCalculations.calculateBodyFat({bmi, age, gender, });
+        const idealWeight = healthCalculations.calculateIdealWeight({ height, });
+        let dailyCalories = healthCalculations.calculateDailyCalories({goal, tdee, });
+        const weightAdvice = healthAdviceService.getWeightAdvice({idealWeight, targetWeight});
+
 //      Luu vao DB
         const newUser = new User({
             username,
@@ -46,10 +50,19 @@ class authService {
                 weight,
                 gender,
                 activityLevel,
+                bmi,
+                bmr,
+                tdee,
+                bodyfat,
             },
             goals:{
+                goal,
                 dailyCalories,
                 weightGoal: targetWeight || weight,
+                weightAdvice: {
+                        idealWeight: idealWeight,
+                        advice: weightAdvice,
+                }
             }
         });
         await newUser.save();
@@ -64,11 +77,11 @@ class authService {
     async loginUser(email, password){
 //      Kiem tra tai khoan ton tai hay khong
         const user  = await User.findOne({email});
-        if(! user) return new Error('Sai thông tin đăng nhập');
+        if(! user) throw new Error('Sai thông tin đăng nhập');
 
 //      Kiem tra mat khau hop le khong
         const isMacth = await bcrypt.compare(password, user.passwordHash);
-        if(! isMacth) return new Error('Sai mật khẩu');
+        if(! isMacth) throw new Error('Sai mật khẩu');
 
 //      Kiem tra JWT 
         const token = jwt.sign({userId: user._id}, process.env.JWT_SECRET, { expiresIn: '7d'});
