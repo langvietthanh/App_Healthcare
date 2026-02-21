@@ -2,11 +2,12 @@ const User = require('../app/models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');   
 const healthCalculations = require('../utils/healthCalculations');
+const healthService = require('../services/healthService');
 const { passwordChecker } = require('../utils/security');
 
 class authService {
     async registerUser(userData){
-        const {username, email, password, height, weight, gender, birthDate, activityLevel, goal, targetWeight} = userData;
+        const {username, email, password, height, weight, gender, birthDate, activityLevel, goal, weightGoal} = userData;
 
 //      Kiem tra su ton tai cua Email
         const existingEmail = await User.findOne({ email }); 
@@ -37,7 +38,8 @@ class authService {
         const bodyfat = healthCalculations.calculateBodyFat({bmi, age, gender, });
         const idealWeight = healthCalculations.calculateIdealWeight({ height, });
         let dailyCalories = healthCalculations.calculateDailyCalories({goal, tdee, });
-        const weightAdvice = healthAdviceService.getWeightAdvice({idealWeight, targetWeight});
+        const advice = healthService.getWeightAdvice({idealWeight, weightGoal});
+        
 
 //      Luu vao DB
         const newUser = new User({
@@ -58,10 +60,10 @@ class authService {
             goals:{
                 goal,
                 dailyCalories,
-                weightGoal: targetWeight || weight,
+                weightGoal: weightGoal || weight,
                 weightAdvice: {
-                        idealWeight: idealWeight,
-                        advice: weightAdvice,
+                        idealWeight,
+                        advice,
                 }
             }
         });

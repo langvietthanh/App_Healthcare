@@ -2,7 +2,7 @@ const userService = require('../../services/userService');
 class userController {
 
 //  [PUT] /api/user/info
-    async changeInfo (req, res){ 
+    async changeInfo (req, res, next, ){ 
         try{
             // Lấy userId từ Token
             const userId = req.user.userId;
@@ -22,12 +22,12 @@ class userController {
     }
 
 //  [PUT] /api/user/physical-detail
-    async updatePhysicalDetail (req, res){
+    async updatePhysicalDetail (req, res, next){
         try{
             const userId = req.user.userId;
 
             const data = req.body;
-            
+
             const updatedUser = await userService.updatePhysicalDetail( { userId , data } );
 
             res.json (updatedUser);

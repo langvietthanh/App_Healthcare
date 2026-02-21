@@ -1,4 +1,4 @@
-const ACTIVITY_MULTIPLIERS = require ('../utils/healthCalculations');
+const {ACTIVITY_MULTIPLIERS, } = require('../constants/health');
 
 function validateInfomationInput(req, res, next) {
     const {username, email, birthDate,} = req.body ;
@@ -46,10 +46,10 @@ function validatePhysicalDetailInput(req, res, next) {
             throw new Error  ('Cân nặng giới hạn 500kg');
     }
 
-    if ( !gender || !new Set(['male', 'female']).has(gender) )
+    if ( gender && !(['male', 'female'].includes(gender)) )
         throw new Error ('Vui lòng chọn một giới tính được đề xuất');
-
-    if ( !activityLevel || !new Set(['sedentary', 'light', 'moderate', 'active', 'very_active' ]).has(activityLevel) )
+    
+    if ( activityLevel && !( activityLevel in ACTIVITY_MULTIPLIERS ) )
         throw new Error ('Vui lòng chọn một mức độ vận động được đề xuất');
 
     next();

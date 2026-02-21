@@ -1,6 +1,5 @@
 const User = require('../app/models/User');
 const healthCalculations = require('../utils/healthCalculations');
-const healthService = require('./healthService');
 
 /**
  * @class
@@ -53,7 +52,6 @@ class userService{
      * @returns {Object}
      */
     async updatePhysicalDetail ({userId, data} = {}){
-
         const user = await User.findById( userId );
         if (!user) throw new Error ('User không tồn tại');
         const {height, weight, activityLevel, gender, birthDate, } = data;
@@ -80,5 +78,5 @@ module.exports = new userService();
 // "birthDate": "2006-29-08",
 // "height": 180,
 // "weight": 69,
-// "gender": 'male',
-// "activityLevel": "super_active"
+// "gender": "male",
+// "activityLevel": "very_active"
