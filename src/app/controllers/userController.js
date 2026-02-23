@@ -9,7 +9,6 @@ class userController {
 
             const { username, email, birthDate } = req.body;
             
-            
             const updatedUser = await userService.changeInfo( { userId, username, email, birthDate, } );
 
             if (updatedUser) console.log ('change success');
@@ -28,7 +27,7 @@ class userController {
 
             const data = req.body;
 
-            const updatedUser = await userService.updatePhysicalDetail( { userId , data } );
+            const updatedUser = await userService.updatePhysicalDetail( { userId, data } );
 
             res.json (updatedUser);
         }
@@ -38,13 +37,29 @@ class userController {
     }
 
 //  [PUT] /api/user/goals
-    async updateGoals (req, res) {
-        
+    async updateGoals (req, res, next) {
+        try{
+
+        }
+        catch (err){
+            next(err);
+        }
     }
 
 //  [PUT] /api/user/password
-    async changePassword (req, res){
+    async changePassword (req, res, next){
+        try{
+            let userId = req.user.userId;
 
+            let data = req.body;
+
+            await userService.changePassword( { userId, data } );
+
+            res.json( {msg: "Thay đổi mật khẩu thành công"} );
+        }
+        catch (err){
+            next (err);
+        }
     }
 }
 

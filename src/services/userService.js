@@ -1,5 +1,6 @@
 const User = require('../app/models/User');
 const healthCalculations = require('../utils/healthCalculations');
+const bcrypt = require('bcryptjs');
 
 /**
  * @class
@@ -51,7 +52,7 @@ class userService{
      * @param {number} obj.weight 
      * @returns {Object}
      */
-    async updatePhysicalDetail ({userId, data} = {}){
+    async updatePhysicalDetail ({userId, data, } = {}){
         const user = await User.findById( userId );
         if (!user) throw new Error ('User không tồn tại');
         const {height, weight, activityLevel, gender, birthDate, } = data;
@@ -69,14 +70,27 @@ class userService{
         // Trả về kết quả
         return user;
     }
+    /**
+     * @param {Object} obj
+     * @param {ObjectId} obj.userId
+     * @param {Object} obj.data
+     * @return {Object}
+    */
+    async changePassword ({userId, data, } = {}){
+        const user = await User.findById( userId );
+
+        let {oldPassword, newPassword, } = data;
+
+        let isMatch = await bcrypt.compare (oldPassword, user.passwordHash);
+        if ( !isMatch ) throw new Error ("Sai mật khẩu");
+
+        const salt = await bcrypt.genSalt(10);
+        const newPasswordHash = await bcrypt.hash(newPassword, salt);
+
+        user.passwordHash = newPasswordHash;
+        await user.save();
+    } 
 }
 
 
 module.exports = new userService();
-
-
-// "birthDate": "2006-29-08",
-// "height": 180,
-// "weight": 69,
-// "gender": "male",
-// "activityLevel": "very_active"

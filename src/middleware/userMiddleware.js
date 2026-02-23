@@ -1,4 +1,5 @@
 const {ACTIVITY_MULTIPLIERS, } = require('../constants/health');
+const {passwordChecker, } = require('../utils/security');
 
 function validateInfomationInput(req, res, next) {
     const {username, email, birthDate,} = req.body ;
@@ -55,6 +56,20 @@ function validatePhysicalDetailInput(req, res, next) {
     next();
 }   
 
+function validatePasswordInput(req, res, next){
+    const {oldPassword, newPassword, } = req.body;
+    if ( !oldPassword ) throw new Error ("Vui lòng nhập mật khẩu cũ");
+    if ( !newPassword ) throw new Error ("Vui lòng nhập mật khẩu mới");
+    
+    if ( oldPassword === newPassword )  throw new Error ("Vui lòng nhập lại mật khẩu mới không trùng mật khẩu cũ");
+
+    let result = passwordChecker(newPassword);
+    if ( !result.status ) throw new Error (result.msg);
+
+    next();
+
+}
 
 
-module.exports = {validateInfomationInput, validatePhysicalDetailInput};
+
+module.exports = {validateInfomationInput, validatePhysicalDetailInput, validatePasswordInput, };

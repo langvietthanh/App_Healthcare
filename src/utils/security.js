@@ -1,5 +1,10 @@
 
-exports.passwordChecker = (password) => {
+
+/**
+ * @param {string} password 
+ * @returns {Object}
+ */
+function passwordChecker(password){
     const minLength = 8;
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
@@ -11,3 +16,5 @@ exports.passwordChecker = (password) => {
     else 
         return { status: false, msg: "Mật khẩu chưa đủ mạnh. Cần ít nhất 8 ký tự, đủ chữ hoa, chữ thường, số và ký tự đặc biệt." };
 }
+
+module.exports = {passwordChecker, };

@@ -26,7 +26,8 @@ class authController{
             res.json(result);
         }
         catch (err){
-            if(err === 'Sai thông tin đăng nhập') res.status(400).json({msg: err.message});
+            if(err === 'Sai thông tin đăng nhập') 
+                res.status(400).json({msg: err.message});
             console.error(err);
             res.status(500).send('Server Error');
         }

@@ -3,9 +3,8 @@ const errorHandler = (err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     
     res.status(statusCode).json({
-        success: false,
+        status: err.status || "Error",
         message: err.message || "Lỗi hệ thống không xác định",
-        // Chỉ hiện stack trace (dòng bị lỗi) khi đang ở môi trường phát triển (development)
         stack: process.env.NODE_ENV === 'development' ? err.stack : null
     });
 };
