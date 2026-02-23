@@ -7,5 +7,7 @@ const ACTIVITY_MULTIPLIERS = {
   very_active: 1.9       // Rất năng động (2 lần/ngày)
 };
 
+// Mục tiêu (Goal)
+const GOAL = ['lose_weight', 'balance', 'gain_muscle'] ;
 
-module.exports = {ACTIVITY_MULTIPLIERS, };
+module.exports = {ACTIVITY_MULTIPLIERS, GOAL, };

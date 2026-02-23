@@ -70,6 +70,20 @@ function validatePasswordInput(req, res, next){
 
 }
 
+function validateGoalsInput(req, res, next){
+    const {weightGoal} = req.body;
+
+    if (weightGoal) {
+        if (typeof weightGoal !== 'number')
+            throw new Error ('Vui lòng nhập kí tự số');
+        else if  (weightGoal < 25)
+            throw new Error ('Cân nặng tối thiểu 25kg');
+        else if (weightGoal > 500) 
+            throw new Error  ('Cân nặng giới hạn 500kg');
+    }
+
+    next();
+}
 
 
-module.exports = {validateInfomationInput, validatePhysicalDetailInput, validatePasswordInput, };
+module.exports = {validateInfomationInput, validatePhysicalDetailInput, validatePasswordInput, validateGoalsInput, };

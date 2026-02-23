@@ -12,8 +12,6 @@ class authController{
 
             if (err === 'Email đã tồn tại') return res.status(409).json({msg: err.message});
 
-            console.error(err);
-
             res.status(500).send('Server Error');
         }
     }

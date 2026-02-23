@@ -1,4 +1,3 @@
-const healthCalculations  = require('../utils/healthCalculations');
 /**
  * @class
  */

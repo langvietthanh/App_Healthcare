@@ -1,7 +1,11 @@
-
-
-
+/**
+ * @class
+ */
 class AppError extends Error {
+    /**
+     * @param {string} errorMessage 
+     * @param {number} statusCode 
+     */
     constructor (errorMessage, statusCode) {
         super (errorMessage);
         this.statusCode = statusCode;

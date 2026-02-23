@@ -37,7 +37,6 @@ class healthCalculations{
   
   /**
    * @param {Object} option
-   * @param {number} option.bmi
    * @param {number} option.height
    * @returns {number}
    */

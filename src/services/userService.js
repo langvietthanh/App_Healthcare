@@ -1,5 +1,6 @@
 const User = require('../app/models/User');
 const healthCalculations = require('../utils/healthCalculations');
+const healthService = require('./healthService');
 const bcrypt = require('bcryptjs');
 
 /**
@@ -13,7 +14,7 @@ class userService{
      * @param {string} obj.avatar
      * @returns {Object}
      */
-    async changeInfo ({userId, username, email, birthDate, } = {}){
+    async changeInfo ( {userId, username, email, birthDate, } = {} ){
         const update = {
             $set:{
                 username,
@@ -27,7 +28,7 @@ class userService{
         };
 
         const user = await User.findByIdAndUpdate(userId, update, option).select('-passwordHash'); 
-         // for (let k in user.physicalDetail) console.log(`${k}: ${user.physicalDetail[k]}`);
+        if (!user) throw new Error ('User không tồn tại');
         
         if (birthDate){
             const newStats = {
@@ -52,7 +53,7 @@ class userService{
      * @param {number} obj.weight 
      * @returns {Object}
      */
-    async updatePhysicalDetail ({userId, data, } = {}){
+    async updatePhysicalDetail ( {userId, data, } = {} ){
         const user = await User.findById( userId );
         if (!user) throw new Error ('User không tồn tại');
         const {height, weight, activityLevel, gender, birthDate, } = data;
@@ -70,14 +71,16 @@ class userService{
         // Trả về kết quả
         return user;
     }
+
     /**
      * @param {Object} obj
      * @param {ObjectId} obj.userId
      * @param {Object} obj.data
      * @return {Object}
     */
-    async changePassword ({userId, data, } = {}){
+    async changePassword ( {userId, data, } = {} ){
         const user = await User.findById( userId );
+        if (!user) throw new Error ('User không tồn tại');
 
         let {oldPassword, newPassword, } = data;
 
@@ -90,6 +93,35 @@ class userService{
         user.passwordHash = newPasswordHash;
         await user.save();
     } 
+
+    /**
+     * 
+     * @param {Object} obj
+     * @param {ObjectId} obj.userId 
+     * @param {Object} obj.data
+     * @returns {Object}
+     */
+    async updateGoals ( { userId, data, } = {} ){
+        console.log(userId);
+        const user = await User.findById( userId );
+        if (!user) throw new Error ('User không tồn tại');
+
+
+        let {goal, weightGoal, } = data;
+        let {tdee, height, } = user.physicalDetail;
+        
+        let dailyCalories =  healthCalculations.calculateDailyCalories( { goal, tdee, } );
+        
+        let idealWeight = healthCalculations.calculateIdealWeight( { height, } );
+        let advice = healthService.getWeightAdvice( { idealWeight, weightGoal, } );
+        let weightAdvice = {idealWeight, advice, };
+
+        user.goals = {goal, dailyCalories, weightGoal, weightAdvice, }; 
+
+        await user.save();
+
+        return user;
+    }
 }
 
 

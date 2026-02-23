@@ -39,7 +39,13 @@ class userController {
 //  [PUT] /api/user/goals
     async updateGoals (req, res, next) {
         try{
+            let userId = req.user.userId;
 
+            let data = req.body;
+
+            const updatedUser = await userService.updateGoals( { userId, data, } );
+            
+            res.json (updatedUser);
         }
         catch (err){
             next(err);
