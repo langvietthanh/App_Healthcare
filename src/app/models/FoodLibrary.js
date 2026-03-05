@@ -6,7 +6,8 @@ const FoodLibrary = new Schema({
     name: {type: String, required: true, index: true },
     servingSize: {
         amount: { type: Number, default: 100 },
-        unit: { type: String, default: 'g' } 
+        unit: { type: String, default: 'g', enum: ['g', 'ml', 'lb', 'oz'] }, 
+        weightInGram: { type: Number}
     },
     nutrients: {
         calories: { type: Number, required: true },

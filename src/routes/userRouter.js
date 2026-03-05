@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../app/controllers/userController');
 const authMiddleware = require('../middleware/authMiddleware');
-const {validateInfomationInput, validatePhysicalDetailInput, validatePasswordInput, validateGoalsInput, } = require('../middleware/userMiddleware');
+const {validateInfomationInput, validatePhysicalDetailInput, validatePasswordInput, validateGoalsInput, } = require('../middleware/validate');
 
 // @route   PUT /api/user/info
 // @desc    Cập nhật thông tin cá nhân

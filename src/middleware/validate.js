@@ -17,11 +17,12 @@ function validateInfomationInput(req, res, next) {
     }
 
     if (birthDate){
+        let BOD = new Date(birthDate)
         let today = new Date();
         let minAge = 15;
         let cutoffDate = new Date();
         cutoffDate.setFullYear(today.getFullYear() - minAge);
-        if(birthDate > cutoffDate) throw new Error ('Bạn chưa đủ tuổi để sử dụng App');
+        if(BOD > cutoffDate) throw new Error ('Bạn chưa đủ tuổi để sử dụng App');
     }
     next();
 }
@@ -84,6 +85,7 @@ function validateGoalsInput(req, res, next){
 
     next();
 }
+
 
 
 module.exports = {validateInfomationInput, validatePhysicalDetailInput, validatePasswordInput, validateGoalsInput, };

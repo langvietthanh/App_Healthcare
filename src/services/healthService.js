@@ -7,7 +7,7 @@ class healthService {
      * @param {number} obj.idealWeight
      * @param {number} obj.weightGoal 
      */
-    getWeightAdvice ({ idealWeight, weightGoal, } = {}) {
+    getAdvice ({ idealWeight, weightGoal, } = {}) {
         if (!weightGoal || !idealWeight) return "";
         // Sai số chấp nhận được (ví dụ trong khoảng 1kg được coi là bằng nhau)
         const threshold = 1; 

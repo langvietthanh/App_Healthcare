@@ -38,7 +38,7 @@ class authService {
         const bodyfat = healthCalculations.calculateBodyFat({bmi, age, gender, });
         const idealWeight = healthCalculations.calculateIdealWeight({ height, });
         let dailyCalories = healthCalculations.calculateDailyCalories({goal, tdee, });
-        const advice = healthService.getWeightAdvice({idealWeight, weightGoal});
+        const advice = healthService.getAdvice({idealWeight, weightGoal});
         
 
 //      Luu vao DB
@@ -90,7 +90,9 @@ class authService {
         return {token, user}
     }
 
-    getMe = async userId => await User.findById(userId).select('-passwordHash');
+    async getMe(userId){
+        return await User.findById(userId).select('-passwordHash');
+    }
 }
 
 module.exports = new authService();

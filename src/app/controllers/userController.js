@@ -7,11 +7,9 @@ class userController {
             // Lấy userId từ Token
             const userId = req.user.userId;
 
-            const { username, email, birthDate } = req.body;
+            const data = req.body;
             
-            const updatedUser = await userService.changeInfo( { userId, username, email, birthDate, } );
-
-            if (updatedUser) console.log ('change success');
+            const updatedUser = await userService.changeInfo( { userId, data, } );
             
             res.json({user: updatedUser});
         }

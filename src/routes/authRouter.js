@@ -2,10 +2,19 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../app/controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
+const {
+    validateInfomationInput, 
+    validatePhysicalDetailInput, 
+    validateGoalsInput, 
+} = require('../middleware/validate');
 
 // @route   POST /api/auth/register
 // @desc    Đăng ký người dùng mới
-router.post('/register', authController.register);
+router.post('/register', 
+    validateInfomationInput, 
+    validatePhysicalDetailInput, 
+    validateGoalsInput, 
+    authController.register);
 
 // @route   POST /api/auth/login
 // @desc    Đăng nhập & lấy token

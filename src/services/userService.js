@@ -14,7 +14,8 @@ class userService{
      * @param {string} obj.avatar
      * @returns {Object}
      */
-    async changeInfo ( {userId, username, email, birthDate, } = {} ){
+    async changeInfo ( {userId, data, } = {} ){
+        const {username, email, birthDate, } = data;
         const update = {
             $set:{
                 username,
@@ -39,6 +40,13 @@ class userService{
                 activityLevel: user.physicalDetail.activityLevel,
             }; 
             user.physicalDetail = healthCalculations.calculatePhysicalDetail( newStats );
+            
+            let {tdee, } = user.physicalDetail;
+            
+            let dailyCalories =  healthCalculations.calculateDailyCalories( { goal: user.goals.goal, tdee, } );
+
+            user.goals = {dailyCalories, }; 
+            
             await user.save();
         }
 
@@ -66,7 +74,14 @@ class userService{
         }; 
         
         user.physicalDetail = healthCalculations.calculatePhysicalDetail( newStats );
-        
+
+        let idealWeight = healthCalculations.calculateIdealWeight( { height: user.physicalDetail.height, } );
+        let advice = healthService.getAdvice( { idealWeight, weightGoal: user.goals.weightGoal, } );
+        let dailyCalories =  healthCalculations.calculateDailyCalories( { goal: user.goals.goal, tdee: user.physicalDetail.tdee, } );
+        let weightAdvice = {idealWeight, advice, };
+        user.goals.weightAdvice = weightAdvice;
+        user.goals.dailyCalories = dailyCalories;
+
         await user.save();
         // Trả về kết quả
         return user;
@@ -108,12 +123,11 @@ class userService{
 
 
         let {goal, weightGoal, } = data;
-        let {tdee, height, } = user.physicalDetail;
+        let {tdee, } = user.physicalDetail;
         
         let dailyCalories =  healthCalculations.calculateDailyCalories( { goal, tdee, } );
-        
-        let idealWeight = healthCalculations.calculateIdealWeight( { height, } );
-        let advice = healthService.getWeightAdvice( { idealWeight, weightGoal, } );
+        let idealWeight = user.goals.weightAdvice.idealWeight;
+        let advice = healthService.getAdvice( { idealWeight, weightGoal, } );
         let weightAdvice = {idealWeight, advice, };
 
         user.goals = {goal, dailyCalories, weightGoal, weightAdvice, }; 

@@ -4,7 +4,7 @@ const {ObjectId} =  mongoose.Schema.Types;
 
 const DailyLog = new Schema({
     userId: {type: ObjectId, ref: 'User', required: true},
-    date: {type: String, required: true},
+    date: {type: Date, required: true},
     foodEntries: [{
         foodRefId: { type: ObjectId, ref: 'FoodLibrary' }, // Link tới món gốc (nếu cần xem chi tiết)
     
