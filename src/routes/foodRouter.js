@@ -10,7 +10,7 @@ router.post('/', authMiddleware, foodController.createNewFood);
 
 // @route   GET /api/foods
 // @desc    Tìm món ăn
-// router.get('/search', foodController.searchFood);
+router.get('/', authMiddleware, foodController.searchFood);
 
 // @route   GET /api/foods/:id
 // @desc    Chi tiết món 

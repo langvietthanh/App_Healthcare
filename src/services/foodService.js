@@ -26,15 +26,26 @@ class foodService{
         await newFood.save();
         return newFood;
     }
+
+    async searchFood({data, userId} = {}){
+        const keyword = data.q;
+        // 1. Điều kiện CỐ ĐỊNH: Chỉ lấy món Public HOẶC món do chính tôi tạo
+        const query = {
+            $or: [
+                { isPublic: true },
+                { creatorId: userId }
+            ]
+        };
+
+        // 2. Điều kiện THÊM: Nếu có gõ từ khóa tìm kiếm thì thêm vào query
+        // Mặc định MongoDB sẽ nối các thuộc tính bằng toán tử AND
+        if (keyword) {
+            query.name = { $regex: keyword, $options: 'i' };
+        } 
+
+        const publicListFoods = await FoodLibrary.find(query).limit(50);
+        return publicListFoods;
+    }
 }   
 
 module.exports = new foodService();
-// {
-// "name" : "Phở" ,
-// "protein" : 10 ,
-// "carbs" : 20 ,
-// "fat" : 30 ,
-// "unit" : "g" ,
-// "amount" : 500 ,
-// "isPublic" : "true" 
-// }
