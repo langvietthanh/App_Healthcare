@@ -1,19 +1,10 @@
 const User = require('../app/models/User');
-const healthCalculations = require('../utils/healthCalculations');
-const healthService = require('./healthService');
+const AppError = require('../utils/appError');
+const HealthCalculations = require('../utils/healthCalculations');
+const HealthService = require('./healthService');
 const bcrypt = require('bcryptjs');
 
-/**
- * @class
- */
-class userService{
-    /**
-     * @param {Object} obj 
-     * @param {ObjectId} obj.userId
-     * @param {string} obj.username
-     * @param {string} obj.avatar
-     * @returns {Object}
-     */
+class UserService{
     async changeInfo ( {userId, data, } = {} ){
         const {username, email, birthDate, } = data;
         const update = {
@@ -29,7 +20,7 @@ class userService{
         };
 
         const user = await User.findByIdAndUpdate(userId, update, option).select('-passwordHash'); 
-        if (!user) throw new Error ('User không tồn tại');
+        if (!user) throw new AppError ('User không tồn tại', 401);
         
         if (birthDate){
             const newStats = {
@@ -39,31 +30,23 @@ class userService{
                 gender: user.physicalDetail.gender,
                 activityLevel: user.physicalDetail.activityLevel,
             }; 
-            user.physicalDetail = healthCalculations.calculatePhysicalDetail( newStats );
+            user.physicalDetail = HealthCalculations.calculatePhysicalDetail( newStats );
             
-            let {tdee, } = user.physicalDetail;
+            let {tdee} = user.physicalDetail;
             
-            let dailyCalories =  healthCalculations.calculateDailyCalories( { goal: user.goals.goal, tdee, } );
+            let dailyCalories =  HealthCalculations.calculateDailyCalories( { goal: user.goals.goal, tdee, } );
 
-            user.goals = {dailyCalories, }; 
+            user.goals.dailyCalories = dailyCalories; 
             
             await user.save();
         }
 
-        if(!user) throw new Error('User không tồn tại');
         return user;
     }
-
-    /**
-     * @param {Object} obj
-     * @param {ObjectId} obj.userId 
-     * @param {number} obj.height
-     * @param {number} obj.weight 
-     * @returns {Object}
-     */
+// ->
     async updatePhysicalDetail ( {userId, data, } = {} ){
         const user = await User.findById( userId );
-        if (!user) throw new Error ('User không tồn tại');
+        if (!user) throw new AppError ('User không tồn tại', 401);
         const {height, weight, activityLevel, gender, birthDate, } = data;
         const newStats = {
             birthDate: birthDate || user.birthDate,
@@ -73,11 +56,11 @@ class userService{
             activityLevel: activityLevel || user.physicalDetail.activityLevel,
         }; 
         
-        user.physicalDetail = healthCalculations.calculatePhysicalDetail( newStats );
+        user.physicalDetail = HealthCalculations.calculatePhysicalDetail( newStats );
 
-        let idealWeight = healthCalculations.calculateIdealWeight( { height: user.physicalDetail.height, } );
-        let advice = healthService.getAdvice( { idealWeight, weightGoal: user.goals.weightGoal, } );
-        let dailyCalories =  healthCalculations.calculateDailyCalories( { goal: user.goals.goal, tdee: user.physicalDetail.tdee, } );
+        let idealWeight = HealthCalculations.calculateIdealWeight( { height: user.physicalDetail.height, } );
+        let advice = HealthService.getAdvice( { idealWeight, weightGoal: user.goals.weightGoal, } );
+        let dailyCalories =  HealthCalculations.calculateDailyCalories( { goal: user.goals.goal, tdee: user.physicalDetail.tdee, } );
         let weightAdvice = {idealWeight, advice, };
         user.goals.weightAdvice = weightAdvice;
         user.goals.dailyCalories = dailyCalories;
@@ -87,20 +70,14 @@ class userService{
         return user;
     }
 
-    /**
-     * @param {Object} obj
-     * @param {ObjectId} obj.userId
-     * @param {Object} obj.data
-     * @return {Object}
-    */
     async changePassword ( {userId, data, } = {} ){
         const user = await User.findById( userId );
-        if (!user) throw new Error ('User không tồn tại');
+        if (!user) throw new AppError ('User không tồn tại', 401);
 
         let {oldPassword, newPassword, } = data;
 
         let isMatch = await bcrypt.compare (oldPassword, user.passwordHash);
-        if ( !isMatch ) throw new Error ("Sai mật khẩu");
+        if ( !isMatch ) throw new AppError ("Sai mật khẩu", 401);
 
         const salt = await bcrypt.genSalt(10);
         const newPasswordHash = await bcrypt.hash(newPassword, salt);
@@ -109,25 +86,18 @@ class userService{
         await user.save();
     } 
 
-    /**
-     * 
-     * @param {Object} obj
-     * @param {ObjectId} obj.userId 
-     * @param {Object} obj.data
-     * @returns {Object}
-     */
     async updateGoals ( { userId, data, } = {} ){
         console.log(userId);
         const user = await User.findById( userId );
-        if (!user) throw new Error ('User không tồn tại');
+        if (!user) throw new AppError ('User không tồn tại',401);
 
 
         let {goal, weightGoal, } = data;
         let {tdee, } = user.physicalDetail;
         
-        let dailyCalories =  healthCalculations.calculateDailyCalories( { goal, tdee, } );
+        let dailyCalories =  HealthCalculations.calculateDailyCalories( { goal, tdee, } );
         let idealWeight = user.goals.weightAdvice.idealWeight;
-        let advice = healthService.getAdvice( { idealWeight, weightGoal, } );
+        let advice = HealthService.getAdvice( { idealWeight, weightGoal, } );
         let weightAdvice = {idealWeight, advice, };
 
         user.goals = {goal, dailyCalories, weightGoal, weightAdvice, }; 
@@ -138,5 +108,4 @@ class userService{
     }
 }
 
-
-module.exports = new userService();
+module.exports = new UserService();

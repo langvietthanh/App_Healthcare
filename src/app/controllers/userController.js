@@ -1,70 +1,50 @@
-const userService = require('../../services/userService');
-class userController {
-
+const UserService = require('../../services/userService');
+const catchAsync = require('../../utils/catchAsync');
+class UserController {
 //  [PUT] /api/user/info
-    async changeInfo (req, res, next, ){ 
-        try{
-            // Lấy userId từ Token
-            const userId = req.user.userId;
+    changeInfo = catchAsync (async (req, res, next) => { 
+        // Lấy userId từ Token
+        const userId = req.user.userId;
 
-            const data = req.body;
-            
-            const updatedUser = await userService.changeInfo( { userId, data, } );
-            
-            res.json({user: updatedUser});
-        }
-        catch (error){
-            next(error);
-        }
-    }
+        const data = req.body;
+        
+        const updatedUser = await UserService.changeInfo( { userId, data, } );
+        
+        res.json({user: updatedUser});        
+    })
 
 //  [PUT] /api/user/physical-detail
-    async updatePhysicalDetail (req, res, next){
-        try{
-            const userId = req.user.userId;
+    updatePhysicalDetail = catchAsync (async (req, res, next) => {
+        const userId = req.user.userId;
 
-            const data = req.body;
+        const data = req.body;
 
-            const updatedUser = await userService.updatePhysicalDetail( { userId, data } );
+        const updatedUser = await UserService.updatePhysicalDetail( { userId, data } );
 
-            res.json (updatedUser);
-        }
-        catch (error){
-            next (error);
-        }
-    }
+        res.json (updatedUser);
+    })
 
 //  [PUT] /api/user/goals
-    async updateGoals (req, res, next) {
-        try{
-            let userId = req.user.userId;
+    updateGoals = catchAsync (async (req, res, next) => {
+        let userId = req.user.userId;
 
-            let data = req.body;
+        let data = req.body;
 
-            const updatedUser = await userService.updateGoals( { userId, data, } );
-            
-            res.json (updatedUser);
-        }
-        catch (err){
-            next(err);
-        }
-    }
+        const updatedUser = await UserService.updateGoals( { userId, data, } );
+        
+        res.json (updatedUser);
+    })
 
 //  [PUT] /api/user/password
-    async changePassword (req, res, next){
-        try{
-            let userId = req.user.userId;
+    changePassword = catchAsync (async (req, res, next) => {
+        let userId = req.user.userId;
 
-            let data = req.body;
+        let data = req.body;
 
-            await userService.changePassword( { userId, data } );
+        await UserService.changePassword( { userId, data } );
 
-            res.json( {msg: "Thay đổi mật khẩu thành công"} );
-        }
-        catch (err){
-            next (err);
-        }
-    }
+        res.json( {msg: "Thay đổi mật khẩu thành công"} );
+    })
 }
 
-module.exports = new userController();
+module.exports = new UserController();

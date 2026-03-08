@@ -15,8 +15,10 @@ const Food = new Schema({
         carbs: { type: Number, default: 0 },
         fat: { type: Number, default: 0 }
     },
-    isPublic: {type: Boolean, default: true },
+    isPublic: {type: Boolean, default: false },
+    verifyStatus: {type: String, enum: ['none', 'pending', 'approved', 'rejected'],default: 'none' },
     creatorId: {type: ObjectId, ref: 'User', default: null},
-})
+    isDeleted: { type: Boolean, default: false },
+}, {timestamps: true})
 
 module.exports = mongoose.model('Food', Food);

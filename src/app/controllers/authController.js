@@ -1,48 +1,28 @@
-const authService = require('../../services/authService');
+const AuthService = require('../../services/authService');
+const catchAsync = require('../../utils/catchAsync');
 
-class authController{
+class AuthController{
 
 //  POST /api/auth/register
-    async register(req, res){
-        try{
-            const result = await authService.registerUser(req.body);
-            res.status(201).json(result)
-        }
-        catch (err) {
-
-            if (err === 'Email đã tồn tại') return res.status(409).json({msg: err.message});
-
-            res.status(500).send('Server Error');
-        }
-    }
+    register = catchAsync(async (req, res, next) => {
+        const userData = req.body;
+        const result = await AuthService.register({userData});
+        res.status(201).json(result)
+    })
 
 //  POST /api/auth/login
-    async login(req, res){
-        try{
-            const { email, password } = req.body;
-            const result = await authService.loginUser(email, password);
-            res.json(result);
-        }
-        catch (err){
-            if(err === 'Sai thông tin đăng nhập') 
-                res.status(400).json({msg: err.message});
-            console.error(err);
-            res.status(500).send('Server Error');
-        }
-    }
+    login = catchAsync(async (req, res, next) => {
+        const data = req.body;
+        const result = await AuthService.login({data});
+        res.json(result);
+    })
 
 //  GET /api/auth/me
-    async getMe (req, res) {
-        try {
-            const userId = req.user.userId;
-            const user = await authService.getMe(userId);
-            res.json(user);
-        } catch (err) {
-            console.error(err.message);
-            res.status(500).send('Server Error');
-        }
-    }
+    getMe = catchAsync(async (req, res, next) => {
+        const userId = req.user.userId;
+        const user = await AuthService.getMe(userId);
+        res.json(user);
+    })
 }
 
-
-module.exports = new authController();
+module.exports = new AuthController();

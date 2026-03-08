@@ -1,16 +1,13 @@
 const jwt = require('jsonwebtoken');
+const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
 
-module.exports = function (req, res, next){
+module.exports = catchAsync (async (req, res, next) => {
     const token = req.header('x-auth-token');
-    if ( !token ) return res.status(401).json({msg: 'Không có token, từ chối truy cập'});
+    if ( !token ) throw new AppError('Không có token, từ chối truy cập',401);
 
-    try{
-//      Giải mã để lấy PAYLOAD
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
-        next();
-    }
-    catch (err){
-        res.status(401).json({msg: 'Token không hợp lệ'});
-    }
-}
+//  Giải mã để lấy PAYLOAD
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+})
