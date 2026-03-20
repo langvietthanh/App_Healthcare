@@ -66,7 +66,7 @@ class FoodService{
     }
  
     async getPendingFoods(){
-        const pendingFoods = await Food.find({ verifyStatus: 'pending' });
+        const pendingFoods = await Food.find({ verifyStatus: 'pending', isDeleted: false });
         return pendingFoods;
     }
         
@@ -78,7 +78,7 @@ class FoodService{
        
     async getDetailFood({data}){
         const foodId = data.id;
-        const detailFood = await Food.findById(foodId);
+        const detailFood = await Food.findOne({ _id: foodId, isDeleted: false });
         if (!detailFood) throw new AppError('Không tìm thấy món ăn', 404);
         return detailFood;
     }
@@ -123,7 +123,7 @@ class FoodService{
         }
 
         // Xử lý kịch bản: User thường sửa món và muốn xin Public
-        if (updateData.isPublic === true && userRole !== 'admin') {
+        if (updateData.isPublic === true && role !== 'admin') {
             updateData.isPublic = false;
             updateData.verifyStatus = 'pending'; // Lại ném vào hàng chờ duyệt
         }
@@ -153,9 +153,11 @@ class FoodService{
         }
         // Tiến hành update
         const updatedData = {
-            name, 
+            ...(name && { name }), 
             nutrients,
-            servingSize
+            servingSize,
+            ...(updateData.isPublic !== undefined && { isPublic: updateData.isPublic }),
+            ...(updateData.verifyStatus !== undefined && { verifyStatus: updateData.verifyStatus })
         }
 
         const updatedFood = await Food.findByIdAndUpdate(foodId, updatedData, { new: true });
@@ -163,12 +165,11 @@ class FoodService{
         return updatedFood;
     }
 
-    async deleteFood({foodId, userId, role}){
+    async softDeleteFood({foodId, userId, role}){
         const food = await Food.findById(foodId);
         if (!food) {
             throw new AppError('Không tìm thấy món ăn',404);
         }
-
         // 2. Kiểm tra quyền Xóa
         if (food.isPublic === true) {
             // MỘT KHI ĐÃ PUBLIC: Chỉ Admin mới được can thiệp
@@ -184,6 +185,7 @@ class FoodService{
         }
         // Xóa mềm 
         food.isDeleted = true;
+
         await food.save();
     }
 }   

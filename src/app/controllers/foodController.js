@@ -37,14 +37,14 @@ class FoodController {
     getPendingFoods = catchAsync (async (req, res, next) => { 
         // Chỉ Admin mới được vào đây (bạn cần viết middleware chặn ở Router)
         const pendingFoods = await FoodService.getPendingFoods();
-        res.status(200).json({ count: pendingFoods.length, foods: pendingFoods }); 
+        const result = pendingFoods.map( item => ({name: item.name, isPublic: item.isPublic, verifyStatus: item.verifyStatus}))
+        res.status(200).json({ count: pendingFoods.length, foods: result }); 
     })
 
 //  [PATCH] /api/foods/:id/verify 
     setVerifyStatusFood = catchAsync (async (req, res, next) => {
         const foodId = req.params.id;
         const verifiedStatus = req.body.verifyStatus;
-        console.log(verifiedStatus)
         const food = verifiedStatus === 'approve'
         ? await FoodService.approveFood({foodId})
         : await FoodService.rejectFood({foodId})
@@ -61,13 +61,12 @@ class FoodController {
         res.status(201).json(updatedFood);
     });
 
-//  [PUT] /api/foods/:id - Xóa món
-    deleteFood = catchAsync (async (req, res, next) => {
-        console.log(req.params);
+//  [DELETE] /api/foods/:id - Xóa món
+    softDeleteFood = catchAsync (async (req, res, next) => {
         const {role, userId} = req.user;
         const foodId = req.params.id;
-        await FoodService.deleteFood({foodId, userId, role});
-        res.status(204);
+        await FoodService.softDeleteFood({foodId, userId, role});
+        res.status(200).json({msg: "Xóa thành công"});
     })
 }
 

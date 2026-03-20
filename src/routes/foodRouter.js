@@ -51,7 +51,7 @@ router.get('/:id',
 );
 
 /**
- * @route   [PATCH] /api/foods/:id
+ * @route   [PATCH] /api/foods/:id/verify
  * @desc    Admin thay đổi trạng thái xác thực (approve/reject)
  */
 router.patch('/:id/verify', 
@@ -61,7 +61,7 @@ router.patch('/:id/verify',
 );
 
 /**
- * @route   [PUT] /api/foods/:id
+ * @route   [PATCH] /api/foods/:id
  * @desc    Sửa/Cập nhật thông tin món ăn
  */
 router.patch('/:id', 
@@ -75,7 +75,7 @@ router.patch('/:id',
  */
 router.delete('/:id', 
     authMiddleware, 
-    FoodController.deleteFood
+    FoodController.softDeleteFood
 );
 
 module.exports = router;
