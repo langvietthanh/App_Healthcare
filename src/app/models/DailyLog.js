@@ -19,10 +19,12 @@ const DailyLog = new Schema({
         fat: Number
     }],
     exerciseEntries: [{
-        exerciseId: { type: ObjectId, ref: 'ExerciseLibrary' },
+        exerciseId: { type: ObjectId, ref: 'Exercise' },
         name: String, // Snapshot tên bài tập
-        durationMinutes: { type: Number, required: true }, // Thời gian tập
-        caloriesBurned: { type: Number, required: true }, // Kết quả tính toán: MET * kg * giờ
+        durationMinutes: { type: Number }, // Thời gian tập
+        sets: { type: Number },
+        reps: { type: Number },
+        weight: { type: Number }, // Mức tạ (kg)
         time: Date // Thời điểm tập trong ngày
     }],
     totals: {
