@@ -68,6 +68,33 @@ class FoodController {
         await FoodService.softDeleteFood({foodId, userId, role});
         res.status(200).json({msg: "Xóa thành công"});
     })
+
+    // -------------------------------------------------------------
+    // CHỨC NĂNG MÓN ĂN YÊU THÍCH (FAVORITE)
+    // -------------------------------------------------------------
+
+//  [GET] /api/foods/favorites
+    getFavoriteFoods = catchAsync(async (req, res, next) => {
+        const userId = req.user.userId;
+        const favorites = await FoodService.getFavoriteFoods({ userId });
+        res.status(200).json(favorites);
+    });
+
+//  [POST] /api/foods/favorites
+    addFavoriteFood = catchAsync(async (req, res, next) => {
+        const userId = req.user.userId;
+        const data = req.body; // Payload JSON yêu cầu chứa mảng { "foodId": "..." }
+        const newFavorite = await FoodService.addFavoriteFood({ userId, data });
+        res.status(201).json({ msg: "Đã thêm vào danh sách yêu thích", data: newFavorite });
+    });
+
+//  [DELETE] /api/foods/favorites/:foodId
+    removeFavoriteFood = catchAsync(async (req, res, next) => {
+        const userId = req.user.userId;
+        const foodId = req.params.foodId;
+        const result = await FoodService.removeFavoriteFood({ userId, data: { foodId } });
+        res.status(200).json(result);
+    });
 }
 
 module.exports = new FoodController();

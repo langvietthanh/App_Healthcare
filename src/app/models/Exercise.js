@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const { ObjectId } = mongoose.Schema.Types;
 const { EXERCISE_CATEGORIES, EXERCISE_MUSCLES } = require('../../constants/exercise');
 
 const Exercise = new Schema({
@@ -32,6 +33,9 @@ const Exercise = new Schema({
         }],
         default: []
     },
+    isPublic: { type: Boolean, default: false },
+    verifyStatus: { type: String, enum: ['none', 'pending', 'approved', 'rejected'], default: 'none' },
+    creatorId: { type: ObjectId, ref: 'User', default: null },
     isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });
 
