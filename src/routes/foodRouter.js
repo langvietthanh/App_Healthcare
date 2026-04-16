@@ -42,6 +42,33 @@ router.get('/my-foods',
 );
 
 /**
+ * @route   [GET] /api/foods/favorites
+ * @desc    Lấy danh sách món ăn yêu thích
+ */
+router.get('/favorites',
+    authMiddleware,
+    FoodController.getFavoriteFoods
+);
+
+/**
+ * @route   [POST] /api/foods/favorites
+ * @desc    Thêm món ăn vào danh sách yêu thích
+ */
+router.post('/favorites',
+    authMiddleware,
+    FoodController.addFavoriteFood
+);
+
+/**
+ * @route   [DELETE] /api/foods/favorites/:foodId
+ * @desc    Gỡ món ăn khỏi danh sách yêu thích
+ */
+router.delete('/favorites/:foodId',
+    authMiddleware,
+    FoodController.removeFavoriteFood
+);
+
+/**
  * @route   [GET] /api/foods/:id
  * @desc    Chi tiết món 
  */

@@ -1,4 +1,5 @@
 const Food = require('../app/models/Food');
+const FavoriteFood = require('../app/models/FavoriteFood');
 const AppError = require('../utils/appError');
 const {
     calculateTotalCalories,
@@ -187,6 +188,39 @@ class FoodService{
         food.isDeleted = true;
 
         await food.save();
+    }
+
+    // MÓN ĂN YÊU THÍCH (FAVORITE FOOD)
+    // ----------------------------------------------------------------------
+    
+    async getFavoriteFoods({ userId }) {
+        // Find tất cả các bản ghi có chứa chữ ký của userId này
+        // Dùng populate để kéo TẤT CẢ thông tin thật của Món ăn thông qua foodId
+        const favorites = await FavoriteFood.find({ userId }).populate('foodId');
+        
+        // Cạo bỏ lớp vỏ bọc FavoriteFood dư thừa, chỉ trả về Cục Data Món Ăn (foodId) cho giao diện Frontend
+        return favorites.map(fav => fav.foodId);
+    }
+
+    async addFavoriteFood({ userId, data }) {
+        const foodId = data.foodId;
+        const food = await Food.findById(foodId);
+        if (!food || food.isDeleted) throw new AppError('Món ăn gốc không tồn tại hoặc đã bị xóa', 404);
+
+        const newFav = new FavoriteFood({ userId, foodId });
+        
+        // Lưu ý: Nếu user cố tình spam bấm "Like" 2 lần, MongoDB sẽ ném lỗi văng ra ngoài 
+        // Bởi vì trong Schema FavoriteFood ta đã khóa chốt chặn Unique Index {userId: 1, foodId: 1}
+        await newFav.save();
+        return newFav;
+    }
+
+    async removeFavoriteFood({ userId, data }) {
+        const foodId = data.foodId;
+        const fav = await FavoriteFood.findOneAndDelete({ userId, foodId });
+        
+        if (!fav) throw new AppError('Món ăn chưa từng hiện diện trong danh sách yêu thích của bạn', 404);
+        return { message: "Đã gỡ món ăn khỏi danh mục Yêu thích." };
     }
 }   
 
