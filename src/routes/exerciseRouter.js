@@ -6,11 +6,10 @@ const ExerciseController = require('../app/controllers/exerciseController');
 
 /**
  * @route   [POST] /api/exercises
- * @desc    Admin tạo bài tập mới
+ * @desc    Tạo bài tập mới (Admin: public, User: cá nhân)
  */
 router.post('/', 
     authMiddleware, 
-    requireAdmin,
     ExerciseController.createNewExercise
 );
 

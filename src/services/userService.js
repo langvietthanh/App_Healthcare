@@ -1,4 +1,5 @@
 const User = require('../app/models/User');
+const BodyMetricHistory = require('../app/models/BodyMetricHistory');
 const AppError = require('../utils/appError');
 const HealthCalculations = require('../utils/healthCalculations');
 const HealthService = require('./healthService');
@@ -66,6 +67,11 @@ class UserService{
         user.goals.dailyCalories = dailyCalories;
 
         await user.save();
+
+        // Lưu lịch sử cân nặng vào BodyMetricHistory (phục vụ biểu đồ Reports)
+        const finalWeight = weight || user.physicalDetail.weight;
+        await new BodyMetricHistory({ userId, weight: finalWeight }).save();
+
         // Trả về kết quả
         return user;
     }

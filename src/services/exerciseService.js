@@ -8,18 +8,40 @@ const {
 } = require('../constants/exercise');
 
 class ExerciseService {
-    async createNewExercise({ data }) {
+    async createNewExercise({ data, userId, role }) {
         const { name, category, targetMuscles, description, instructions } = data;
-        const newExercise = new Exercise({ name, category, targetMuscles, description, instructions });
+
+        // Admin tạo bài tập hệ thống (public) — User tạo bài tập cá nhân (private, không lên hệ thống)
+        const isAdmin = role === 'admin';
+
+        const newExercise = new Exercise({
+            name,
+            category,
+            targetMuscles,
+            description,
+            instructions,
+            isPublic: isAdmin,
+            verifyStatus: isAdmin ? 'approved' : 'none',
+            creatorId: isAdmin ? null : userId,
+        });
+
         await newExercise.save();
         return newExercise;
     }
 
-    async searchExercise({ data }) {
+    async searchExercise({ data, userId }) {
         const keyword = data.q;
         const category = data.category;
         const muscle = data.muscle;
-        const query = { isDeleted: false };
+
+        // Chỉ lấy bài tập Public HOẶC bài do chính user tạo (giống logic Food)
+        const query = {
+            $or: [
+                { isPublic: true },
+                { creatorId: userId }
+            ],
+            isDeleted: false
+        };
         
         if (keyword) {
             query.name = { $regex: keyword, $options: 'i' };

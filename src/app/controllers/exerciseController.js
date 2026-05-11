@@ -5,14 +5,17 @@ class ExerciseController {
 //  [POST] /api/exercises
     createNewExercise = catchAsync(async (req, res, next) => {
         const data = req.body;
-        const newExercise = await ExerciseService.createNewExercise({ data });
+        const userId = req.user.userId;
+        const role = req.user.role;
+        const newExercise = await ExerciseService.createNewExercise({ data, userId, role });
         res.status(201).json(newExercise);
     });
 
 //  [GET] /api/exercises
     searchExercise = catchAsync(async (req, res, next) => {
         const data = req.query;
-        const listExercises = await ExerciseService.searchExercise({ data });
+        const userId = req.user.userId;
+        const listExercises = await ExerciseService.searchExercise({ data, userId });
         res.status(200).json(listExercises);
     });
 
