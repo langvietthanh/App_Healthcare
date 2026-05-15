@@ -1,32 +1,112 @@
 import React, { useState } from 'react';
 import { Calendar, Plus } from 'lucide-react';
 
+// ─── Chế độ ăn ──────────────────────────────────────────────────────────
+const DIET_PRESETS = {
+  'Cân Bằng': { carbs: 40, protein: 40, fat: 20 },
+  'Low Carb': { carbs: 25, protein: 45, fat: 30 },
+  'High Protein': { carbs: 30, protein: 50, fat: 20 },
+  'Tùy Chỉnh': null,
+};
+
+const DietSection = () => {
+  const [selected, setSelected] = useState('Cân Bằng');
+  const [macros, setMacros] = useState({ carbs: 40, protein: 40, fat: 20 });
+  const total = macros.carbs + macros.protein + macros.fat;
+  const isValid = total === 100;
+  const macroConfig = [
+    { key: 'carbs', label: 'Carbs', color: '#22c55e' },
+    { key: 'protein', label: 'Chất đạm', color: '#ef4444' },
+    { key: 'fat', label: 'Chất béo', color: '#f97316' },
+  ];
+  const handlePreset = (name) => {
+    setSelected(name);
+    if (DIET_PRESETS[name]) setMacros(DIET_PRESETS[name]);
+  };
+  const handleChange = (key, val) => {
+    setSelected('Tùy Chỉnh');
+    setMacros(prev => ({ ...prev, [key]: Math.max(0, Math.min(100, Number(val))) }));
+  };
+  return (
+    <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-[32px] p-8 shadow-2xl">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold tracking-tight">Chế độ ăn</h2>
+        <span className="text-xs text-zinc-500">Tỷ lệ dinh dưỡng</span>
+      </div>
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        {macroConfig.map(m => (
+          <div key={m.key} className="flex flex-col items-center gap-2">
+            <span className="text-xs font-bold" style={{ color: m.color }}>{m.label}</span>
+            <input type="number" min="0" max="100" value={macros[m.key]}
+              onChange={e => handleChange(m.key, e.target.value)}
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-2 px-2 text-white text-center text-xl font-black focus:outline-none focus:border-[#c8f31d] transition-colors"
+              style={{ borderColor: selected === 'Tùy Chỉnh' ? m.color : undefined }}
+            />
+            <span className="text-[10px] text-zinc-500">%</span>
+          </div>
+        ))}
+      </div>
+      <div className="space-y-2 mb-5">
+        {macroConfig.map(m => (
+          <div key={m.key} className="flex items-center gap-3">
+            <span className="text-[10px] text-zinc-500 w-16 shrink-0">{m.label}</span>
+            <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${macros[m.key]}%`, backgroundColor: m.color }} />
+            </div>
+            <span className="text-[10px] font-bold text-zinc-400 w-8 text-right">{macros[m.key]}%</span>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center justify-between py-3 border-t border-b border-zinc-800 mb-5">
+        <div>
+          <span className="font-bold text-white">% Tổng</span>
+          <p className="text-[10px] text-zinc-500 mt-0.5">Các chất dinh dưỡng phải tổng bằng 100%</p>
+        </div>
+        <span className={`text-xl font-black ${isValid ? 'text-[#c8f31d]' : 'text-red-400'}`}>{total}%</span>
+      </div>
+      <div className="flex flex-wrap gap-2 mb-5">
+        {Object.keys(DIET_PRESETS).map(name => (
+          <button key={name} onClick={() => handlePreset(name)}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${selected === name ? 'bg-[#c8f31d] text-black border-[#c8f31d]' : 'text-zinc-300 border-zinc-700 hover:border-zinc-500'
+              }`}>{name}</button>
+        ))}
+      </div>
+      <button
+        disabled={!isValid}
+        className={`w-full py-3.5 rounded-2xl font-black text-base transition-all ${isValid ? 'bg-[#c8f31d] text-black hover:scale-[1.01] shadow-[0_0_15px_rgba(200,243,29,0.2)]' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+          }`}>
+        Lưu chế độ ăn
+      </button>
+    </div>
+  );
+};
+
 const StomachIcon = ({ level = 0, current = 0, goal = 2000 }) => {
   const percentage = Math.max(0, Math.min(100, level));
-  
+
   return (
     <div className="relative flex items-center justify-center p-2">
       {/* Container Oval Dọc */}
       <div className="relative w-[160px] h-[240px] rounded-[100px] border-[6px] border-zinc-800 bg-zinc-900 overflow-hidden shadow-inner flex flex-col items-center justify-center">
-        
+
         {/* Nước gợn sóng 1 (Mờ hơn, sóng phía sau) */}
-        <div 
+        <div
           className="absolute left-1/2 w-[600px] h-[600px] bg-[#c8f31d]/40 rounded-[43%] animate-[spin_7s_linear_infinite] transition-all duration-1000 ease-in-out"
-          style={{ 
-            top: `calc(${100 - percentage}% - 10px)`, 
-            marginLeft: '-300px' 
+          style={{
+            top: `calc(${100 - percentage}% - 10px)`,
+            marginLeft: '-300px'
           }}
         ></div>
 
         {/* Nước gợn sóng 2 (Đậm hơn, sóng phía trước) */}
-        <div 
+        <div
           className="absolute left-1/2 w-[600px] h-[600px] bg-[#c8f31d] rounded-[40%] animate-[spin_5s_linear_infinite] transition-all duration-1000 ease-in-out drop-shadow-[0_-5px_15px_rgba(200,243,29,0.3)]"
-          style={{ 
-            top: `calc(${100 - percentage}% + 5px)`, 
-            marginLeft: '-300px' 
+          style={{
+            top: `calc(${100 - percentage}% + 5px)`,
+            marginLeft: '-300px'
           }}
         ></div>
-        
+
         {/* Nội dung chữ đè lên trên sóng */}
         <div className="relative z-10 text-center flex flex-col items-center mt-4">
           <span className="text-[10px] font-extrabold uppercase tracking-widest text-black bg-[#c8f31d] px-3 py-1 rounded-full mb-2 shadow-lg">
@@ -68,7 +148,7 @@ const BatteryInfo = ({ current, goal }) => {
   const isOver = current > goal;
   const remaining = isOver ? current - goal : goal - current;
   const percentage = Math.min((current / goal) * 100, 100);
-  
+
   let color = "#c8f31d"; // Xanh lá mạ
   if (isOver) {
     color = "#ef4444"; // Đỏ (Vượt mức)
@@ -207,7 +287,7 @@ const Diary = () => {
 
   return (
     <div className="flex flex-col min-h-full pb-10 text-white bg-transparent">
-      
+
       {/* Header */}
       <div className="flex justify-between items-center px-10 py-10">
         <div>
@@ -233,21 +313,19 @@ const Diary = () => {
       {/* Main Card */}
       <div className="px-8 mb-8">
         <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-[32px] p-8 shadow-2xl relative overflow-hidden">
-          
+
           <div className="flex justify-between items-center mb-10">
             <h2 className="text-2xl font-bold tracking-tight">Calo & Dinh dưỡng</h2>
             <div className="bg-zinc-800/80 rounded-xl flex p-1 border border-zinc-700/50">
               <button
                 onClick={() => setViewMode('day')}
-                className={`px-5 py-1.5 rounded-lg text-sm font-bold transition-all ${
-                  viewMode === 'day' ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-400 hover:text-white'
-                }`}
+                className={`px-5 py-1.5 rounded-lg text-sm font-bold transition-all ${viewMode === 'day' ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-400 hover:text-white'
+                  }`}
               >Ngày</button>
               <button
                 onClick={() => setViewMode('week')}
-                className={`px-5 py-1.5 rounded-lg text-sm font-bold transition-all ${
-                  viewMode === 'week' ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-400 hover:text-white'
-                }`}
+                className={`px-5 py-1.5 rounded-lg text-sm font-bold transition-all ${viewMode === 'week' ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-400 hover:text-white'
+                  }`}
               >Tuần</button>
             </div>
           </div>
@@ -279,6 +357,11 @@ const Diary = () => {
           )}
 
         </div>
+      </div>
+
+      {/* Chế độ ăn */}
+      <div className="px-8 mb-8">
+        <DietSection />
       </div>
 
     </div>

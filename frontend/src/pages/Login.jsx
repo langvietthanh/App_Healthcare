@@ -17,19 +17,27 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Gọi API POST /auth/login (do axiosClient đã có sẵn /api)
+      // Bước 1: Đăng nhập lấy token
       const response = await axiosClient.post('/auth/login', { email, password });
-      
-      // API có thể trả về response.data.token hoặc chỉ là response.token do setup của axiosClient
       const token = response.token || response.data?.token;
-      if (token) {
-        localStorage.setItem('token', token);
+
+      if (!token) throw new Error('Không nhận được token');
+      localStorage.setItem('token', token);
+
+      // Bước 2: Gọi /auth/me để lấy thông tin role
+      const meRes = await axiosClient.get('/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const role = meRes.role || meRes.data?.role || 'user';
+      localStorage.setItem('role', role);
+
+      // Bước 3: Redirect theo role
+      if (role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/dashboard');
       }
-      
-      // Chuyển hướng tới trang Dashboard
-      navigate('/dashboard');
     } catch (err) {
-      // Lấy lỗi từ API (nếu có message)
       setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
     } finally {
       setLoading(false);

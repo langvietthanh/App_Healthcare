@@ -1,13 +1,20 @@
 import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Utensils, Dumbbell, User, BookOpen } from 'lucide-react';
 
 const MainLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    navigate('/login');
+  };
 
   const navItems = [
     { path: '/dashboard', label: 'Home', icon: Home },
-    { path: '/diary', label: 'Nhật kí', icon: BookOpen },
+    { path: '/diary', label: 'Diary', icon: BookOpen },
     { path: '/meals', label: 'Meal Plans', icon: Utensils },
     { path: '/workouts', label: 'Exercise', icon: Dumbbell },
     { path: '/profile', label: 'Profile', icon: User },
@@ -31,8 +38,8 @@ const MainLayout = () => {
                 to={item.path}
                 style={isActive ? { color: 'black', backgroundColor: 'rgb(200 243 29 / 82%)' } : {}}
                 className={`flex items-center gap-4 px-5 py-4 rounded-xl font-bold transition-all ${isActive
-                    ? "shadow-[0_0_15px_rgba(200,243,29,0.3)]"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+                  ? "shadow-[0_0_15px_rgba(200,243,29,0.3)]"
+                  : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
                   }`}
               >
                 <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
@@ -52,7 +59,7 @@ const MainLayout = () => {
             </div>
             <div>
               <p className="text-sm font-bold text-white">Piyush !</p>
-              <button className="text-xs text-zinc-500 hover:text-[#c8f31d] transition-colors">Đăng xuất</button>
+              <button onClick={handleLogout} className="text-xs text-zinc-500 hover:text-[#c8f31d] transition-colors">Đăng xuất</button>
             </div>
           </div>
         </div>
