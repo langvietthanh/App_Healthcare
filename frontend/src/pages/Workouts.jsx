@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Search, Filter, Star, Plus, ArrowLeft, Clock, Dumbbell, X, Calendar, ChevronLeft, ChevronRight, Bell, ChevronDown } from 'lucide-react';
+import { mockExercises } from './admin/AdminExercises';
 
 const Workouts = () => {
   // Navigation State
@@ -38,12 +39,7 @@ const Workouts = () => {
     setIsFavorite(false);
   };
 
-  const mockExercises = [
-    { name: "Chạy bộ ngoài trời", rating: 5, time: "30 phút", kcal: 300, img: "🏃‍♂️", type: 'Cardio' },
-    { name: "Đạp xe địa hình", rating: 4.5, time: "45 phút", kcal: 450, img: "🚴‍♂️", type: 'Cardio' },
-    { name: "Nâng tạ đòn", rating: 4.8, time: "15 phút", kcal: 200, img: "🏋️", type: 'Strength' },
-    { name: "Hít đất", rating: 4.2, time: "10 phút", kcal: 150, img: "💪", type: 'Strength' },
-  ];
+
 
   const handleSelectExercise = (ex) => {
     setSelectedExercise(ex);
@@ -172,8 +168,8 @@ const Workouts = () => {
             <div className="space-y-4 mb-8">
               {scheduledExercises.map((item, idx) => (
                 <div key={idx} className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 flex items-center gap-4 shadow-lg">
-                  <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center text-3xl">
-                    {item.img}
+                  <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center overflow-hidden">
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-black text-lg text-white mb-1">{item.name}</h3>
@@ -182,7 +178,7 @@ const Workouts = () => {
                       <span>•</span>
                       <span>{item.repsOrTime} {item.mode === 'reps' ? 'Reps' : 'Giây'}</span>
                       <span>•</span>
-                      <span className="text-[#c8f31d]">{item.kcal} kcal</span>
+                      <span className="text-[#c8f31d]">200 kcal</span>
                     </div>
                   </div>
                 </div>
@@ -314,12 +310,12 @@ const Workouts = () => {
 
         <div className="flex-1 overflow-y-auto px-8 pb-20 scrollbar-hide animate-in slide-in-from-right-8 duration-300">
           <div className="bg-zinc-900 rounded-3xl p-6 mb-8 border border-zinc-800 flex items-center gap-5 shadow-lg">
-            <div className="w-20 h-20 bg-zinc-800 rounded-2xl flex items-center justify-center text-4xl shadow-inner">
-              {selectedExercise?.img}
+            <div className="w-20 h-20 bg-zinc-800 rounded-2xl flex items-center justify-center overflow-hidden shadow-inner">
+              <img src={selectedExercise?.image} alt={selectedExercise?.name} className="w-full h-full object-cover" />
             </div>
             <div>
               <h3 className="text-2xl font-black text-white mb-1">{selectedExercise?.name}</h3>
-              <p className="text-zinc-400 font-bold uppercase tracking-wider text-xs">{selectedExercise?.type}</p>
+              <p className="text-zinc-400 font-bold uppercase tracking-wider text-xs">{selectedExercise?.category}</p>
             </div>
           </div>
 
@@ -543,9 +539,7 @@ const Workouts = () => {
               className="bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-3xl p-4 flex gap-5 items-center group hover:bg-zinc-800/80 hover:border-zinc-700 transition-all shadow-lg cursor-pointer"
             >
               <div className="w-20 h-20 bg-zinc-800 rounded-2xl flex items-center justify-center shrink-0 border border-zinc-700 overflow-hidden relative shadow-inner">
-                <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center text-3xl">
-                  {ex.img}
-                </div>
+                <img src={ex.image} alt={ex.name} className="w-full h-full object-cover" />
               </div>
               
               <div className="flex-1 py-1">
@@ -557,16 +551,16 @@ const Workouts = () => {
                     <Star
                       key={star}
                       size={14}
-                      fill={star <= Math.floor(ex.rating) ? "#eab308" : "none"}
-                      color={star <= Math.floor(ex.rating) ? "#eab308" : "#52525b"}
+                      fill="#eab308"
+                      color="#eab308"
                     />
                   ))}
-                  <span className="text-xs text-zinc-400 font-bold ml-1.5">{ex.rating}</span>
+                  <span className="text-xs text-zinc-400 font-bold ml-1.5">5.0</span>
                 </div>
                 
                 <div className="flex items-center gap-3">
-                  <span className="text-[11px] font-extrabold text-zinc-400 bg-zinc-800 px-2.5 py-1 rounded-lg uppercase tracking-wider">{ex.time}</span>
-                  <span className="text-sm font-black text-[#c8f31d]">{ex.kcal} kcal</span>
+                  <span className="text-[11px] font-extrabold text-zinc-400 bg-zinc-800 px-2.5 py-1 rounded-lg uppercase tracking-wider">15 phút</span>
+                  <span className="text-sm font-black text-[#c8f31d]">200 kcal</span>
                 </div>
               </div>
               

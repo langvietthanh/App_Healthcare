@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, Coffee, Sun, Moon, Cookie, ChevronRight, Search, ChevronLeft, Heart } from 'lucide-react';
+import { mockFoods } from './admin/AdminFoods';
 
 const MealCard = ({ id, title, icon: Icon, currentKcal, targetKcal, items = [], onAddFood }) => {
   return (
@@ -317,16 +318,8 @@ const MealPlan = () => {
                   </button>
                 )}
 
-                {/* Giả lập dữ liệu món ăn tùy theo tab (hiện tại hiển thị chung 1 danh sách) */}
-                {(activeTab === 'recent' || activeTab === 'favorite' || activeTab === 'custom') && [
-                  { name: "Cơm trắng", desc: "1 bát vừa (200g)", kcal: 260, carbs: 58, protein: 5, fat: 0 },
-                  { name: "Thịt lợn luộc", desc: "100g", kcal: 242, carbs: 0, protein: 27, fat: 14 },
-                  { name: "Rau muống xào", desc: "1 đĩa vừa", kcal: 110, carbs: 4, protein: 3, fat: 9 },
-                  { name: "Trứng ốp la", desc: "1 quả", kcal: 90, carbs: 1, protein: 6, fat: 7 },
-                  { name: "Bánh mì Pate", desc: "1 ổ", kcal: 350, carbs: 40, protein: 12, fat: 15 },
-                  { name: "Sữa chua không đường", desc: "1 hộp", kcal: 60, carbs: 5, protein: 4, fat: 3 },
-                  { name: "Chuối tây", desc: "1 quả", kcal: 88, carbs: 23, protein: 1, fat: 0 },
-                ].map((food, i) => (
+                {/* Sử dụng dữ liệu mockFoods */}
+                {(activeTab === 'recent' || activeTab === 'favorite' || activeTab === 'custom') && mockFoods.map((food, i) => (
                   <div
                     key={i}
                     onClick={() => handleSelectFood(food)}
@@ -334,15 +327,20 @@ const MealPlan = () => {
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-14 h-14 bg-zinc-800 rounded-xl overflow-hidden border border-zinc-700">
-                        <img src="/icon_protein.png" alt={food.name} className="w-full h-full object-cover opacity-80" />
+                        {food.image ? (
+                          <img src={food.image} alt={food.name} className="w-full h-full object-cover opacity-80" />
+                        ) : (
+                          <img src="/icon_protein.png" alt={food.name} className="w-full h-full object-cover opacity-80" />
+                        )}
                       </div>
                       <div>
                         <h4 className="text-white font-bold text-base">{food.name}</h4>
                         <div className="flex items-center gap-2 mt-1.5">
-                          <span className="text-zinc-500 text-xs font-medium">{food.desc}</span>
+                          <span className="text-zinc-500 text-xs font-medium">{food.amount}{food.unit}</span>
                           <span className="w-1 h-1 rounded-full bg-zinc-700"></span>
-                          <span className="text-[#c8f31d] text-sm font-extrabold">{food.kcal} kcal</span>
+                          <span className="text-[#c8f31d] text-sm font-extrabold">{food.calories} kcal</span>
                         </div>
+                        <p className="text-zinc-400 text-[10px] mt-1 max-w-[200px] truncate">{food.description}</p>
                       </div>
                     </div>
                     <button className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-[#c8f31d] group-hover:bg-[#c8f31d] group-hover:text-black transition-colors shadow-lg">
@@ -357,10 +355,10 @@ const MealPlan = () => {
             <div className="flex-1 flex flex-col p-5 bg-[#111] overflow-y-auto">
               <div className="flex flex-col items-center mb-6 pt-2">
                 <div className="w-24 h-24 bg-zinc-800 rounded-[20px] overflow-hidden border border-zinc-700 mb-4 shadow-xl">
-                  <img src="/icon_protein.png" alt={selectedFood.name} className="w-full h-full object-cover" />
+                  <img src={selectedFood.image || "/icon_protein.png"} alt={selectedFood.name} className="w-full h-full object-cover" />
                 </div>
                 <h3 className="text-2xl font-black text-white text-center mb-1">{selectedFood.name}</h3>
-                <p className="text-[#c8f31d] font-bold text-lg">{selectedFood.kcal} kcal <span className="text-zinc-500 text-xs font-medium">/ 100g</span></p>
+                <p className="text-[#c8f31d] font-bold text-lg">{selectedFood.calories} kcal <span className="text-zinc-500 text-xs font-medium">/ {selectedFood.amount}{selectedFood.unit}</span></p>
               </div>
 
               {/* Macro breakdown */}

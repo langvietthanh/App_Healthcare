@@ -4,21 +4,33 @@ import { Search, Plus, Pencil, Trash2, X, Check, ImagePlus, ChevronDown, CheckCi
 const UNITS = ['g', 'lb', 'oz', 'ml'];
 const emptyForm = { name: '', calories: '', protein: '', carbs: '', fat: '', unit: 'g', amount: '100', image: '' };
 
-const mockFoods = [
-  { id: 1, name: 'Cơm trắng',  calories: 130, protein: 2.7, carbs: 28,  fat: 0.3, unit: 'g',   amount: 100, image: 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=400', status: 'approved', createdAt: '2026-05-10', creator: 'Admin' },
-  { id: 2, name: 'Ức gà luộc', calories: 165, protein: 31,  carbs: 0,   fat: 3.6, unit: 'g',   amount: 100, image: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=400', status: 'approved', createdAt: '2026-05-08', creator: 'Admin' },
-  { id: 3, name: 'Trứng gà',   calories: 78,  protein: 6,   carbs: 0.6, fat: 5,   unit: 'g',   amount: 100, image: '', status: 'approved', createdAt: '2026-05-05', creator: 'Admin' },
-  { id: 4, name: 'Phở bò',     calories: 350, protein: 20,  carbs: 45,  fat: 8,   unit: 'g',   amount: 400, image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400', status: 'approved', createdAt: '2026-05-01', creator: 'Admin' },
-  { id: 5, name: 'Bánh mì thịt nướng', calories: 420, protein: 18, carbs: 52, fat: 12, unit: 'g', amount: 250, image: '', status: 'pending', createdAt: '2026-05-14', creator: 'Nguyễn Văn A' },
-  { id: 6, name: 'Chả cá Lã Vọng',    calories: 290, protein: 22, carbs: 8,  fat: 18, unit: 'g', amount: 150, image: '', status: 'pending', createdAt: '2026-05-13', creator: 'Trần Thị B' },
-  { id: 7, name: 'Nem cuốn tôm',       calories: 180, protein: 14, carbs: 22, fat: 4,  unit: 'g', amount: 100, image: '', status: 'pending', createdAt: '2026-05-12', creator: 'Lê Văn C' },
-  { id: 8, name: 'Bún bò Huế',         calories: 380, protein: 25, carbs: 48, fat: 9,  unit: 'g', amount: 450, image: '', status: 'rejected', createdAt: '2026-04-28', creator: 'Phạm Thị D' },
+export const mockFoods = [
+  // Ức gà áp chảo: Nguồn protein nạc "quốc dân", hấp thu nhanh.
+  { id: 1, name: 'Ức gà áp chảo', description: 'Nguồn protein nạc "quốc dân", hấp thu nhanh.', calories: 165, protein: 31, carbs: 0, fat: 3.6, unit: 'g', amount: 100, image: '', status: 'approved', createdAt: '2026-05-10', creator: 'Admin' },
+  // Khoai lang luộc: Nguồn tinh bột hấp thu chậm (Carbs GI thấp), cung cấp năng lượng bền bỉ.
+  { id: 2, name: 'Khoai lang luộc', description: 'Nguồn tinh bột hấp thu chậm (Carbs GI thấp), cung cấp năng lượng bền bỉ.', calories: 86, protein: 1.6, carbs: 20, fat: 0.1, unit: 'g', amount: 100, image: '', status: 'approved', createdAt: '2026-05-09', creator: 'Admin' },
+  // Trứng gà luộc: Protein hoàn chỉnh, giá rẻ, dồi dào chất béo tốt từ lòng đỏ.
+  { id: 3, name: 'Trứng gà luộc', description: 'Protein hoàn chỉnh, giá rẻ, dồi dào chất béo tốt từ lòng đỏ.', calories: 78, protein: 6, carbs: 0.6, fat: 5, unit: 'g', amount: 100, image: '', status: 'approved', createdAt: '2026-05-08', creator: 'Admin' },
+  // Thịt bò thăn (Beefsteak): Giàu protein và Creatine tự nhiên giúp tăng sức mạnh.
+  { id: 4, name: 'Thịt bò thăn (Beefsteak)', description: 'Giàu protein và Creatine tự nhiên giúp tăng sức mạnh.', calories: 250, protein: 26, carbs: 0, fat: 15, unit: 'g', amount: 100, image: '', status: 'approved', createdAt: '2026-05-07', creator: 'Admin' },
+  // Cá hồi nướng: Giàu Omega-3 giúp giảm viêm cơ và hỗ trợ phục hồi.
+  { id: 5, name: 'Cá hồi nướng', description: 'Giàu Omega-3 giúp giảm viêm cơ và hỗ trợ phục hồi.', calories: 206, protein: 22, carbs: 0, fat: 12, unit: 'g', amount: 100, image: '', status: 'approved', createdAt: '2026-05-06', creator: 'Admin' },
+  // Yến mạch (Oatmeal): Bữa sáng tiêu chuẩn, giàu chất xơ và tinh bột tốt.
+  { id: 6, name: 'Yến mạch (Oatmeal)', description: 'Bữa sáng tiêu chuẩn, giàu chất xơ và tinh bột tốt.', calories: 389, protein: 17, carbs: 66, fat: 7, unit: 'g', amount: 100, image: '', status: 'approved', createdAt: '2026-05-05', creator: 'Admin' },
+  // Sữa chua Hy Lạp (Greek Yogurt): Chứa lượng protein gấp đôi sữa chua thường, tốt cho tiêu hóa.
+  { id: 7, name: 'Sữa chua Hy Lạp (Greek Yogurt)', description: 'Chứa lượng protein gấp đôi sữa chua thường, tốt cho tiêu hóa.', calories: 59, protein: 10, carbs: 3.6, fat: 0.4, unit: 'g', amount: 100, image: '', status: 'approved', createdAt: '2026-05-04', creator: 'Admin' },
+  // Bơ đậu phộng (Peanut Butter): Nguồn chất béo tốt và calo đậm đặc, thích hợp cho người muốn tăng cân (Bulking).
+  { id: 8, name: 'Bơ đậu phộng (Peanut Butter)', description: 'Nguồn chất béo tốt và calo đậm đặc, thích hợp cho người muốn tăng cân (Bulking).', calories: 588, protein: 25, carbs: 20, fat: 50, unit: 'g', amount: 100, image: '', status: 'approved', createdAt: '2026-05-03', creator: 'Admin' },
+  // Súp lơ xanh (Broccoli): Chứa nhiều Vitamin, chất xơ và chất chống oxy hóa, hỗ trợ quá trình trao đổi chất.
+  { id: 9, name: 'Súp lơ xanh (Broccoli)', description: 'Chứa nhiều Vitamin, chất xơ và chất chống oxy hóa, hỗ trợ quá trình trao đổi chất.', calories: 34, protein: 2.8, carbs: 6.6, fat: 0.4, unit: 'g', amount: 100, image: '', status: 'approved', createdAt: '2026-05-02', creator: 'Admin' },
+  // Whey Protein (Thực phẩm bổ sung): Protein dạng lỏng hấp thu cực nhanh, uống ngay sau tập.
+  { id: 10, name: 'Whey Protein (Thực phẩm bổ sung)', description: 'Protein dạng lỏng hấp thu cực nhanh, uống ngay sau tập.', calories: 120, protein: 24, carbs: 3, fat: 1, unit: 'g', amount: 30, image: '', status: 'approved', createdAt: '2026-05-01', creator: 'Admin' }
 ];
 
 const statusConfig = {
-  approved: { label: 'Đã duyệt',   color: '#22c55e', bg: '#22c55e15', icon: CheckCircle2 },
-  pending:  { label: 'Chờ duyệt',  color: '#f97316', bg: '#f9731615', icon: Clock },
-  rejected: { label: 'Từ chối',    color: '#ef4444', bg: '#ef444415', icon: XCircle },
+  approved: { label: 'Đã duyệt', color: '#22c55e', bg: '#22c55e15', icon: CheckCircle2 },
+  pending: { label: 'Chờ duyệt', color: 'rgba(249, 115, 22, 1)', bg: '#f9731615', icon: Clock },
+  rejected: { label: 'Từ chối', color: '#ef4444', bg: '#ef444415', icon: XCircle },
 };
 
 const AdminFoods = () => {
@@ -174,11 +186,13 @@ const AdminFoods = () => {
                     <td className="px-5 py-4 text-zinc-300 text-sm">{f.creator}</td>
                     <td className="px-5 py-4 text-zinc-500 text-xs">{f.createdAt}</td>
                     <td className="px-5 py-4">
-                      {(() => { const s = statusConfig[f.status]; const Icon = s.icon; return (
-                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold w-fit" style={{ backgroundColor: s.bg, color: s.color }}>
-                          <Icon size={12} />{s.label}
-                        </span>
-                      ); })()}
+                      {(() => {
+                        const s = statusConfig[f.status]; const Icon = s.icon; return (
+                          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold w-fit" style={{ backgroundColor: s.bg, color: s.color }}>
+                            <Icon size={12} />{s.label}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-5 py-4">
                       {f.status === 'pending' ? (
@@ -233,9 +247,9 @@ const AdminFoods = () => {
               <F label="Tên món ăn *" name="name" placeholder="VD: Cơm trắng" />
               <div className="grid grid-cols-2 gap-4">
                 <F label="Calo (kcal)" name="calories" type="number" placeholder="130" />
-                <F label="Protein (g)"  name="protein"  type="number" placeholder="2.7" />
-                <F label="Carbs (g)"    name="carbs"    type="number" placeholder="28" />
-                <F label="Fat (g)"      name="fat"      type="number" placeholder="0.3" />
+                <F label="Protein (g)" name="protein" type="number" placeholder="2.7" />
+                <F label="Carbs (g)" name="carbs" type="number" placeholder="28" />
+                <F label="Fat (g)" name="fat" type="number" placeholder="0.3" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <F label="Số lượng" name="amount" type="number" placeholder="100" />

@@ -6,12 +6,115 @@ const MUSCLES = ['Ngực', 'Lưng', 'Vai', 'Tay trước', 'Tay sau', 'Bụng', 
 const levelColor = { 'Dễ': '#22c55e', 'Trung bình': '#f97316', 'Khó': '#ef4444' };
 const emptyForm = { name: '', category: 'Strength', muscles: [], level: 'Trung bình', description: '', instructions: [''], image: '' };
 
-const mockExercises = [
-  { id: 1, name: 'Bench Press', category: 'Strength',    muscles: ['Ngực', 'Tay trước'], level: 'Trung bình', image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400' },
-  { id: 2, name: 'Squat',       category: 'Strength',    muscles: ['Đùi trước', 'Mông'], level: 'Trung bình', image: 'https://images.unsplash.com/photo-1434608519344-49d77a124f48?w=400' },
-  { id: 3, name: 'Plank',       category: 'Flexibility', muscles: ['Bụng', 'Lưng'],       level: 'Dễ',         image: '' },
-  { id: 4, name: 'Burpees',     category: 'HIIT',        muscles: ['Toàn thân'],           level: 'Khó',        image: '' },
-  { id: 5, name: 'Deadlift',    category: 'Strength',    muscles: ['Lưng', 'Đùi sau'],    level: 'Khó',        image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=400' },
+export const mockExercises = [
+  {
+    id: 1,
+    name: 'Barbell Squat (Gánh tạ đòn)',
+    category: 'Strength',
+    muscles: ['Đùi trước', 'Đùi sau', 'Mông', 'Bụng'],
+    level: 'Trung bình',
+    image: '/image/exercise/Barbell Squats.png',
+    instructions: [
+      'Đứng thẳng, hai chân rộng bằng vai, thanh tạ đặt trên vai sau.',
+      'Từ từ gập gối, đẩy mông về phía sau như đang ngồi xuống ghế.',
+      'Giữ lưng thẳng, hạ người xuống cho đến khi đùi song song với mặt sàn.',
+      'Đẩy mạnh gót chân để đứng thẳng lên vị trí ban đầu.'
+    ]
+  },
+  {
+    id: 2,
+    name: 'Deadlift (Nâng tạ kéo)',
+    category: 'Strength',
+    muscles: ['Lưng', 'Đùi sau', 'Mông'],
+    level: 'Khó',
+    image: '/image/exercise/Sumo Deadlift.png',
+    instructions: [
+      'Đứng hai chân rộng bằng vai, thanh tạ nằm trên mặt đất sát ống chân.',
+      'Cúi người, hai tay nắm lấy thanh tạ, giữ lưng thẳng.',
+      'Dùng lực từ chân và hông, đứng thẳng người lên đồng thời nhấc thanh tạ theo.',
+      'Từ từ hạ tạ xuống mặt đất theo đường cũ.'
+    ]
+  },
+  {
+    id: 3,
+    name: 'Bench Press (Đẩy tạ đòn trên ghế nằm)',
+    category: 'Strength',
+    muscles: ['Ngực', 'Vai', 'Tay sau'],
+    level: 'Trung bình',
+    image: '/image/exercise/Bench Press.png',
+    instructions: [
+      'Nằm ngửa trên ghế băng phẳng, hai bàn chân đặt vững trên sàn.',
+      'Hai tay nắm thanh tạ rộng hơn vai một chút, nhấc tạ ra khỏi giá đỡ.',
+      'Từ từ hạ tạ xuống cho đến khi chạm nhẹ vào giữa ngực.',
+      'Đẩy mạnh tạ lên vị trí ban đầu, khóa thẳng tay.'
+    ]
+  },
+  {
+    id: 4,
+    name: 'Pull-up (Kéo xà đơn)',
+    category: 'Strength',
+    muscles: ['Lưng', 'Tay trước'],
+    level: 'Khó',
+    image: '/image/exercise/Pull-Ups.png',
+    instructions: [
+      'Hai tay nắm thanh xà, khoảng cách rộng hơn vai, lòng bàn tay hướng về phía trước.',
+      'Gồng cơ lõi, kéo người lên cho đến khi cằm vượt qua thanh xà.',
+      'Hạ người xuống từ từ, có kiểm soát về vị trí bắt đầu.'
+    ]
+  },
+  {
+    id: 5,
+    name: 'Overhead Press (Đẩy tạ qua đầu)',
+    category: 'Strength',
+    muscles: ['Vai', 'Tay sau', 'Bụng'],
+    level: 'Trung bình',
+    image: '/image/exercise/Overhead Press.png',
+    instructions: [
+      'Đứng thẳng, giữ thanh tạ ở vị trí ngang vai phía trước cổ.',
+      'Siết chặt cơ bụng, đẩy tạ thẳng lên qua đầu cho đến khi tay duỗi thẳng.',
+      'Hạ tạ từ từ xuống vị trí ngang vai.'
+    ]
+  },
+  {
+    id: 6,
+    name: 'Barbell Row (Gập người kéo tạ)',
+    category: 'Strength',
+    muscles: ['Lưng', 'Tay trước'],
+    level: 'Trung bình',
+    image: '/image/exercise/Barbell Row.png',
+    instructions: [
+      'Hơi khuỵu gối, gập người về phía trước khoảng 45 độ, lưng giữ thẳng.',
+      'Nắm thanh tạ, để tạ treo tự nhiên dưới vai.',
+      'Kéo thanh tạ chạm vào phần bụng dưới, ép chặt hai bả vai vào nhau.',
+      'Hạ tạ xuống vị trí ban đầu.'
+    ]
+  },
+  {
+    id: 7,
+    name: 'Dumbbell Lunge (Chùng chân với tạ đơn)',
+    category: 'Strength',
+    muscles: ['Đùi trước', 'Đùi sau', 'Mông'],
+    level: 'Trung bình',
+    image: '/image/exercise/Dumbbell Lunge.png',
+    instructions: [
+      'Đứng thẳng, hai tay cầm hai quả tạ đơn buông thõng dọc thân người.',
+      'Bước một chân về phía trước, hạ thấp trọng tâm cho đến khi cả hai đầu gối tạo thành góc 90 độ.',
+      'Đạp mạnh chân trước để quay lại vị trí đứng thẳng ban đầu. Đổi chân.'
+    ]
+  },
+  {
+    id: 8,
+    name: 'Bicep Curl (Cuốn tạ tay trước)',
+    category: 'Strength',
+    muscles: ['Tay trước'],
+    level: 'Dễ',
+    image: '/image/exercise/Bicep Curl.png',
+    instructions: [
+      'Đứng thẳng, hai tay cầm tạ đơn, lòng bàn tay hướng về phía trước.',
+      'Giữ bắp tay cố định, gập khuỷu tay để cuốn tạ lên sát vai.',
+      'Từ từ hạ tạ xuống vị trí ban đầu.'
+    ]
+  }
 ];
 
 const AdminExercises = () => {
