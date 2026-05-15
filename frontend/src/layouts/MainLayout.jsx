@@ -54,11 +54,11 @@ const MainLayout = () => {
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full border-2 border-[#c8f31d] overflow-hidden p-0.5">
               <div className="w-full h-full rounded-full overflow-hidden">
-                <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-full h-full object-cover" />
+                <img src="../../public/Avatar.png" alt="Avatar" className="w-full h-full object-cover" />
               </div>
             </div>
             <div>
-              <p className="text-sm font-bold text-white">Piyush !</p>
+              <p className="text-sm font-bold text-white">LangThanh !</p>
               <button onClick={handleLogout} className="text-xs text-zinc-500 hover:text-[#c8f31d] transition-colors">Đăng xuất</button>
             </div>
           </div>

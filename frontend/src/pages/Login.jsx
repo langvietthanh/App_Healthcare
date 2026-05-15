@@ -5,7 +5,7 @@ import axiosClient from '../config/axiosClient';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('Piyush@Example.Com');
+  const [email, setEmail] = useState('LangThanh@Example.Com');
   const [password, setPassword] = useState('12345678');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -74,8 +74,8 @@ const Login = () => {
         <div>
           <label className="block text-sm font-medium mb-2">Email</label>
           <div className="relative">
-            <input 
-              type="email" 
+            <input
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -93,14 +93,14 @@ const Login = () => {
         <div>
           <label className="block text-sm font-medium mb-2">Mật khẩu</label>
           <div className="relative">
-            <input 
+            <input
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full bg-transparent border border-gray-600 rounded-lg px-4 py-3.5 text-white placeholder-gray-500 focus:border-[#c8f31d] focus:outline-none transition-colors"
             />
-            <button 
+            <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
@@ -114,8 +114,8 @@ const Login = () => {
         </div>
 
         {/* Login Button */}
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           disabled={loading}
           className="w-full bg-[#c8f31d] text-black font-bold text-lg rounded-lg py-4 mt-4 hover:bg-[#b0d815] active:scale-[0.98] transition-all disabled:opacity-50"
         >
@@ -135,7 +135,7 @@ const Login = () => {
           </button>
           <button type="button" className="w-full bg-[#4267B2] text-white font-medium rounded-lg py-3.5 flex items-center justify-center gap-3 hover:bg-[#365899] transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z"/>
+              <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" />
             </svg>
             Kết nối với Facebook
           </button>

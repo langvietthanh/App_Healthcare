@@ -248,7 +248,7 @@ const Dashboard = () => {
       <div className="bg-[#c8f31d] rounded-b-[40px] px-6 pt-12 pb-10 text-black relative z-10 shadow-lg">
         <div className="flex justify-between items-center mb-8">
           <div className="w-12 h-12 rounded-full overflow-hidden shadow-md">
-            <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-full h-full object-cover" />
+            <img src="../../public/Avatar.png" alt="Avatar" className="w-full h-full object-cover" />
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => setPage('stats')} className="w-10 h-10 bg-black/10 rounded-xl flex items-center justify-center hover:bg-black/20 transition-colors" title="Xem thống kê">
@@ -261,7 +261,7 @@ const Dashboard = () => {
         </div>
         <div>
           <p className="text-xl font-extrabold mb-1 text-white">Xin chào, Buổi sáng tốt lành 👋</p>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">Piyush !</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white">LangThanh !</h1>
         </div>
       </div>
 
