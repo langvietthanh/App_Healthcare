@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
-  baseURL: 'http://localhost:3000/api', // Trỏ thẳng vào Backend của bạn
+  baseURL: 'http://localhost:3000/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -29,7 +29,7 @@ axiosClient.interceptors.response.use(
   },
   (error) => {
     const status = error.response ? error.response.status : null;
-    
+
     // Nếu lỗi 401 (Hết hạn token hoặc token sai) -> Tự động logout
     if (status === 401) {
       localStorage.removeItem('token');
@@ -37,7 +37,7 @@ axiosClient.interceptors.response.use(
       // Uncomment dòng dưới nếu muốn tự động đá về trang login
       // window.location.href = '/login'; 
     }
-    
+
     return Promise.reject(error);
   }
 );

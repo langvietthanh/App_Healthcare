@@ -1,49 +1,49 @@
 const UserService = require('../../services/userService');
 const catchAsync = require('../../utils/catchAsync');
 class UserController {
-//  [PUT] /api/user/info
-    changeInfo = catchAsync (async (req, res, next) => { 
+    //  [PUT] /api/user/info
+    changeInfo = catchAsync(async (req, res, next) => {
         // Lấy userId từ Token
         const userId = req.user.userId;
 
         const data = req.body;
-        
-        const updatedUser = await UserService.changeInfo( { userId, data, } );
-        
-        res.json({user: updatedUser});        
+
+        const updatedUser = await UserService.changeInfo({ userId, data, });
+
+        res.json({ user: updatedUser });
     })
 
-//  [PUT] /api/user/physical-detail
-    updatePhysicalDetail = catchAsync (async (req, res, next) => {
+    //  [PUT] /api/user/physical-detail
+    updatePhysicalDetail = catchAsync(async (req, res, next) => {
         const userId = req.user.userId;
 
         const data = req.body;
 
-        const updatedUser = await UserService.updatePhysicalDetail( { userId, data } );
+        const updatedUser = await UserService.updatePhysicalDetail({ userId, data });
 
-        res.json (updatedUser);
+        res.json(updatedUser);
     })
 
-//  [PUT] /api/user/goals
-    updateGoals = catchAsync (async (req, res, next) => {
+    //  [PUT] /api/user/goals
+    updateGoals = catchAsync(async (req, res, next) => {
         let userId = req.user.userId;
 
         let data = req.body;
 
-        const updatedUser = await UserService.updateGoals( { userId, data, } );
-        
-        res.json (updatedUser);
+        const updatedUser = await UserService.updateGoals({ userId, data, });
+
+        res.json(updatedUser);
     })
 
-//  [PUT] /api/user/password
-    changePassword = catchAsync (async (req, res, next) => {
+    //  [PUT] /api/user/password
+    changePassword = catchAsync(async (req, res, next) => {
         let userId = req.user.userId;
 
         let data = req.body;
 
-        await UserService.changePassword( { userId, data } );
+        await UserService.changePassword({ userId, data });
 
-        res.json( {msg: "Thay đổi mật khẩu thành công"} );
+        res.json({ msg: "Thay đổi mật khẩu thành công" });
     })
 }
 

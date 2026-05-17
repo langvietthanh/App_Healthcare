@@ -2,21 +2,25 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Onboarding from './pages/Onboarding';
-import Dashboard from './pages/Dashboard';
-import Profile from './pages/Profile';
-import Diary from './pages/Diary';
-import MealPlan from './pages/MealPlan';
-import Workouts from './pages/Workouts';
+import {
+  Login,
+  Register,
+  Onboarding,
+  Dashboard,
+  Profile,
+  Diary,
+  MealPlan,
+  Workouts
+} from './pages/user';
 import ProtectedRoute from './routes/ProtectedRoute';
 import AdminRoute from './routes/AdminRoute';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminUsers from './pages/admin/AdminUsers';
-import AdminFoods from './pages/admin/AdminFoods';
-import AdminExercises from './pages/admin/AdminExercises';
-import AdminReports from './pages/admin/AdminReports';
+import {
+  AdminDashboard,
+  AdminUsers,
+  AdminFoods,
+  AdminExercises,
+  AdminReports
+} from './pages/admin';
 
 function App() {
   return (

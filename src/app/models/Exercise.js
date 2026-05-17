@@ -36,7 +36,9 @@ const Exercise = new Schema({
     isPublic: { type: Boolean, default: false },
     verifyStatus: { type: String, enum: ['none', 'pending', 'approved', 'rejected'], default: 'none' },
     creatorId: { type: ObjectId, ref: 'User', default: null },
-    isDeleted: { type: Boolean, default: false }
+    isDeleted: { type: Boolean, default: false },
+    imgURL: { type: String, default: '' },
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Exercise', Exercise);
