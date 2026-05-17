@@ -1,28 +1,16 @@
-import { useState } from 'react';
 import { ChevronLeft, Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import iconProtein from '../assets/icons/icon_protein.png'
+import iconCarb from '../assets/icons/icon_carb.png'
+import iconFat from '../assets/icons/icon_fat.png'
 
 const Profile = () => {
   const navigate = useNavigate();
-
   const macros = [
-    {
-      label: 'Protein',
-      value: 130,
-      img: '/icon_protein.png'
-    },
-    {
-      label: 'Carbs',
-      value: 235,
-      img: '/icon_carb.png'
-    },
-    {
-      label: 'Fat',
-      value: 60,
-      img: '/icon_fat.png'
-    }
+    { label: 'Protein', value: 130, img: iconProtein },
+    { label: 'Carbs', value: 235, img: iconCarb },
+    { label: 'Fat', value: 60, img: iconFat },
   ];
-
   return (
     <div className="flex flex-col min-h-full pb-10 text-white bg-transparent">
 
