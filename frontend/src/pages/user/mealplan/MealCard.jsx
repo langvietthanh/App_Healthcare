@@ -3,9 +3,9 @@
  * File này dùng cho component cha nào là chính: MealPlan (src/pages/user/mealplan/index.jsx)
  */
 import React from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 
-const MealCard = ({ id, title, icon: Icon, currentKcal, targetKcal, items = [], onAddFood }) => {
+const MealCard = ({ id, title, icon: Icon, currentKcal, targetKcal, items = [], onAddFood, onRemoveItem }) => {
   return (
     <div className="bg-zinc-900/60 backdrop-blur-md border border-zinc-800 rounded-[24px] p-6 mb-6 shadow-xl transition-all hover:bg-zinc-900/80 group">
       <div className="flex justify-between items-start mb-4">
@@ -32,7 +32,17 @@ const MealCard = ({ id, title, icon: Icon, currentKcal, targetKcal, items = [], 
                 <span className="font-semibold text-white">{item.name}</span>
                 <span className="text-xs text-zinc-400">{item.amount}</span>
               </div>
-              <span className="font-bold text-[#c8f31d]">{item.kcal} kcal</span>
+              <div className="flex items-center gap-3">
+                <span className="font-bold text-[#c8f31d]">{item.kcal} kcal</span>
+                {onRemoveItem && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onRemoveItem(item.id); }}
+                    className="text-zinc-500 hover:text-red-400 p-1 transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>

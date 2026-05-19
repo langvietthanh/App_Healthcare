@@ -4,15 +4,21 @@
  */
 import React, { useState } from 'react';
 import { Bell, BarChart2, Scale, Droplets, Minus, Plus, Footprints, Play, X } from 'lucide-react';
+import { useDailyLog } from '../../../context/DailyLogContext';
 
 const DashboardHome = ({ setPage }) => {
-  const [water, setWater] = useState(1500);
+  const { state, updateWaterIntake } = useDailyLog();
+  const { user, dailyLog } = state;
+  const water = dailyLog?.waterIntake || 1500;
   const [steps] = useState(4328);
   const [showWorkoutBanner, setShowWorkoutBanner] = useState(true);
 
-  const waterGoal = 2500;
+  // Tính toán lượng nước mục tiêu: 35ml cho mỗi kg cân nặng
+  const waterGoal = user?.physicalDetail?.weight
+    ? Math.round(user.physicalDetail.weight * 35)
+    : 2500;
   const stepsGoal = 10000;
-  const waterPct = Math.min((water / waterGoal) * 100, 100);
+  const waterPct = Math.min(((water <= waterGoal ? water : waterGoal) / waterGoal) * 100, 100);
   const stepsPct = Math.min((steps / stepsGoal) * 100, 100);
 
   return (
@@ -21,7 +27,7 @@ const DashboardHome = ({ setPage }) => {
       <div className="bg-[#c8f31d] rounded-b-[40px] px-6 pt-12 pb-10 text-black relative z-10 shadow-lg">
         <div className="flex justify-between items-center mb-8">
           <div className="w-12 h-12 rounded-full overflow-hidden shadow-md">
-            <img src="../../../public/Avatar.png" alt="Avatar" className="w-full h-full object-cover" />
+            <img src={user?.imgURL || "/Avatar.png"} alt="Avatar" className="w-full h-full object-cover" />
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -38,7 +44,7 @@ const DashboardHome = ({ setPage }) => {
         </div>
         <div>
           <p className="text-xl font-extrabold mb-1 text-white">Xin chào, Buổi sáng tốt lành 👋</p>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">LangThanh !</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white">{user?.username || "Đang tải..."}</h1>
         </div>
       </div>
 
@@ -75,7 +81,7 @@ const DashboardHome = ({ setPage }) => {
             <div className="w-11 h-11 bg-[#c8f31d]/10 rounded-2xl flex items-center justify-center group-hover:bg-[#c8f31d]/20 transition-colors">
               <Scale size={22} className="text-[#c8f31d]" />
             </div>
-            <p className="text-xl font-black text-white">71.0</p>
+            <p className="text-xl font-black text-white">{user?.physicalDetail?.weight || '--'}</p>
             <p className="text-[10px] text-zinc-500 font-semibold">kg</p>
           </button>
 
@@ -92,13 +98,13 @@ const DashboardHome = ({ setPage }) => {
             </div>
             <div className="flex gap-2 mt-1">
               <button
-                onClick={() => setWater((w) => Math.max(0, w - 250))}
+                onClick={() => updateWaterIntake(Math.max(0, water - 250))}
                 className="w-6 h-6 bg-zinc-700 rounded-full flex items-center justify-center text-white hover:bg-zinc-600 transition-colors"
               >
                 <Minus size={12} />
               </button>
               <button
-                onClick={() => setWater((w) => Math.min(waterGoal, w + 250))}
+                onClick={() => updateWaterIntake(water + 250)}
                 className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-400 transition-colors"
               >
                 <Plus size={12} />

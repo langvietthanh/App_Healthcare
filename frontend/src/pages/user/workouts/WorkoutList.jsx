@@ -25,17 +25,25 @@ const WorkoutList = ({ setView, scheduledExercises, setCurrentExerciseIndex }) =
           <div className="space-y-4 mb-8">
             {scheduledExercises.map((item, idx) => (
               <div key={idx} className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 flex items-center gap-4 shadow-lg">
-                <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center text-3xl">
-                  {item.img}
+                <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center text-3xl overflow-hidden">
+                  {item.img && (item.img.startsWith('http') || item.img.startsWith('/')) ? (
+                    <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
+                  ) : (
+                    item.img || '🏋️'
+                  )}
                 </div>
                 <div className="flex-1">
                   <h3 className="font-black text-lg text-white mb-1">{item.name}</h3>
-                  <div className="flex items-center gap-3 text-sm font-bold text-zinc-400">
+                  <div className="flex items-center gap-3 text-sm font-bold text-zinc-400 flex-wrap">
                     <span>{item.sets} Sets</span>
                     <span>•</span>
                     <span>{item.repsOrTime} {item.mode === 'reps' ? 'Reps' : 'Giây'}</span>
-                    <span>•</span>
-                    <span className="text-[#c8f31d]">{item.kcal} kcal</span>
+                    {item.muscles && item.muscles.length > 0 && (
+                      <>
+                        <span>•</span>
+                        <span className="text-[#c8f31d]">{item.muscles.join(', ')}</span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

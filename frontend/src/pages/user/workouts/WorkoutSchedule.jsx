@@ -4,17 +4,44 @@
  */
 import React from 'react';
 import { Calendar, ChevronLeft, ChevronRight, Clock, ChevronDown, Plus } from 'lucide-react';
+import { useWorkout } from '../../../store';
 
 const WorkoutSchedule = ({ setView }) => {
-  const days = [
-    { day: 'CN', date: 20 },
-    { day: 'T2', date: 21 },
-    { day: 'T3', date: 22 },
-    { day: 'T4', date: 23 },
-    { day: 'T5', date: 24 },
-    { day: 'T6', date: 25 },
-    { day: 'T7', date: 26 },
-  ];
+  const { state, setWorkoutSelectedDate, setWorkoutSelectedTime } = useWorkout();
+  const { selectedDate, selectedTime } = state;
+
+
+  // Sinh ra 7 ngày của tuần hiện tại (bắt đầu từ Thứ 2)
+  const getDaysOfWeek = () => {
+    const start = new Date(selectedDate);
+    const day = start.getDay();
+    const diff = start.getDate() - day + (day === 0 ? -6 : 1); 
+    const monday = new Date(start.setDate(diff));
+
+    const days = [];
+    const dayLabels = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      days.push({
+        day: dayLabels[d.getDay()],
+        date: d.getDate(),
+        fullDate: d
+      });
+    }
+    return days;
+  };
+
+  const days = getDaysOfWeek();
+  const currentMonth = `Tháng ${String(selectedDate.getMonth() + 1).padStart(2, '0')}`;
+  const currentYear = selectedDate.getFullYear();
+
+  // Đổi tuần
+  const changeWeek = (offset) => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(selectedDate.getDate() + offset * 7);
+    setWorkoutSelectedDate(newDate);
+  };
 
   return (
     <div className="h-full bg-[#050505] text-white relative font-sans overflow-hidden flex flex-col">
@@ -32,37 +59,49 @@ const WorkoutSchedule = ({ setView }) => {
               Ngày
             </div>
             <div className="flex items-center gap-4 font-bold">
-              <ChevronLeft size={24} className="text-[#c8f31d] cursor-pointer" />
-              <div className="text-center">
-                <div className="text-lg">Tháng 02</div>
-                <div className="text-sm text-[#c8f31d]">2025</div>
+              <ChevronLeft 
+                size={24} 
+                className="text-[#c8f31d] cursor-pointer hover:scale-110 transition-transform" 
+                onClick={() => changeWeek(-1)}
+              />
+              <div className="text-center w-20">
+                <div className="text-lg">{currentMonth}</div>
+                <div className="text-sm text-[#c8f31d]">{currentYear}</div>
               </div>
-              <ChevronRight size={24} className="text-[#c8f31d] cursor-pointer" />
+              <ChevronRight 
+                size={24} 
+                className="text-[#c8f31d] cursor-pointer hover:scale-110 transition-transform" 
+                onClick={() => changeWeek(1)}
+              />
             </div>
           </div>
 
           <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-            {days.map((item, idx) => (
-              <div
-                key={idx}
-                className={`flex flex-col items-center justify-center min-w-[76px] py-4 rounded-[20px] cursor-pointer transition-colors ${
-                  item.date === 20
-                    ? 'bg-[#c8f31d] text-black shadow-lg'
-                    : 'border border-[#c8f31d] text-[#c8f31d] bg-transparent'
-                }`}
-              >
-                <span className={`text-base mb-2 ${item.date === 20 ? 'font-medium' : 'font-normal'}`}>
-                  {item.day}
-                </span>
+            {days.map((item, idx) => {
+              const isSelected = item.fullDate.toDateString() === selectedDate.toDateString();
+              return (
                 <div
-                  className={`w-11 h-11 rounded-full flex items-center justify-center text-xl font-bold ${
-                    item.date === 20 ? 'bg-white text-black' : 'bg-white text-black'
+                  key={idx}
+                  onClick={() => setWorkoutSelectedDate(item.fullDate)}
+                  className={`flex flex-col items-center justify-center min-w-[76px] py-4 rounded-[20px] cursor-pointer transition-all ${
+                    isSelected
+                      ? 'bg-[#c8f31d] text-black shadow-lg scale-105'
+                      : 'border border-[#c8f31d] text-[#c8f31d] bg-transparent hover:bg-zinc-900'
                   }`}
                 >
-                  {item.date}
+                  <span className={`text-base mb-2 ${isSelected ? 'font-medium' : 'font-normal'}`}>
+                    {item.day}
+                  </span>
+                  <div
+                    className={`w-11 h-11 rounded-full flex items-center justify-center text-xl font-bold ${
+                      isSelected ? 'bg-white text-black shadow-inner' : 'bg-white text-black'
+                    }`}
+                  >
+                    {item.date}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -72,9 +111,21 @@ const WorkoutSchedule = ({ setView }) => {
             <Clock size={24} className="text-[#c8f31d]" />
             Thời gian
           </div>
-          <div className="border border-[#c8f31d] rounded-2xl px-5 py-3 flex items-center gap-4 cursor-pointer">
-            <span className="font-bold text-lg tracking-wide">05:44 AM</span>
-            <ChevronDown size={24} className="text-[#c8f31d]" />
+          <div className="border border-[#c8f31d] rounded-2xl px-5 py-3 flex items-center gap-4 cursor-pointer relative hover:bg-zinc-900 transition-colors">
+            <input 
+              type="time" 
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+              onChange={(e) => {
+                 if(e.target.value) {
+                   const [h, m] = e.target.value.split(':');
+                   const dateObj = new Date();
+                   dateObj.setHours(h, m);
+                   setWorkoutSelectedTime(dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }));
+                 }
+              }} 
+            />
+            <span className="font-bold text-lg tracking-wide pointer-events-none">{selectedTime}</span>
+            <ChevronDown size={24} className="text-[#c8f31d] pointer-events-none" />
           </div>
         </div>
 

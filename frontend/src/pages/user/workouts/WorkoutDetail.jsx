@@ -32,8 +32,12 @@ const WorkoutDetail = ({
 
       <div className="flex-1 overflow-y-auto px-8 pb-20 scrollbar-hide animate-in slide-in-from-right-8 duration-300">
         <div className="bg-zinc-900 rounded-3xl p-6 mb-8 border border-zinc-800 flex items-center gap-5 shadow-lg">
-          <div className="w-20 h-20 bg-zinc-800 rounded-2xl flex items-center justify-center text-4xl shadow-inner">
-            {selectedExercise?.img}
+          <div className="w-20 h-20 bg-zinc-800 rounded-2xl flex items-center justify-center text-4xl shadow-inner overflow-hidden">
+            {selectedExercise?.img && (selectedExercise.img.startsWith('http') || selectedExercise.img.startsWith('/')) ? (
+              <img src={selectedExercise.img} alt={selectedExercise.name} className="w-full h-full object-cover" />
+            ) : (
+              selectedExercise?.img || '🏋️'
+            )}
           </div>
           <div>
             <h3 className="text-2xl font-black text-white mb-1">{selectedExercise?.name}</h3>

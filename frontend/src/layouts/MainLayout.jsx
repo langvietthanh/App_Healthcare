@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Utensils, Dumbbell, User, BookOpen } from 'lucide-react';
+import { useDailyLog } from '../context/DailyLogContext';
 
 const MainLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { state, fetchUserTarget } = useDailyLog();
+  const { user } = state;
+
+  useEffect(() => {
+    // Tải thông tin User toàn cục ngay khi Layout chứa thanh Sidebar được tải lên
+    if (!user) {
+      fetchUserTarget();
+    }
+  }, [user]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -54,11 +64,11 @@ const MainLayout = () => {
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full border-2 border-[#c8f31d] overflow-hidden p-0.5">
               <div className="w-full h-full rounded-full overflow-hidden">
-                <img src="../../public/Avatar.png" alt="Avatar" className="w-full h-full object-cover" />
+                <img src={user?.imgURL || "/Avatar.png"} alt="Avatar" className="w-full h-full object-cover" />
               </div>
             </div>
             <div>
-              <p className="text-sm font-bold text-white">LangThanh !</p>
+              <p className="text-sm font-bold text-white">{user?.username || "Đang tải..."}</p>
               <button onClick={handleLogout} className="text-xs text-zinc-500 hover:text-[#c8f31d] transition-colors">Đăng xuất</button>
             </div>
           </div>

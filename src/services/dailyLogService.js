@@ -71,6 +71,8 @@ class DailyLogService {
 
         const log = await this.getOrCreateDailyLog(userId, date);
 
+        const capitalizedMealType = mealType.charAt(0).toUpperCase() + mealType.slice(1).toLowerCase();
+
         // Khởi tạo Database Snapshot phục vụ lưu vết lịch sử cá nhân (Audit logs)
         const newEntry = new DailyFoodEntry({
             dailyLogId: log._id,
@@ -78,7 +80,7 @@ class DailyLogService {
             date,
             foodRefId: food._id,
             foodName: food.name,
-            mealType,
+            mealType: capitalizedMealType,
             intakeAmount,
             intakeUnit,
             calories: actualCalories,

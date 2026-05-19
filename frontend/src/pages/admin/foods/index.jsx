@@ -1,9 +1,10 @@
 /**
- * Tác dụng của file: Điều phối quản lý State món ăn, đóng mở các modal thêm/sửa/xóa, và thực hiện duyệt/từ chối yêu cầu thực phẩm từ người dùng.
+ * Tác dụng của file: Điều phối quản lý State món ăn, đóng mở các modal thêm/sửa/xóa, và thực hiện duyệt/từ chối yêu cầu thực phẩm từ người dùng thực tế qua các API từ Backend.
  * File này dùng cho component cha nào là chính: App.jsx (qua tệp barrel export pages/admin/index.js)
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
+import axiosClient from '../../../config/axiosClient';
 
 import FoodFilter from './FoodFilter';
 import FoodTable from './FoodTable';
@@ -12,39 +13,64 @@ import FoodDeleteModal from './FoodDeleteModal';
 
 const emptyForm = { name: '', calories: '', protein: '', carbs: '', fat: '', unit: 'g', amount: '100', image: '' };
 
-const mockFoods = [
-  { id: 1, name: 'Cơm trắng', calories: 130, protein: 2.7, carbs: 28, fat: 0.3, unit: 'g', amount: 100, image: 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=400', status: 'approved', createdAt: '2026-05-10', creator: 'Admin' },
-  { id: 2, name: 'Ức gà luộc', calories: 165, protein: 31, carbs: 0, fat: 3.6, unit: 'g', amount: 100, image: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=400', status: 'approved', createdAt: '2026-05-08', creator: 'Admin' },
-  { id: 3, name: 'Trứng gà', calories: 78, protein: 6, carbs: 0.6, fat: 5, unit: 'g', amount: 100, image: '', status: 'approved', createdAt: '2026-05-05', creator: 'Admin' },
-  { id: 4, name: 'Phở bò', calories: 350, protein: 20, carbs: 45, fat: 8, unit: 'g', amount: 400, image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400', status: 'approved', createdAt: '2026-05-01', creator: 'Admin' },
-  { id: 5, name: 'Bánh mì thịt nướng', calories: 420, protein: 18, carbs: 52, fat: 12, unit: 'g', amount: 250, image: '', status: 'pending', createdAt: '2026-05-14', creator: 'Nguyễn Văn A' },
-  { id: 6, name: 'Chả cá Lã Vọng', calories: 290, protein: 22, carbs: 8, fat: 18, unit: 'g', amount: 150, image: '', status: 'pending', createdAt: '2026-05-13', creator: 'Trần Thị B' },
-  { id: 7, name: 'Nem cuốn tôm', calories: 180, protein: 14, carbs: 22, fat: 4, unit: 'g', amount: 100, image: '', status: 'pending', createdAt: '2026-05-12', creator: 'Lê Văn C' },
-  { id: 8, name: 'Bún bò Huế', calories: 380, protein: 25, carbs: 48, fat: 9, unit: 'g', amount: 450, image: '', status: 'rejected', createdAt: '2026-04-28', creator: 'Phạm Thị D' },
-];
-
 const AdminFoods = () => {
   const [tab, setTab] = useState('all'); // 'all' | 'pending'
   const [search, setSearch] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [showFilter, setShowFilter] = useState(false);
-  const [foods, setFoods] = useState(mockFoods);
+  const [foods, setFoods] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [deleteId, setDeleteId] = useState(null);
 
+  // Fetch foods list from backend
+  const fetchFoods = async () => {
+    setLoading(true);
+    try {
+      const endpoint = tab === 'pending' ? '/foods/pending' : '/foods';
+      const response = await axiosClient.get(endpoint);
+      const data = response.data || response;
+      
+      if (Array.isArray(data)) {
+        const mapped = data.map(e => ({
+          id: e._id,
+          name: e.name,
+          calories: e.nutrients?.calories || 0,
+          protein: e.nutrients?.protein || 0,
+          carbs: e.nutrients?.carbs || 0,
+          fat: e.nutrients?.fat || 0,
+          unit: e.servingSize?.unit || 'g',
+          amount: e.servingSize?.amount || 100,
+          status: e.verifyStatus || 'approved',
+          createdAt: e.createdAt ? e.createdAt.slice(0, 10) : '',
+          creator: e.creatorId ? 'Người dùng' : 'Hệ thống',
+          image: e.imgURL || ''
+        }));
+        setFoods(mapped);
+      }
+    } catch (err) {
+      console.error('Error fetching foods:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFoods();
+  }, [tab]);
+
   // Filter logic
   const filtered = foods.filter(f => {
     const matchSearch = f.name.toLowerCase().includes(search.toLowerCase());
-    const matchTab = tab === 'all' ? f.status !== 'pending' : f.status === 'pending';
     const matchFrom = !dateFrom || f.createdAt >= dateFrom;
     const matchTo = !dateTo || f.createdAt <= dateTo;
-    return matchSearch && matchTab && matchFrom && matchTo;
+    return matchSearch && matchFrom && matchTo;
   });
 
-  const pendingCount = foods.filter(f => f.status === 'pending').length;
+  const pendingCount = tab === 'pending' ? foods.length : 0; // count pending length safely
 
   const openAdd = () => { setForm(emptyForm); setEditItem(null); setShowForm(true); };
   const openEdit = (item) => {
@@ -61,25 +87,56 @@ const AdminFoods = () => {
     setShowForm(true);
   };
   const handleImageFile = (e) => { const f = e.target.files[0]; if (f) setForm(p => ({ ...p, image: URL.createObjectURL(f) })); };
-  const handleSave = () => {
+  
+  const handleSave = async () => {
     if (!form.name.trim()) return;
-    const entry = {
-      ...form,
-      id: editItem?.id ?? Date.now(),
-      calories: +form.calories,
-      protein: +form.protein,
-      carbs: +form.carbs,
-      fat: +form.fat,
-      amount: +form.amount,
-      status: 'approved',
-      createdAt: new Date().toISOString().slice(0, 10),
-      creator: 'Admin'
+    
+    const payload = {
+      name: form.name,
+      protein: +form.protein || 0,
+      carbs: +form.carbs || 0,
+      fat: +form.fat || 0,
+      unit: form.unit || 'g',
+      amount: +form.amount || 100,
+      isPublic: true,
+      image: form.image
     };
-    setFoods(prev => editItem ? prev.map(f => f.id === editItem.id ? entry : f) : [...prev, entry]);
-    setShowForm(false);
+
+    try {
+      if (editItem) {
+        await axiosClient.patch(`/foods/${editItem.id}`, payload);
+      } else {
+        await axiosClient.post('/foods', payload);
+      }
+      setShowForm(false);
+      fetchFoods();
+    } catch (err) {
+      console.error('Error saving food:', err);
+      alert(err.response?.data?.message || 'Có lỗi xảy ra khi lưu món ăn');
+    }
   };
-  const handleDelete = (id) => { setFoods(prev => prev.filter(f => f.id !== id)); setDeleteId(null); };
-  const handleVerify = (id, status) => setFoods(prev => prev.map(f => f.id === id ? { ...f, status } : f));
+
+  const handleDelete = async (id) => {
+    try {
+      await axiosClient.delete(`/foods/${id}`);
+      setDeleteId(null);
+      fetchFoods();
+    } catch (err) {
+      console.error('Error deleting food:', err);
+      alert(err.response?.data?.message || 'Có lỗi xảy ra khi xóa món ăn');
+    }
+  };
+
+  const handleVerify = async (id, status) => {
+    const backendStatus = status === 'approved' ? 'approve' : 'reject';
+    try {
+      await axiosClient.patch(`/foods/${id}/verify`, { verifyStatus: backendStatus });
+      fetchFoods();
+    } catch (err) {
+      console.error('Error verifying food:', err);
+      alert(err.response?.data?.message || 'Có lỗi xảy ra khi duyệt món ăn');
+    }
+  };
 
   return (
     <div className="p-8 space-y-6">
@@ -88,8 +145,7 @@ const AdminFoods = () => {
         <div>
           <h1 className="text-3xl font-black text-white mb-1">Quản lý Món ăn</h1>
           <p className="text-zinc-500 text-sm">
-            {foods.filter(f => f.status === 'approved').length} món đã duyệt ·{' '}
-            <span className="text-orange-400 font-semibold">{pendingCount} chờ duyệt</span>
+            {loading ? 'Đang tải dữ liệu...' : `${foods.length} món ăn trong danh sách`}
           </p>
         </div>
         <button onClick={openAdd} className="flex items-center gap-2 px-5 py-3 bg-[#c8f31d] text-black font-black rounded-xl hover:scale-[1.02] transition-all text-sm">

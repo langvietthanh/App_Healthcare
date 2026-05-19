@@ -48,11 +48,10 @@ const WorkoutSearch = ({
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 style={activeTab === tab ? { color: 'black', backgroundColor: 'rgb(200 243 29 / 82%)' } : {}}
-                className={`px-6 py-3.5 rounded-2xl font-bold whitespace-nowrap transition-all ${
-                  activeTab === tab
+                className={`px-6 py-3.5 rounded-2xl font-bold whitespace-nowrap transition-all ${activeTab === tab
                     ? 'shadow-[0_0_15px_rgba(200,243,29,0.3)]'
                     : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
-                }`}
+                  }`}
               >
                 {tab}
               </button>
@@ -74,11 +73,10 @@ const WorkoutSearch = ({
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`w-[60px] border rounded-2xl flex items-center justify-center transition-colors shrink-0 shadow-inner ${
-              showFilters
+            className={`w-[60px] border rounded-2xl flex items-center justify-center transition-colors shrink-0 shadow-inner ${showFilters
                 ? 'bg-[#c8f31d] border-[#c8f31d] text-black'
                 : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-[#c8f31d] hover:border-[#c8f31d]'
-            }`}
+              }`}
           >
             <Filter size={24} />
           </button>
@@ -188,7 +186,11 @@ const WorkoutSearch = ({
             >
               <div className="w-20 h-20 bg-zinc-800 rounded-2xl flex items-center justify-center shrink-0 border border-zinc-700 overflow-hidden relative shadow-inner">
                 <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center text-3xl">
-                  {ex.img}
+                  {ex.img && (ex.img.startsWith('http') || ex.img.startsWith('/') || ex.img.includes('.')) ? (
+                    <img src={ex.img} alt={ex.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span>{ex.img || '🏋️'}</span>
+                  )}
                 </div>
               </div>
 
@@ -210,12 +212,15 @@ const WorkoutSearch = ({
                   <span className="text-xs text-zinc-400 font-bold ml-1.5">{ex.rating}</span>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <span className="text-[11px] font-extrabold text-zinc-400 bg-zinc-800 px-2.5 py-1 rounded-lg uppercase tracking-wider">
-                    {ex.time}
-                  </span>
-                  <span className="text-sm font-black text-[#c8f31d]">{ex.kcal} kcal</span>
-                </div>
+                {ex.muscles && ex.muscles.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {ex.muscles.map((m, i) => (
+                      <span key={i} className="text-[10px] font-extrabold text-[#c8f31d] bg-[#c8f31d]/10 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                        {m}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="w-12 h-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center group-hover:bg-[#c8f31d] group-hover:text-black text-zinc-400 transition-colors shrink-0 shadow-md">

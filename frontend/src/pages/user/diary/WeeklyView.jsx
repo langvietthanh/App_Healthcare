@@ -1,29 +1,70 @@
-/**
- * Tác dụng của file: Giao diện thống kê Calo theo tuần, bao gồm biểu đồ cột 7 ngày, vòng tròn tiến độ tổng tuần và các thanh tiến trình chất dinh dưỡng.
- * File này dùng cho component cha nào là chính: Diary (src/pages/user/diary/index.jsx)
- */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axiosClient from '../../../config/axiosClient';
 
-const WeeklyView = () => {
-  const weeklyData = [
-    { day: 'T2', kcal: 0, max: 2752 },
-    { day: 'T3', kcal: 0, max: 2752 },
-    { day: 'T4', kcal: 0, max: 2752 },
-    { day: 'T5', kcal: 0, max: 2752 },
-    { day: 'T6', kcal: 0, max: 2752 },
-    { day: 'T7', kcal: 0, max: 2752 },
-    { day: 'CN', kcal: 0, max: 2752 },
+const WeeklyView = ({ targetKcal }) => {
+  const [report, setReport] = useState(null);
+
+  useEffect(() => {
+    const fetchReport = async () => {
+      try {
+        const res = await axiosClient.get('/reports/weekly');
+        const data = res.data || res;
+        setReport(data);
+      } catch (err) {
+        console.error('Error fetching weekly report:', err);
+      }
+    };
+    fetchReport();
+  }, []);
+
+  // Mapping để chuyển đổi getDay() (0-6) sang chữ
+  const dayLabels = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  
+  // Luôn bắt đầu từ T2 và kết thúc ở CN
+  let weeklyData = [
+    { day: 'T2', kcal: 0, max: targetKcal || 2000 },
+    { day: 'T3', kcal: 0, max: targetKcal || 2000 },
+    { day: 'T4', kcal: 0, max: targetKcal || 2000 },
+    { day: 'T5', kcal: 0, max: targetKcal || 2000 },
+    { day: 'T6', kcal: 0, max: targetKcal || 2000 },
+    { day: 'T7', kcal: 0, max: targetKcal || 2000 },
+    { day: 'CN', kcal: 0, max: targetKcal || 2000 },
   ];
-  const totalWeekKcal = 0;
-  const totalWeekGoal = 2752 * 7;
+  
+  let totalWeekKcal = 0;
+
+  if (report && report.dailyData) {
+    report.dailyData.forEach(d => {
+      const dateObj = new Date(d.date);
+      const label = dayLabels[dateObj.getDay()];
+      
+      // Tìm thứ tương ứng trong mảng cố định để cập nhật Kcal
+      const index = weeklyData.findIndex(item => item.day === label);
+      if (index !== -1) {
+        weeklyData[index].kcal = d.caloriesIn;
+      }
+      totalWeekKcal += d.caloriesIn;
+    });
+  }
+
+  const totalWeekGoal = (targetKcal || 2000) * 7;
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
-  const pct = Math.min((totalWeekKcal / totalWeekGoal) * 100, 100);
+  const pct = Math.min((totalWeekKcal / totalWeekGoal) * 100, 100) || 0;
   const offset = circumference - (pct / 100) * circumference;
+
+  // Lấy trung bình Macros từ báo cáo
+  const avg = report?.averages || { carbs: 0, protein: 0, fat: 0 };
+  
+  // Mục tiêu Macros mỗi ngày (Tạm tính theo tỷ lệ mặc định 40-40-20 của Calories)
+  const targetCarbs = Math.round(((targetKcal || 2000) * 0.4) / 4);
+  const targetProtein = Math.round(((targetKcal || 2000) * 0.4) / 4);
+  const targetFat = Math.round(((targetKcal || 2000) * 0.2) / 9);
+
   const macros = [
-    { label: 'Carbs', icon: '🌾', current: 0, total: 1925, color: '#eab308' },
-    { label: 'Chất đạm', icon: '🥩', current: 0, total: 1925, color: '#ef4444' },
-    { label: 'Chất béo', icon: '🥑', current: 0, total: 427, color: '#22c55e' },
+    { label: 'Carbs', icon: '🌾', current: avg.carbs, total: targetCarbs, color: '#eab308' },
+    { label: 'Chất đạm', icon: '🥩', current: avg.protein, total: targetProtein, color: '#ef4444' },
+    { label: 'Chất béo', icon: '🥑', current: avg.fat, total: targetFat, color: '#22c55e' },
   ];
 
   return (
@@ -51,13 +92,14 @@ const WeeklyView = () => {
         <div className="flex-1 flex items-end justify-between gap-1">
           {weeklyData.map((d, i) => {
             const barPct = d.max > 0 ? Math.max((d.kcal / d.max) * 100, 4) : 4;
+            const barColor = d.kcal > 0 ? '#f97316' : '#27272a';
             return (
               <div key={i} className="flex flex-col items-center gap-1 flex-1">
-                <span className="text-[9px] font-bold text-zinc-500">{d.max}</span>
-                <div className="w-full rounded-t-lg relative" style={{ height: '90px', backgroundColor: '#27272a' }}>
+                <span className="text-[9px] font-bold text-zinc-500">{d.kcal}</span>
+                <div className="w-full rounded-t-lg relative overflow-hidden" style={{ height: '90px', backgroundColor: '#27272a' }}>
                   <div
-                    className="absolute bottom-0 left-0 right-0 rounded-t-lg"
-                    style={{ height: `${barPct}%`, backgroundColor: '#27272a', opacity: 0.5 }}
+                    className="absolute bottom-0 left-0 right-0 rounded-t-lg transition-all duration-1000"
+                    style={{ height: `${Math.min(barPct, 100)}%`, backgroundColor: barColor }}
                   />
                 </div>
                 <span className="text-[10px] font-bold text-zinc-400">{d.day}</span>
@@ -69,7 +111,7 @@ const WeeklyView = () => {
 
       {/* Dấu ? */}
       <div className="flex justify-end mb-6">
-        <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 font-bold text-sm cursor-pointer hover:bg-zinc-700 transition-colors">?</div>
+        <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 font-bold text-sm cursor-pointer hover:bg-zinc-700 transition-colors" title="Thống kê trung bình dựa trên 7 ngày gần nhất">?</div>
       </div>
 
       {/* Divider */}
@@ -77,6 +119,7 @@ const WeeklyView = () => {
 
       {/* Macros thanh tiến trình */}
       <div className="space-y-5">
+        <h3 className="text-sm font-bold text-zinc-400">Trung bình Macros (7 ngày)</h3>
         {macros.map((m) => {
           const pct = m.total > 0 ? (m.current / m.total) * 100 : 0;
           return (
@@ -93,7 +136,7 @@ const WeeklyView = () => {
               <div className="w-full h-2.5 bg-zinc-800 rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-1000"
-                  style={{ width: `${pct}%`, backgroundColor: m.color }}
+                  style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: m.color }}
                 />
               </div>
             </div>

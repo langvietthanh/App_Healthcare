@@ -2,7 +2,7 @@
  * Tác dụng của file: Giao diện điều chỉnh Tỷ lệ Dinh dưỡng mục tiêu (Cân bằng, Low Carb, High Protein hoặc Tùy chỉnh %), vẽ biểu đồ thanh ngang động và nút lưu chế độ ăn.
  * File này dùng cho component cha nào là chính: Diary (src/pages/user/diary/index.jsx)
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const DIET_PRESETS = {
   'Cân Bằng': { carbs: 40, protein: 40, fat: 20 },
@@ -11,24 +11,47 @@ const DIET_PRESETS = {
   'Tùy Chỉnh': null,
 };
 
-const DietSection = () => {
-  const [selected, setSelected] = useState('Cân Bằng');
-  const [macros, setMacros] = useState({ carbs: 40, protein: 40, fat: 20 });
+const DietSection = ({ currentPreset, currentRatios, onSavePreset }) => {
+  const [selected, setSelected] = useState(currentPreset || 'Cân Bằng');
+  const [macros, setMacros] = useState(currentRatios || { carbs: 40, protein: 40, fat: 20 });
+
+  useEffect(() => {
+    if (currentPreset) setSelected(currentPreset);
+    if (currentRatios) {
+      setMacros({
+        carbs: currentRatios.carbs,
+        protein: currentRatios.protein,
+        fat: currentRatios.fat
+      });
+    }
+  }, [currentPreset, currentRatios]);
+
   const total = macros.carbs + macros.protein + macros.fat;
   const isValid = total === 100;
+  
   const macroConfig = [
-    { key: 'carbs', label: 'Carbs', color: '#22c55e' },
+    { key: 'carbs', label: 'Carbs', color: '#eab308' },
     { key: 'protein', label: 'Chất đạm', color: '#ef4444' },
-    { key: 'fat', label: 'Chất béo', color: '#f97316' },
+    { key: 'fat', label: 'Chất béo', color: '#22c55e' },
   ];
+
   const handlePreset = (name) => {
     setSelected(name);
     if (DIET_PRESETS[name]) setMacros(DIET_PRESETS[name]);
   };
+
   const handleChange = (key, val) => {
     setSelected('Tùy Chỉnh');
     setMacros((prev) => ({ ...prev, [key]: Math.max(0, Math.min(100, Number(val))) }));
   };
+
+  const handleSave = () => {
+    if (isValid && onSavePreset) {
+      onSavePreset(selected, macros);
+      alert('Đã cập nhật chế độ dinh dưỡng thành công!');
+    }
+  };
+
   return (
     <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-[32px] p-8 shadow-2xl">
       <div className="flex items-center justify-between mb-6">
@@ -96,6 +119,7 @@ const DietSection = () => {
       </div>
       <button
         disabled={!isValid}
+        onClick={handleSave}
         className={`w-full py-3.5 rounded-2xl font-black text-base transition-all ${
           isValid
             ? 'bg-[#c8f31d] text-black hover:scale-[1.01] shadow-[0_0_15px_rgba(200,243,29,0.2)]'

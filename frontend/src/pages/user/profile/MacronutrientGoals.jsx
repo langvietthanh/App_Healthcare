@@ -7,11 +7,19 @@ import iconProtein from '../../../assets/icons/icon_protein.png';
 import iconCarb from '../../../assets/icons/icon_carb.png';
 import iconFat from '../../../assets/icons/icon_fat.png';
 
-const MacronutrientGoals = () => {
+const MacronutrientGoals = ({ user }) => {
+  const dailyCalories = user?.goals?.dailyCalories || 2000;
+  
+  // Áp dụng tỷ lệ chia Macro Cân Bằng chuẩn khoa học (40% Protein, 40% Carbs, 20% Fat)
+  // 1g Protein = 4 kcal, 1g Carb = 4 kcal, 1g Fat = 9 kcal
+  const targetProtein = Math.round((dailyCalories * 0.40) / 4);
+  const targetCarbs = Math.round((dailyCalories * 0.40) / 4);
+  const targetFat = Math.round((dailyCalories * 0.20) / 9);
+
   const macros = [
-    { label: 'Protein', value: 130, img: iconProtein },
-    { label: 'Carbs', value: 235, img: iconCarb },
-    { label: 'Fat', value: 60, img: iconFat },
+    { label: 'Protein', value: targetProtein, img: iconProtein },
+    { label: 'Carbs', value: targetCarbs, img: iconCarb },
+    { label: 'Fat', value: targetFat, img: iconFat },
   ];
 
   return (

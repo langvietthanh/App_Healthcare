@@ -33,12 +33,9 @@ class FoodController {
         res.status(200).json(listFoods.map( food => ({name: food.name, creatorId: food.creatorId})));
     });
 
-//  [GET] /api/foods/pending - Lấy danh sách món chờ duyệt
     getPendingFoods = catchAsync (async (req, res, next) => { 
-        // Chỉ Admin mới được vào đây (bạn cần viết middleware chặn ở Router)
         const pendingFoods = await FoodService.getPendingFoods();
-        const result = pendingFoods.map( item => ({name: item.name, isPublic: item.isPublic, verifyStatus: item.verifyStatus}))
-        res.status(200).json({ count: pendingFoods.length, foods: result }); 
+        res.status(200).json(pendingFoods); 
     })
 
 //  [PATCH] /api/foods/:id/verify 

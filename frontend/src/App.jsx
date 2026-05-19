@@ -21,44 +21,53 @@ import {
   AdminExercises,
   AdminReports
 } from './pages/admin';
+import { DailyLogProvider } from './context/DailyLogContext';
+import { MealPlanProvider } from './context/MealPlanContext';
+import { WorkoutProvider } from './store';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+    <WorkoutProvider>
+      <MealPlanProvider>
+        <DailyLogProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
 
-        {/* Protected Admin Routes */}
-        <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="users" element={<AdminUsers />} />
-            <Route path="foods" element={<AdminFoods />} />
-            <Route path="exercises" element={<AdminExercises />} />
-            <Route path="reports" element={<AdminReports />} />
-          </Route>
-        </Route>
+              {/* Protected Admin Routes */}
+              <Route element={<AdminRoute />}>
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                  <Route path="dashboard" element={<AdminDashboard />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="foods" element={<AdminFoods />} />
+                  <Route path="exercises" element={<AdminExercises />} />
+                  <Route path="reports" element={<AdminReports />} />
+                </Route>
+              </Route>
 
-        {/* Protected User Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="diary" element={<Diary />} />
-            <Route path="meals" element={<MealPlan />} />
-            <Route path="workouts" element={<Workouts />} />
-            <Route path="profile" element={<Profile />} />
-          </Route>
-        </Route>
+              {/* Protected User Routes */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/" element={<MainLayout />}>
+                  <Route index element={<Navigate to="/dashboard" replace />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="diary" element={<Diary />} />
+                  <Route path="meals" element={<MealPlan />} />
+                  <Route path="workouts" element={<Workouts />} />
+                  <Route path="profile" element={<Profile />} />
+                </Route>
+              </Route>
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </BrowserRouter>
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </DailyLogProvider>
+      </MealPlanProvider>
+    </WorkoutProvider>
   );
 }
 

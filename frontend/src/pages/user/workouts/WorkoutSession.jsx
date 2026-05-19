@@ -19,13 +19,13 @@ const WorkoutSession = ({
   return (
     <div className="h-full bg-[#111] text-white relative font-sans overflow-hidden flex flex-col">
       {/* Top Image Half */}
-      <div className="h-1/2 relative rounded-b-[40px] overflow-hidden shrink-0 shadow-2xl">
-        <img
-          src={`https://picsum.photos/seed/${currentEx.name}/800/800`}
-          alt={currentEx.name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-black/20 to-black/60"></div>
+      <div className="h-1/2 relative rounded-b-[40px] overflow-hidden shrink-0 shadow-2xl bg-zinc-900 flex items-center justify-center">
+        {currentEx.img && (currentEx.img.startsWith('http') || currentEx.img.startsWith('/')) ? (
+          <img src={currentEx.img} alt={currentEx.name} className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-[120px] mb-8">{currentEx.img || '🏋️'}</span>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-black/20 to-black/60 pointer-events-none"></div>
 
         <button
           onClick={() => setView('list')}
@@ -47,12 +47,18 @@ const WorkoutSession = ({
         <div className="flex-1 flex flex-col items-center justify-center py-4">
           {/* Circular Timer Mock */}
           <div className="relative w-40 h-40 rounded-full border-8 border-zinc-800 flex flex-col items-center justify-center mb-4 shadow-inner">
-            <div className="absolute inset-[-8px] rounded-full border-8 border-[#c8f31d] border-t-transparent border-r-transparent -rotate-45"></div>
+            <div className="absolute inset-[-8px] rounded-full border-8 border-[#c8f31d] border-t-transparent border-r-transparent -rotate-45 transition-all"></div>
             <span className="text-3xl font-bold tracking-wider">
-              00:{currentEx.repsOrTime < 10 ? `0${currentEx.repsOrTime}` : currentEx.repsOrTime}
+              {currentEx.mode === 'reps' ? (
+                `${currentEx.repsOrTime} Reps`
+              ) : (
+                `00:${currentEx.repsOrTime < 10 ? `0${currentEx.repsOrTime}` : currentEx.repsOrTime}`
+              )}
             </span>
           </div>
-          <p className="text-white font-bold text-xl tracking-wider">10:59</p>
+          <p className="text-zinc-500 font-bold tracking-wider uppercase text-xs">
+            {currentEx.mode === 'reps' ? 'Số lần thực hiện' : 'Thời gian mục tiêu'}
+          </p>
         </div>
 
         <div className="flex gap-4 mt-2">
@@ -65,7 +71,7 @@ const WorkoutSession = ({
           </button>
           <button
             onClick={() => {
-              if (nextEx) setCurrentExerciseIndex((prev) => prev + 1);
+              if (nextEx) setCurrentExerciseIndex(currentExerciseIndex + 1);
               else setView('schedule');
             }}
             className="flex-[2] bg-[#c8f31d] text-black font-bold py-4 rounded-2xl flex justify-center items-center gap-2 hover:scale-[1.02] transition-transform shadow-lg"
@@ -80,20 +86,20 @@ const WorkoutSession = ({
           {nextEx ? (
             <div className="flex items-center justify-between pb-2 border-b-2 border-zinc-500">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-zinc-700">
-                  <img
-                    src={`https://picsum.photos/seed/${nextEx.name}/200/200`}
-                    alt={nextEx.name}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="w-16 h-16 bg-zinc-800 rounded-xl overflow-hidden shrink-0 border border-zinc-700 flex items-center justify-center text-3xl">
+                  {nextEx.img && (nextEx.img.startsWith('http') || nextEx.img.startsWith('/')) ? (
+                    <img src={nextEx.img} alt={nextEx.name} className="w-full h-full object-cover" />
+                  ) : (
+                    nextEx.img || '🏋️'
+                  )}
                 </div>
                 <div>
                   <h4 className="font-bold text-sm mb-1 text-white">{nextEx.name}</h4>
-                  <div className="flex items-center gap-2 text-[11px] font-bold text-zinc-400">
-                    <span className="text-[#c8f31d] flex items-center gap-1">🔥 {nextEx.kcal} kcal</span>
-                    <span>|</span>
-                    <span className="flex items-center gap-1">⏱ {nextEx.time}</span>
-                  </div>
+                  {nextEx.muscles && nextEx.muscles.length > 0 && (
+                    <p className="text-[11px] text-[#c8f31d] mt-1 font-bold truncate max-w-[150px]">
+                      {nextEx.muscles.join(', ')}
+                    </p>
+                  )}
                   <p className="text-[11px] text-zinc-500 mt-1 font-bold">Beginner</p>
                 </div>
               </div>
