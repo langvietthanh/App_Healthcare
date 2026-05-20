@@ -80,7 +80,7 @@ const Workouts = () => {
   };
 
   if (view === 'schedule') {
-    return <WorkoutSchedule setView={setWorkoutView} />;
+    return <WorkoutSchedule setView={setWorkoutView} scheduledExercises={scheduledExercises} />;
   }
 
   if (view === 'list') {

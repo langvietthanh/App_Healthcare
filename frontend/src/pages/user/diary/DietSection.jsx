@@ -11,6 +11,65 @@ const DIET_PRESETS = {
   'Tùy Chỉnh': null,
 };
 
+const MacrosGrid = ({ macroConfig, macros, handleChange, selected }) => (
+  <div className="grid grid-cols-3 gap-3 mb-5">
+    {macroConfig.map((m) => (
+      <div key={m.key} className="flex flex-col items-center gap-2">
+        <span className="text-xs font-bold" style={{ color: m.color }}>
+          {m.label}
+        </span>
+        <input
+          type="number"
+          min="0"
+          max="100"
+          value={macros[m.key]}
+          onChange={(e) => handleChange(m.key, e.target.value)}
+          className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-2 px-2 text-white text-center text-xl font-black focus:outline-none focus:border-[#c8f31d] transition-colors"
+          style={{ borderColor: selected === 'Tùy Chỉnh' ? m.color : undefined }}
+        />
+        <span className="text-[10px] text-zinc-500">%</span>
+      </div>
+    ))}
+  </div>
+);
+
+const MacrosProgressBar = ({ macroConfig, macros }) => (
+  <div className="space-y-2 mb-5">
+    {macroConfig.map((m) => (
+      <div key={m.key} className="flex items-center gap-3">
+        <span className="text-[10px] text-zinc-500 w-16 shrink-0">{m.label}</span>
+        <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${macros[m.key]}%`, backgroundColor: m.color }}
+          />
+        </div>
+        <span className="text-[10px] font-bold text-zinc-400 w-8 text-right">
+          {macros[m.key]}%
+        </span>
+      </div>
+    ))}
+  </div>
+);
+
+const PresetButtons = ({ DIET_PRESETS, selected, handlePreset }) => (
+  <div className="flex flex-wrap gap-2 mb-5">
+    {Object.keys(DIET_PRESETS).map((name) => (
+      <button
+        key={name}
+        onClick={() => handlePreset(name)}
+        className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
+          selected === name
+            ? 'bg-[#c8f31d] text-black border-[#c8f31d]'
+            : 'text-zinc-300 border-zinc-700 hover:border-zinc-500'
+        }`}
+      >
+        {name}
+      </button>
+    ))}
+  </div>
+);
+
 const DietSection = ({ currentPreset, currentRatios, onSavePreset }) => {
   const [selected, setSelected] = useState(currentPreset || 'Cân Bằng');
   const [macros, setMacros] = useState(currentRatios || { carbs: 40, protein: 40, fat: 20 });
@@ -58,41 +117,19 @@ const DietSection = ({ currentPreset, currentRatios, onSavePreset }) => {
         <h2 className="text-2xl font-bold tracking-tight">Chế độ ăn</h2>
         <span className="text-xs text-zinc-500">Tỷ lệ dinh dưỡng</span>
       </div>
-      <div className="grid grid-cols-3 gap-3 mb-5">
-        {macroConfig.map((m) => (
-          <div key={m.key} className="flex flex-col items-center gap-2">
-            <span className="text-xs font-bold" style={{ color: m.color }}>
-              {m.label}
-            </span>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              value={macros[m.key]}
-              onChange={(e) => handleChange(m.key, e.target.value)}
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-2 px-2 text-white text-center text-xl font-black focus:outline-none focus:border-[#c8f31d] transition-colors"
-              style={{ borderColor: selected === 'Tùy Chỉnh' ? m.color : undefined }}
-            />
-            <span className="text-[10px] text-zinc-500">%</span>
-          </div>
-        ))}
-      </div>
-      <div className="space-y-2 mb-5">
-        {macroConfig.map((m) => (
-          <div key={m.key} className="flex items-center gap-3">
-            <span className="text-[10px] text-zinc-500 w-16 shrink-0">{m.label}</span>
-            <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{ width: `${macros[m.key]}%`, backgroundColor: m.color }}
-              />
-            </div>
-            <span className="text-[10px] font-bold text-zinc-400 w-8 text-right">
-              {macros[m.key]}%
-            </span>
-          </div>
-        ))}
-      </div>
+      
+      <MacrosGrid 
+        macroConfig={macroConfig} 
+        macros={macros} 
+        handleChange={handleChange} 
+        selected={selected} 
+      />
+      
+      <MacrosProgressBar 
+        macroConfig={macroConfig} 
+        macros={macros} 
+      />
+      
       <div className="flex items-center justify-between py-3 border-t border-b border-zinc-800 mb-5">
         <div>
           <span className="font-bold text-white">% Tổng</span>
@@ -102,21 +139,13 @@ const DietSection = ({ currentPreset, currentRatios, onSavePreset }) => {
           {total}%
         </span>
       </div>
-      <div className="flex flex-wrap gap-2 mb-5">
-        {Object.keys(DIET_PRESETS).map((name) => (
-          <button
-            key={name}
-            onClick={() => handlePreset(name)}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
-              selected === name
-                ? 'bg-[#c8f31d] text-black border-[#c8f31d]'
-                : 'text-zinc-300 border-zinc-700 hover:border-zinc-500'
-            }`}
-          >
-            {name}
-          </button>
-        ))}
-      </div>
+      
+      <PresetButtons 
+        DIET_PRESETS={DIET_PRESETS} 
+        selected={selected} 
+        handlePreset={handlePreset} 
+      />
+      
       <button
         disabled={!isValid}
         onClick={handleSave}

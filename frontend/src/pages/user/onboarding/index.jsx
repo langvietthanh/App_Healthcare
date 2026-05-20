@@ -14,6 +14,24 @@ import StepFitnessLevel from './StepFitnessLevel';
 import StepGoal from './StepGoal';
 import StepFinish from './StepFinish';
 
+const OnboardingHeader = ({ step, totalSteps, handlePrev, handleSkip, ChevronLeft }) => (
+  <div className="flex items-center justify-between px-6 pt-6 pb-4">
+    <button onClick={handlePrev} className="text-[#c8f31d] hover:text-[#aee018]">
+      <ChevronLeft size={32} />
+    </button>
+
+    <div className="flex flex-col items-center">
+      <span className="text-xs text-zinc-500 font-medium tracking-widest uppercase">
+        Bước {step} / {totalSteps}
+      </span>
+    </div>
+
+    <button onClick={handleSkip} className="text-[#c8f31d] font-bold text-sm hover:text-[#aee018]">
+      Bỏ qua
+    </button>
+  </div>
+);
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(2); // Start from 2 to match Figma labels
@@ -123,23 +141,14 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col font-sans">
-      {/* Header */}
       {step < 8 && (
-        <div className="flex items-center justify-between px-6 pt-6 pb-4">
-          <button onClick={handlePrev} className="text-[#c8f31d] hover:text-[#aee018]">
-            <ChevronLeft size={32} />
-          </button>
-
-          <div className="flex flex-col items-center">
-            <span className="text-xs text-zinc-500 font-medium tracking-widest uppercase">
-              Bước {step} / {totalSteps}
-            </span>
-          </div>
-
-          <button onClick={handleSkip} className="text-[#c8f31d] font-bold text-sm hover:text-[#aee018]">
-            Bỏ qua
-          </button>
-        </div>
+        <OnboardingHeader 
+          step={step} 
+          totalSteps={totalSteps} 
+          handlePrev={handlePrev} 
+          handleSkip={handleSkip} 
+          ChevronLeft={ChevronLeft} 
+        />
       )}
 
       {/* Main Content Area */}

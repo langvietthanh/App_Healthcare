@@ -5,6 +5,38 @@
 import React from 'react';
 import Numpad from './Numpad';
 
+const UnitToggle = ({ unit, setUnit, label1 = 'LBS', label2 = 'KG' }) => (
+  <div className="flex justify-center mb-10">
+    <div className="bg-zinc-800 rounded-lg p-1 flex">
+      <button
+        onClick={() => setUnit(label1)}
+        className={`px-6 py-2 rounded-md font-bold transition-colors ${
+          unit === label1 ? 'bg-zinc-200 text-black' : 'text-zinc-400 hover:text-white'
+        }`}
+      >
+        {label1}
+      </button>
+      <button
+        onClick={() => setUnit(label2)}
+        className={`px-6 py-2 rounded-md font-bold transition-colors ${
+          unit === label2 ? 'bg-zinc-200 text-black' : 'text-zinc-400 hover:text-white'
+        }`}
+      >
+        {label2}
+      </button>
+    </div>
+  </div>
+);
+
+const WeightDisplay = ({ weight, unit }) => (
+  <div className="text-center w-full flex justify-center mb-10">
+    <div className="border border-[#c8f31d] rounded-lg py-4 px-8 min-w-[250px] bg-zinc-900/50 text-white">
+      <span className="text-4xl font-bold">{weight || '0'}</span>
+      <span className="text-2xl text-zinc-400 ml-2">| {unit.toLowerCase()}</span>
+    </div>
+  </div>
+);
+
 const StepWeightCurrent = ({
   weight,
   weightUnit,
@@ -17,33 +49,8 @@ const StepWeightCurrent = ({
       <div className="w-full px-6">
         <h2 className="text-3xl font-bold mb-8 text-center text-white">Cân nặng hiện tại?</h2>
 
-        <div className="flex justify-center mb-10">
-          <div className="bg-zinc-800 rounded-lg p-1 flex">
-            <button
-              onClick={() => setWeightUnit('LBS')}
-              className={`px-6 py-2 rounded-md font-bold transition-colors ${
-                weightUnit === 'LBS' ? 'bg-zinc-200 text-black' : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              LBS
-            </button>
-            <button
-              onClick={() => setWeightUnit('KG')}
-              className={`px-6 py-2 rounded-md font-bold transition-colors ${
-                weightUnit === 'KG' ? 'bg-zinc-200 text-black' : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              KG
-            </button>
-          </div>
-        </div>
-
-        <div className="text-center w-full flex justify-center mb-10">
-          <div className="border border-[#c8f31d] rounded-lg py-4 px-8 min-w-[250px] bg-zinc-900/50 text-white">
-            <span className="text-4xl font-bold">{weight || '0'}</span>
-            <span className="text-2xl text-zinc-400 ml-2">| {weightUnit.toLowerCase()}</span>
-          </div>
-        </div>
+        <UnitToggle unit={weightUnit} setUnit={setWeightUnit} />
+        <WeightDisplay weight={weight} unit={weightUnit} />
       </div>
 
       <div className="w-full mt-auto">

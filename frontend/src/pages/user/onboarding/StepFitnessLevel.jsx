@@ -4,6 +4,24 @@
  */
 import React from 'react';
 
+const LevelButtons = ({ levels, fitnessLevel, setFitnessLevel }) => (
+  <div className="w-full space-y-4">
+    {levels.map((lvl) => (
+      <button
+        key={lvl.id}
+        onClick={() => setFitnessLevel(lvl.id)}
+        className={`w-full py-5 rounded-xl font-bold text-lg transition-all border ${
+          fitnessLevel === lvl.id
+            ? 'bg-[#c8f31d] text-black border-[#c8f31d]'
+            : 'bg-transparent text-white border-zinc-700 hover:border-[#c8f31d]'
+        }`}
+      >
+        {lvl.label}
+      </button>
+    ))}
+  </div>
+);
+
 const StepFitnessLevel = ({ fitnessLevel, setFitnessLevel, onNext }) => {
   const levels = [
     { id: 'Mới bắt đầu', label: 'MỚI BẮT ĐẦU' },
@@ -15,21 +33,7 @@ const StepFitnessLevel = ({ fitnessLevel, setFitnessLevel, onNext }) => {
     <div className="flex flex-col flex-1 items-center w-full px-6">
       <h2 className="text-3xl font-bold mb-10 text-center text-white">Mức độ thể lực?</h2>
 
-      <div className="w-full space-y-4">
-        {levels.map((lvl) => (
-          <button
-            key={lvl.id}
-            onClick={() => setFitnessLevel(lvl.id)}
-            className={`w-full py-5 rounded-xl font-bold text-lg transition-all border ${
-              fitnessLevel === lvl.id
-                ? 'bg-[#c8f31d] text-black border-[#c8f31d]'
-                : 'bg-transparent text-white border-zinc-700 hover:border-[#c8f31d]'
-            }`}
-          >
-            {lvl.label}
-          </button>
-        ))}
-      </div>
+      <LevelButtons levels={levels} fitnessLevel={fitnessLevel} setFitnessLevel={setFitnessLevel} />
 
       <div className="w-full mt-auto pb-8">
         <button
