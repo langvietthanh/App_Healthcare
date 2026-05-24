@@ -30,7 +30,7 @@ class DailyLogService {
     async getDailyOverview({ userId, date }) {
         const log = await this.getOrCreateDailyLog(userId, date);
         const foods = await DailyFoodEntry.find({ userId, date });
-        const exercises = await DailyExerciseEntry.find({ userId, date });
+        const exercises = await DailyExerciseEntry.find({ userId, date }).populate('exerciseId', 'imgURL');
 
         return { log, foods, exercises };
     }

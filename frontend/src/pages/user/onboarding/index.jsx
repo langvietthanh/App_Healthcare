@@ -73,7 +73,7 @@ const Onboarding = () => {
   const submitMetrics = () => {
     // Tương lai: Gọi API PUT /api/user/physical-detail và PUT /api/user/goals ở đây
     console.log('Submitting metrics:', formData);
-    navigate('/dashboard');
+    window.location.href = '/dashboard';
   };
 
   const renderStepContent = () => {

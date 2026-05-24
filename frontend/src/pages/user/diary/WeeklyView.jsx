@@ -35,7 +35,7 @@ const ChartSection = ({ totalWeekKcal, totalWeekGoal, weeklyData, radius, circum
             <span className="text-[10px] font-bold text-zinc-400">{d.day}</span>
           </div>
         );
-      })}
+      })} 
     </div>
   </div>
 );
@@ -68,7 +68,7 @@ const MacrosSection = ({ macros }) => (
   </div>
 );
 
-const WeeklyView = ({ targetKcal }) => {
+const WeeklyView = ({ targetKcal, targetCarbs, targetProtein, targetFat}) => {
   const [report, setReport] = useState(null);
 
   useEffect(() => {
@@ -77,6 +77,7 @@ const WeeklyView = ({ targetKcal }) => {
         const res = await axiosClient.get('/reports/weekly');
         const data = res.data || res;
         setReport(data);
+        console.log(data);
       } catch (err) {
         console.error('Error fetching weekly report:', err);
       }
@@ -122,16 +123,13 @@ const WeeklyView = ({ targetKcal }) => {
 
   // Lấy trung bình Macros từ báo cáo
   const avg = report?.averages || { carbs: 0, protein: 0, fat: 0 };
-  
-  // Mục tiêu Macros mỗi ngày (Tạm tính theo tỷ lệ mặc định 40-40-20 của Calories)
-  const targetCarbs = Math.round(((targetKcal || 2000) * 0.4) / 4);
-  const targetProtein = Math.round(((targetKcal || 2000) * 0.4) / 4);
-  const targetFat = Math.round(((targetKcal || 2000) * 0.2) / 9);
+
+  const totalMacro = report?.totals || { carbs: 0, protein: 0, fat: 0 };
 
   const macros = [
-    { label: 'Carbs', icon: '🌾', current: avg.carbs, total: targetCarbs, color: '#eab308' },
-    { label: 'Chất đạm', icon: '🥩', current: avg.protein, total: targetProtein, color: '#ef4444' },
-    { label: 'Chất béo', icon: '🥑', current: avg.fat, total: targetFat, color: '#22c55e' },
+    { label: 'Carbs', icon: '🌾', current: totalMacro.carbs, total: targetCarbs * 7, color: '#eab308' },
+    { label: 'Chất đạm', icon: '🥩', current: totalMacro.protein, total: targetProtein * 7, color: '#ef4444' },
+    { label: 'Chất béo', icon: '🥑', current: totalMacro.fat, total: targetFat * 7, color: '#22c55e' },
   ];
 
   return (

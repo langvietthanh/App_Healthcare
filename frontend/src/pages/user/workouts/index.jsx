@@ -25,7 +25,8 @@ const Workouts = () => {
     setWorkoutRestTime,
     setScheduledExercises,
     setCurrentExerciseIndex,
-    fetchExercisesFromBackend
+    fetchExercisesFromBackend,
+    logExerciseEntry
   } = useWorkout();
 
   const {
@@ -89,6 +90,7 @@ const Workouts = () => {
         setView={setWorkoutView}
         scheduledExercises={scheduledExercises}
         setCurrentExerciseIndex={setCurrentExerciseIndex}
+        setScheduledExercises={setScheduledExercises}
       />
     );
   }
@@ -100,6 +102,7 @@ const Workouts = () => {
         scheduledExercises={scheduledExercises}
         currentExerciseIndex={currentExerciseIndex}
         setCurrentExerciseIndex={setCurrentExerciseIndex}
+        logExerciseEntry={logExerciseEntry}
       />
     );
   }

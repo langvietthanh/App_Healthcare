@@ -1,24 +1,55 @@
 /**
- * Tác dụng của file: Màn hình nhập cân nặng (ban đầu, hiện tại, mục tiêu), tính toán lượng cân nặng đã giảm/còn lại, vẽ biểu đồ SVG đường cong tiến độ cân nặng theo tuần
- * File này dùng cho component cha nào là chính: Dashboard (src/pages/user/dashboard/index.jsx)
+ * T\u00e1c d\u1ee5ng c\u1ee7a file: M\u00e0n h\u00ecnh nh\u1eadp c\u00e2n n\u1eb7ng (ban \u0111\u1ea7u, hi\u1ec7n t\u1ea1i, m\u1ee5c ti\u00eau), t\u00ednh to\u00e1n l\u01b0\u1ee3ng c\u00e2n n\u1eb7ng \u0111\u00e3 gi\u1ea3m/c\u00f2n l\u1ea1i, v\u1ebd bi\u1ec3u \u0111\u1ed3 SVG \u0111\u01b0\u1eddng cong ti\u1ebfn \u0111\u1ed9 c\u00e2n n\u1eb7ng theo tu\u1ea7n
+ * File n\u00e0y d\u00f9ng cho component cha n\u00e0o l\u00e0 ch\u00ednh: Dashboard (src/pages/user/dashboard/index.jsx)
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { useDailyLog } from '../../../context/DailyLogContext';
 
 const WeightChart = ({ onBack }) => {
-  const data = [
-    { label: 'T2', value: 72.5 },
-    { label: 'T3', value: 72.2 },
-    { label: 'T4', value: 71.8 },
-    { label: 'T5', value: 71.9 },
-    { label: 'T6', value: 71.5 },
-    { label: 'T7', value: 71.3 },
-    { label: 'CN', value: 71.0 },
-  ];
+  const { state, ensureTodayWeight, fetchWeightHistory, updateTodayWeight } = useDailyLog();
+  const { user, weightHistory } = state;
 
+  const [currentWeight, setCurrentWeight] = useState('');
+  const [targetWeight, setTargetWeight] = useState('');
   const [initialWeight, setInitialWeight] = useState('74.0');
-  const [currentWeight, setCurrentWeight] = useState('71.0');
-  const [targetWeight, setTargetWeight] = useState('68.0');
+  const debounceRef = useRef(null);
+
+  // \u0110\u1ed3ng b\u1ed9 c\u00e2n n\u1eb7ng hi\u1ec7n t\u1ea1i v\u00e0 m\u1ee5c ti\u00eau t\u1eeb user profile
+  useEffect(() => {
+    if (user?.physicalDetail?.weight)
+      setCurrentWeight(String(user.physicalDetail.weight));
+    if (user?.goals?.weightGoal)
+      setTargetWeight(String(user.goals.weightGoal));
+  }, [user]);
+
+  // Kh\u1edfi t\u1ea1o: \u0111\u1ea3m b\u1ea3o h\u00f4m nay c\u00f3 b\u1ea3n ghi, sau \u0111\u00f3 load bi\u1ec3u \u0111\u1ed3
+  useEffect(() => {
+    const init = async () => {
+      await ensureTodayWeight();
+      await fetchWeightHistory();
+    };
+    init();
+  }, []);
+
+  // Auto-save khi c\u00e2n n\u1eb7ng hi\u1ec7n t\u1ea1i thay \u0111\u1ed5i (debounce 800ms)
+  useEffect(() => {
+    const val = parseFloat(currentWeight);
+    if (!val || val < 20 || val > 300) return; // validate
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      updateTodayWeight(val);
+    }, 800);
+    return () => clearTimeout(debounceRef.current);
+  }, [currentWeight]);
+
+  const DAY_LABELS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  const data = weightHistory.length > 0
+    ? weightHistory.map((item) => ({
+        label: DAY_LABELS[new Date(item.dateRecorded).getDay()],
+        value: item.weight,
+      }))
+    : [{ label: '--', value: parseFloat(currentWeight) || 70 }];
 
   const initW = parseFloat(initialWeight) || 74;
   const currW = parseFloat(currentWeight) || 71;

@@ -112,6 +112,70 @@ class UserService {
 
         return user;
     }
+
+    /**
+     * Đảm bảo hôm nay luôn có bản ghi cân nặng trong BodyMetricHistory.
+     * - Nếu đã có bản ghi hôm nay → không làm gì, return bản ghi đó
+     * - Nếu chưa có → lấy bản ghi gần nhất, nếu không có thì dùng physicalDetail.weight
+     */
+    async ensureTodayWeight({ userId }) {
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const endOfToday = new Date();
+        endOfToday.setHours(23, 59, 59, 999);
+
+        // Kiểm tra đã có bản ghi hôm nay chưa
+        const existingToday = await BodyMetricHistory.findOne({
+            userId,
+            dateRecorded: { $gte: startOfToday, $lte: endOfToday }
+        });
+        if (existingToday) return existingToday;
+
+        // Tìm bản ghi gần nhất trước hôm nay
+        const lastRecord = await BodyMetricHistory.findOne({ userId })
+            .sort({ dateRecorded: -1 })
+            .limit(1);
+
+        let weight;
+        if (lastRecord) {
+            weight = lastRecord.weight;
+        } else {
+            // Chưa có bất kỳ bản ghi nào → lấy từ profile
+            const user = await User.findById(userId).select('physicalDetail.weight');
+            if (!user) throw new AppError('User không tồn tại', 401);
+            weight = user.physicalDetail.weight;
+        }
+
+        const newRecord = await new BodyMetricHistory({ userId, weight, dateRecorded: new Date() }).save();
+        return newRecord;
+    }
+
+    /**
+     * Upsert cân nặng cho hôm nay.
+     * - Nếu đã có bản ghi hôm nay → update weight
+     * - Nếu chưa có → tạo mới
+     * - Đồng thời cập nhật user.physicalDetail.weight
+     */
+    async updateTodayWeight({ userId, weight }) {
+        if (!weight || weight <= 0) throw new AppError('Cân nặng không hợp lệ', 400);
+
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const endOfToday = new Date();
+        endOfToday.setHours(23, 59, 59, 999);
+
+        // Upsert bản ghi hôm nay
+        const record = await BodyMetricHistory.findOneAndUpdate(
+            { userId, dateRecorded: { $gte: startOfToday, $lte: endOfToday } },
+            { $set: { weight, dateRecorded: new Date() } },
+            { upsert: true, new: true }
+        );
+
+        // Đồng bộ user.physicalDetail.weight
+        await User.findByIdAndUpdate(userId, { $set: { 'physicalDetail.weight': weight } });
+
+        return record;
+    }
 }
 
 module.exports = new UserService();

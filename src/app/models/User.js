@@ -26,7 +26,7 @@ const User = new Schema({
       advice: { type: String },
     }
   },
-  imgURL: { type: String, default: 'https://res.cloudinary.com/dmj9z2y1t/image/upload/v1744472403/user_2011467_tzqpyg.png' }
+  imgURL: { type: String, default: '' }
 },
   { timestamps: true });
 

@@ -41,17 +41,24 @@ class ReportService {
      * Aggregate DailyLog + DailyExerciseEntry
      */
     async getWeeklyReport({ userId }) {
-        const today = new Date();
-        today.setHours(23, 59, 59, 999);
+        const now = new Date();
+        
+        // Tìm ngày Thứ 2 của tuần hiện tại (getDay() trả về 0 cho CN, 1-6 cho T2-T7)
+        const currentDay = now.getDay();
+        const distanceToMonday = currentDay === 0 ? 6 : currentDay - 1;
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - distanceToMonday);
+        startOfWeek.setHours(0, 0, 0, 0);
 
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-        sevenDaysAgo.setHours(0, 0, 0, 0);
+        // Tìm ngày Chủ Nhật của tuần hiện tại
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        endOfWeek.setHours(23, 59, 59, 999);
 
-        // Lấy DailyLog 7 ngày
+        // Lấy DailyLog của tuần hiện tại
         const logs = await DailyLog.find({
             userId,
-            date: { $gte: sevenDaysAgo, $lte: today }
+            date: { $gte: startOfWeek, $lte: endOfWeek }
         }).sort({ date: 1 });
 
         // Đếm số bài tập theo từng ngày
@@ -59,7 +66,7 @@ class ReportService {
             {
                 $match: {
                     userId: require('mongoose').Types.ObjectId.createFromHexString(userId),
-                    date: { $gte: sevenDaysAgo, $lte: today }
+                    date: { $gte: startOfWeek, $lte: endOfWeek }
                 }
             },
             {
@@ -90,14 +97,22 @@ class ReportService {
             };
         });
 
-        // Tính trung bình
+        // Tính tổng và trung bình
+        const totals = {
+            calories: Math.round(dailyData.reduce((sum, d) => sum + d.caloriesIn, 0)),
+            protein: Math.round(dailyData.reduce((sum, d) => sum + d.protein, 0) * 10) / 10,
+            carbs: Math.round(dailyData.reduce((sum, d) => sum + d.carbs, 0) * 10) / 10,
+            fat: Math.round(dailyData.reduce((sum, d) => sum + d.fat, 0) * 10) / 10,
+            water: Math.round(dailyData.reduce((sum, d) => sum + d.waterIntake, 0))
+        };
+
         const count = dailyData.length || 1;
         const averages = {
-            calories: Math.round(dailyData.reduce((sum, d) => sum + d.caloriesIn, 0) / count),
-            protein: Math.round(dailyData.reduce((sum, d) => sum + d.protein, 0) / count * 10) / 10,
-            carbs: Math.round(dailyData.reduce((sum, d) => sum + d.carbs, 0) / count * 10) / 10,
-            fat: Math.round(dailyData.reduce((sum, d) => sum + d.fat, 0) / count * 10) / 10,
-            water: Math.round(dailyData.reduce((sum, d) => sum + d.waterIntake, 0) / count)
+            calories: Math.round(totals.calories / count),
+            protein: Math.round((totals.protein / count) * 10) / 10,
+            carbs: Math.round((totals.carbs / count) * 10) / 10,
+            fat: Math.round((totals.fat / count) * 10) / 10,
+            water: Math.round(totals.water / count)
         };
 
         // So sánh với mục tiêu calo
@@ -111,6 +126,7 @@ class ReportService {
 
         return {
             dailyData,
+            totals,
             averages,
             goalComparison: {
                 daysOnTarget,

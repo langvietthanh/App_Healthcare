@@ -5,12 +5,18 @@
 import React, { useState } from 'react';
 import { Bell, BarChart2, Scale, Droplets, Minus, Plus, Footprints, Play, X } from 'lucide-react';
 import { useDailyLog } from '../../../context/DailyLogContext';
+import defaultAvatar from '../../../assets/images/defaultAvarta.png';
 
 const DashboardHeader = ({ user, setPage, BarChart2, Bell }) => (
   <div className="bg-[#c8f31d] rounded-b-[40px] px-6 pt-12 pb-10 text-black relative z-10 shadow-lg">
     <div className="flex justify-between items-center mb-8">
       <div className="w-12 h-12 rounded-full overflow-hidden shadow-md">
-        <img src={user?.imgURL || "/Avatar.png"} alt="Avatar" className="w-full h-full object-cover" />
+        <img 
+          src={user?.imgURL || defaultAvatar} 
+          alt="Avatar" 
+          className="w-full h-full object-cover"
+          onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }}
+        />
       </div>
       <div className="flex items-center gap-3">
         <button

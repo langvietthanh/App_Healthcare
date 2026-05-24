@@ -28,7 +28,11 @@ export const initState = {
     scheduledExercises: [],
     currentExerciseIndex: 0,
     selectedDate: new Date(),
-    selectedTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+    selectedTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+
+    // Exercise History (Past date logs from DB)
+    exerciseHistory: [],
+    historyLoading: false
 };
 
 const reducerWorkout = (state, action) => {
@@ -76,6 +80,13 @@ const reducerWorkout = (state, action) => {
             return { ...state, selectedDate: action.payload };
         case ACTIONS.SET_WORKOUT_SELECTED_TIME:
             return { ...state, selectedTime: action.payload };
+
+        case ACTIONS.FETCH_EXERCISE_HISTORY_START:
+            return { ...state, historyLoading: true, exerciseHistory: [] };
+        case ACTIONS.FETCH_EXERCISE_HISTORY_SUCCESS:
+            return { ...state, historyLoading: false, exerciseHistory: action.payload };
+        case ACTIONS.FETCH_EXERCISE_HISTORY_FAILURE:
+            return { ...state, historyLoading: false, exerciseHistory: [] };
 
         default:
             return state;

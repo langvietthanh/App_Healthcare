@@ -173,8 +173,38 @@ export const setWorkoutRestTime = (dispatch) => (time) => dispatch({ type: ACTIO
 
 export const setScheduledExercises = (dispatch) => (exercises) => dispatch({ type: ACTIONS.SET_SCHEDULED_EXERCISES, payload: exercises });
 export const setCurrentExerciseIndex = (dispatch) => (index) => dispatch({ type: ACTIONS.SET_CURRENT_EXERCISE_INDEX, payload: index });
+
+export const logExerciseEntry = (dispatch) => async (exerciseData) => {
+    try {
+        const date = new Date().toISOString().slice(0, 10);
+        const payload = {
+            date,
+            exerciseId: exerciseData.id,
+            name: exerciseData.name,
+            sets: exerciseData.sets,
+            reps: exerciseData.mode === 'reps' ? exerciseData.repsOrTime : undefined,
+            durationMinutes: exerciseData.mode === 'time' ? exerciseData.repsOrTime : undefined,
+        };
+        await axiosClient.post('/daily-logs/exercises', payload);
+    } catch (err) {
+        console.error('Error logging exercise entry:', err);
+    }
+};
 export const setWorkoutSelectedDate = (dispatch) => (date) => dispatch({ type: ACTIONS.SET_WORKOUT_SELECTED_DATE, payload: date });
 export const setWorkoutSelectedTime = (dispatch) => (time) => dispatch({ type: ACTIONS.SET_WORKOUT_SELECTED_TIME, payload: time });
+
+export const fetchExerciseHistory = (dispatch) => async (dateString) => {
+    dispatch({ type: ACTIONS.FETCH_EXERCISE_HISTORY_START });
+    try {
+        const response = await axiosClient.get(`/daily-logs/${dateString}`);
+        const data = response.data || response;
+        const exercises = data.exercises || [];
+        dispatch({ type: ACTIONS.FETCH_EXERCISE_HISTORY_SUCCESS, payload: exercises });
+    } catch (err) {
+        console.error('Error fetching exercise history:', err);
+        dispatch({ type: ACTIONS.FETCH_EXERCISE_HISTORY_FAILURE });
+    }
+};
 
 export const fetchExercisesFromBackend = (dispatch, state) => async () => {
     dispatch({ type: ACTIONS.FETCH_EXERCISES_START });

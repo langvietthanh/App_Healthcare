@@ -52,12 +52,29 @@ const DatePicker = ({ daysOfWeek, selectedDate, setSelectedDate }) => (
 );
 
 const NutritionCard = ({
-  viewMode, setViewMode, percentage, currentKcal, goalKcal,
-  currentCarbs, targetCarbs, currentProtein, targetProtein,
-  currentFat, targetFat, currentWater, targetWater,
-  StomachIcon, BatteryInfo, CircularMacro, WeeklyView
-}) => (
-  <div className="px-8 mb-8">
+  viewMode, setViewMode
+}) => {
+  const { state } = useDailyLog();
+  const { dailyLog, targetCalories: goalKcal, dietPreset, user } = state;
+
+  const targetWater = user?.physicalDetail?.weight
+    ? Math.round(user.physicalDetail.weight * 35)
+    : 2000;
+
+  const currentKcal = Math.round(dailyLog?.totals?.caloriesIn || 0);
+  const percentage = goalKcal > 0 ? (currentKcal / goalKcal) * 100 : 0;
+
+  const targetCarbs = Math.round((goalKcal * dietPreset.carbs) / 100 / 4);
+  const targetProtein = Math.round((goalKcal * dietPreset.protein) / 100 / 4);
+  const targetFat = Math.round((goalKcal * dietPreset.fat) / 100 / 9);
+
+  const currentCarbs = Math.round(dailyLog?.totals?.carbs || 0);
+  const currentProtein = Math.round(dailyLog?.totals?.protein || 0);
+  const currentFat = Math.round(dailyLog?.totals?.fat || 0);
+  const currentWater = dailyLog?.waterIntake || 0;
+
+  return (
+    <div className="px-8 mb-8">
     <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-[32px] p-8 shadow-2xl relative overflow-hidden">
       <div className="flex justify-between items-center mb-10">
         <h2 className="text-2xl font-bold tracking-tight">Calo & Dinh dưỡng</h2>
@@ -102,11 +119,12 @@ const NutritionCard = ({
           </div>
         </>
       ) : (
-        <WeeklyView targetKcal={goalKcal} todayKcal={currentKcal} />
+        <WeeklyView targetKcal={goalKcal} todayKcal={currentKcal} targetCarbs={targetCarbs} targetProtein={targetProtein} targetFat={targetFat} targetWater={targetWater} />
       )}
     </div>
   </div>
-);
+    );
+};
 
 const Diary = () => {
   const [viewMode, setViewMode] = useState('day'); // 'day' | 'week'
@@ -119,12 +137,7 @@ const Diary = () => {
     updateDietPreset,
   } = useDailyLog();
 
-  const { dailyLog, targetCalories: goalKcal, dietPreset, loading, selectedDate, user } = state;
-
-  // Tính mục tiêu nước từ cân nặng (35ml/kg)
-  const targetWater = user?.physicalDetail?.weight
-    ? Math.round(user.physicalDetail.weight * 35)
-    : 2000;
+  const { dietPreset, loading, selectedDate } = state;
 
   const dateString = selectedDate.toISOString().slice(0, 10);
 
@@ -149,20 +162,6 @@ const Diary = () => {
   const handleSaveDietPreset = (presetName, ratios) => {
     updateDietPreset(presetName, ratios);
   };
-
-  // Calculate dynamic macros goals based on preset percentages
-  const currentKcal = Math.round(dailyLog?.totals?.caloriesIn || 0);
-  const percentage = goalKcal > 0 ? (currentKcal / goalKcal) * 100 : 0;
-
-  // 1g Carb = 4 kcal, 1g Protein = 4 kcal, 1g Fat = 9 kcal
-  const targetCarbs = Math.round((goalKcal * dietPreset.carbs) / 100 / 4);
-  const targetProtein = Math.round((goalKcal * dietPreset.protein) / 100 / 4);
-  const targetFat = Math.round((goalKcal * dietPreset.fat) / 100 / 9);
-
-  const currentCarbs = Math.round(dailyLog?.totals?.carbs || 0);
-  const currentProtein = Math.round(dailyLog?.totals?.protein || 0);
-  const currentFat = Math.round(dailyLog?.totals?.fat || 0);
-  const currentWater = dailyLog?.waterIntake || 0;
 
   // Generate 7 days of the current week centered around selectedDate
   const getDaysOfWeek = () => {
@@ -200,21 +199,6 @@ const Diary = () => {
       <NutritionCard 
         viewMode={viewMode}
         setViewMode={setViewMode}
-        percentage={percentage}
-        currentKcal={currentKcal}
-        goalKcal={goalKcal}
-        currentCarbs={currentCarbs}
-        targetCarbs={targetCarbs}
-        currentProtein={currentProtein}
-        targetProtein={targetProtein}
-        currentFat={currentFat}
-        targetFat={targetFat}
-        currentWater={currentWater}
-        targetWater={targetWater}
-        StomachIcon={StomachIcon}
-        BatteryInfo={BatteryInfo}
-        CircularMacro={CircularMacro}
-        WeeklyView={WeeklyView}
       />
 
       <div className="px-8 mb-8">

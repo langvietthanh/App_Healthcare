@@ -45,6 +45,21 @@ class UserController {
 
         res.json({ msg: "Thay đổi mật khẩu thành công" });
     })
+
+    //  [POST] /api/user/weight/ensure
+    ensureTodayWeight = catchAsync(async (req, res, next) => {
+        const userId = req.user.userId;
+        const record = await UserService.ensureTodayWeight({ userId });
+        res.json(record);
+    })
+
+    //  [PUT] /api/user/weight
+    updateTodayWeight = catchAsync(async (req, res, next) => {
+        const userId = req.user.userId;
+        const { weight } = req.body;
+        const record = await UserService.updateTodayWeight({ userId, weight: parseFloat(weight) });
+        res.json(record);
+    })
 }
 
 module.exports = new UserController();

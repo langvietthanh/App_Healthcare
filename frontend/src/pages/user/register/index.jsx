@@ -7,7 +7,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
 import RegisterForm from './RegisterForm';
-import SocialRegister from './SocialRegister';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -92,9 +91,6 @@ const Register = () => {
         loading={loading}
         onSubmit={handleRegister}
       />
-
-      {/* Social Register */}
-      <SocialRegister />
 
       {/* Footer */}
       <div className="text-center mt-2 text-sm text-gray-400 pb-4">

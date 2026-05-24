@@ -14,7 +14,11 @@ export const initState = {
     const cached = localStorage.getItem('diary_diet_preset');
     return cached ? JSON.parse(cached) : { carbs: 40, protein: 40, fat: 20, name: 'Cân Bằng' };
   })(),
-  loading: false
+  loading: false,
+
+  // Weight history (biểu đồ cân nặng)
+  weightHistory: [],
+  weightLoading: false,
 };
 
 export const reducer = (state, action) => {
@@ -48,6 +52,13 @@ export const reducer = (state, action) => {
 
     case ACTIONS.UPDATE_WATER_SUCCESS:
       return { ...state, dailyLog: action.payload };
+
+    case ACTIONS.FETCH_WEIGHT_HISTORY_START:
+      return { ...state, weightLoading: true };
+    case ACTIONS.FETCH_WEIGHT_HISTORY_SUCCESS:
+      return { ...state, weightLoading: false, weightHistory: action.payload };
+    case ACTIONS.FETCH_WEIGHT_HISTORY_FAILURE:
+      return { ...state, weightLoading: false, weightHistory: [] };
 
     default:
       return state;

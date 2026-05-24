@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Dumbbell } from 'lucide-react';
+import { ArrowLeft, Dumbbell, Trash2 } from 'lucide-react';
 
 const ListHeader = ({ setView }) => (
   <div className="flex items-center gap-4 px-6 pt-8 pb-6">
@@ -17,19 +17,24 @@ const EmptyState = () => (
   </div>
 );
 
-const ExerciseListItems = ({ scheduledExercises }) => (
-  <div className="space-y-4 mb-8">
-    {scheduledExercises.map((item, idx) => (
-      <div key={idx} className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 flex items-center gap-4 shadow-lg">
-        <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center text-3xl overflow-hidden">
+const ExerciseListItems = ({ scheduledExercises, setScheduledExercises }) => {
+  const handleRemove = (indexToRemove) => {
+    setScheduledExercises(scheduledExercises.filter((_, index) => index !== indexToRemove));
+  };
+
+  return (
+    <div className="space-y-4 mb-8">
+      {scheduledExercises.map((item, idx) => (
+        <div key={idx} className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 flex items-center gap-4 shadow-lg">
+          <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center text-3xl overflow-hidden shrink-0">
           {item.img && (item.img.startsWith('http') || item.img.startsWith('/')) ? (
             <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
           ) : (
             item.img || '🏋️'
           )}
         </div>
-        <div className="flex-1">
-          <h3 className="font-black text-lg text-white mb-1">{item.name}</h3>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-black text-lg text-white mb-1 truncate">{item.name}</h3>
           <div className="flex items-center gap-3 text-sm font-bold text-zinc-400 flex-wrap">
             <span>{item.sets} Sets</span>
             <span>•</span>
@@ -42,10 +47,18 @@ const ExerciseListItems = ({ scheduledExercises }) => (
             )}
           </div>
         </div>
+        <button
+          onClick={() => handleRemove(idx)}
+          className="w-10 h-10 rounded-full bg-zinc-800/50 flex items-center justify-center text-zinc-500 hover:bg-red-500/20 hover:text-red-500 transition-all shrink-0"
+          title="Xóa bài tập"
+        >
+          <Trash2 size={18} />
+        </button>
       </div>
     ))}
   </div>
-);
+  );
+};
 
 const StartWorkoutButton = ({ scheduledExercises, setCurrentExerciseIndex, setView }) => (
   <div className="mt-auto">
@@ -68,7 +81,7 @@ const StartWorkoutButton = ({ scheduledExercises, setCurrentExerciseIndex, setVi
   </div>
 );
 
-const WorkoutList = ({ setView, scheduledExercises, setCurrentExerciseIndex }) => {
+const WorkoutList = ({ setView, scheduledExercises, setCurrentExerciseIndex, setScheduledExercises }) => {
   return (
     <div className="h-full bg-[#050505] text-white relative font-sans overflow-hidden flex flex-col">
       <ListHeader setView={setView} />
@@ -77,7 +90,10 @@ const WorkoutList = ({ setView, scheduledExercises, setCurrentExerciseIndex }) =
         {scheduledExercises.length === 0 ? (
           <EmptyState />
         ) : (
-          <ExerciseListItems scheduledExercises={scheduledExercises} />
+          <ExerciseListItems 
+            scheduledExercises={scheduledExercises} 
+            setScheduledExercises={setScheduledExercises} 
+          />
         )}
 
         <StartWorkoutButton 

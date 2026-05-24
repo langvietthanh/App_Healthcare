@@ -1,5 +1,5 @@
-import React from 'react';
-import { Calendar, ChevronLeft, ChevronRight, Clock, ChevronDown, Plus, History, BookmarkCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calendar, ChevronLeft, ChevronRight, Clock, ChevronDown, Plus, History, BookmarkCheck, Dumbbell, Loader } from 'lucide-react';
 import { useWorkout } from '../../../store';
 
 // Helper: so sánh ngày (bỏ phần giờ)
@@ -100,13 +100,12 @@ const DateSection = ({ selectedDate, changeWeek, currentMonth, currentYear, days
                 {item.day}
               </span>
               <div
-                className={`w-11 h-11 rounded-full flex items-center justify-center text-xl font-bold relative ${
-                  isSelected
-                    ? 'bg-white text-black shadow-inner'
-                    : isPast
+                className={`w-11 h-11 rounded-full flex items-center justify-center text-xl font-bold relative ${isSelected
+                  ? 'bg-white text-black shadow-inner'
+                  : isPast
                     ? 'bg-zinc-800 text-zinc-500'
                     : 'bg-white text-black'
-                }`}
+                  }`}
               >
                 {item.date}
                 {isToday && !isSelected && (
@@ -121,38 +120,111 @@ const DateSection = ({ selectedDate, changeWeek, currentMonth, currentYear, days
   );
 };
 
-const TimeSection = ({ selectedTime, setWorkoutSelectedTime, dateType }) => {
-  if (dateType === 'past') return null;
+const TimePickerModal = ({ isOpen, onClose, onSave }) => {
+  const [time, setTime] = useState('');
+
+  if (!isOpen) return null;
 
   return (
-    <div className="mt-10 mb-12 flex items-center justify-between">
-      <div className="flex items-center gap-3 font-bold text-xl">
-        <Clock size={24} className="text-[#c8f31d]" />
-        Thời gian
-      </div>
-      <div className="border border-[#c8f31d] rounded-2xl px-5 py-3 flex items-center gap-4 cursor-pointer relative hover:bg-zinc-900 transition-colors">
-        <input
-          type="time"
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          onChange={(e) => {
-            if (e.target.value) {
-              const [h, m] = e.target.value.split(':');
-              const dateObj = new Date();
-              dateObj.setHours(h, m);
-              setWorkoutSelectedTime(dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }));
-            }
-          }}
-        />
-        <span className="font-bold text-lg tracking-wide pointer-events-none">{selectedTime}</span>
-        <ChevronDown size={24} className="text-[#c8f31d] pointer-events-none" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-6 w-80 shadow-2xl animate-in zoom-in-95 duration-200">
+        <h3 className="text-xl font-bold text-white mb-4 text-center">Nhập thời gian</h3>
+        <div className="flex justify-center mb-6">
+          <input
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="bg-zinc-800 text-white text-3xl font-black p-4 rounded-2xl border border-zinc-600 focus:outline-none focus:border-[#c8f31d] text-center w-full"
+          />
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 rounded-xl font-bold text-zinc-400 bg-zinc-800 hover:text-white transition-colors border border-zinc-700"
+          >
+            Hủy
+          </button>
+          <button
+            onClick={() => onSave(time)}
+            className="flex-1 py-3 rounded-xl font-bold text-black bg-[#c8f31d] hover:scale-105 transition-transform shadow-[0_0_15px_rgba(200,243,29,0.3)]"
+          >
+            Xác nhận
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-// Các bộ nút theo từng trạng thái ngày
-const TodayButtons = ({ setView, scheduledExercises }) => {
-  const hasData = scheduledExercises && scheduledExercises.length > 0;
+const TimeSection = ({ selectedTime, setWorkoutSelectedTime, dateType }) => {
+  const [showModal, setShowModal] = useState(false);
+
+  if (dateType === 'past') return null;
+
+  return (
+    <>
+      <div className="mt-10 mb-12 flex items-center justify-between">
+        <div className="flex items-center gap-3 font-bold text-xl">
+          <Clock size={24} className="text-[#c8f31d]" />
+          Nhắc tôi tập luyện: 
+        </div>
+        
+        {selectedTime ? (
+          <div 
+            onClick={() => setShowModal(true)}
+            className="border border-[#c8f31d] rounded-2xl px-5 py-3 flex items-center gap-4 cursor-pointer hover:bg-zinc-900 transition-colors"
+          >
+            <span className="font-bold text-lg tracking-wide">{selectedTime}</span>
+            <ChevronDown size={24} className="text-[#c8f31d]" />
+          </div>
+        ) : (
+          <button 
+            onClick={() => setShowModal(true)}
+            className="bg-[#c8f31d] text-black font-bold px-5 py-3 rounded-2xl flex items-center gap-2 hover:scale-105 transition-transform shadow-[0_0_15px_rgba(200,243,29,0.2)]"
+          >
+            Đặt giờ
+          </button>
+        )}
+      </div>
+
+      <TimePickerModal 
+        isOpen={showModal} 
+        onClose={() => setShowModal(false)} 
+        onSave={(timeVal) => {
+          if (timeVal) {
+            if (typeof Notification !== 'undefined' && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+              Notification.requestPermission();
+            }
+            // timeVal mặc định của input type="time" đã là chuẩn 24h (HH:mm)
+            setWorkoutSelectedTime(timeVal);
+          }
+          setShowModal(false);
+        }} 
+      />
+    </>
+  );
+};
+
+const TodayButtons = ({ setView, scheduledExercises, selectedDate }) => {
+  const { state, fetchExerciseHistory } = useWorkout();
+  const { exerciseHistory, historyLoading } = state;
+  const [showHistory, setShowHistory] = useState(false);
+
+  const handleViewHistory = async () => {
+    if (showHistory) {
+      setShowHistory(false);
+      return;
+    }
+    const dateString = selectedDate.toISOString().slice(0, 10);
+    await fetchExerciseHistory(dateString);
+    setShowHistory(true);
+  };
+
+  // Reset khi đổi ngày
+  useEffect(() => {
+    setShowHistory(false);
+  }, [selectedDate]);
+
   return (
     <div className="mt-auto flex flex-col gap-3">
       <div className="flex gap-4">
@@ -170,16 +242,80 @@ const TodayButtons = ({ setView, scheduledExercises }) => {
           Thêm bài tập
         </button>
       </div>
+      {showHistory && (
+        <div className="mb-2">
+          <div className="flex items-center gap-2 mb-4">
+            <History size={20} className="text-[#c8f31d]" />
+            <p className="font-bold text-lg text-white">Lịch sử hôm nay</p>
+          </div>
+
+          {historyLoading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader size={32} className="text-[#c8f31d] animate-spin" />
+            </div>
+          ) : exerciseHistory.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-zinc-600 gap-2">
+              <History size={40} className="opacity-40" />
+              <p className="font-bold text-base">Chưa có bài tập nào</p>
+              <p className="text-sm text-zinc-700">Bạn chưa hoàn thành bài tập nào hôm nay</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {exerciseHistory.map((entry, idx) => {
+                const img = entry.exerciseId?.imgURL;
+                return (
+                  <div key={entry._id || idx} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-zinc-800 rounded-xl flex items-center justify-center text-2xl shrink-0 overflow-hidden">
+                      {img && (img.startsWith('http') || img.startsWith('/')) ? (
+                        <img src={img} alt={entry.name} className="w-full h-full object-cover" />
+                      ) : (
+                        img || '🏋️'
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-sm text-white truncate">{entry.name || 'Bài tập'}</h4>
+                      <div className="flex items-center gap-2 text-xs font-bold text-zinc-400 mt-1 flex-wrap">
+                        {entry.sets && <span>{entry.sets} Sets</span>}
+                        {entry.reps && (
+                          <>
+                            <span>•</span>
+                            <span>1 Set/{entry.reps} Reps</span>
+                          </>
+                        )}
+                        {entry.durationMinutes && (
+                          <>
+                            <span>•</span>
+                            <span>1 Set{entry.durationMinutes} giây</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="w-8 h-8 bg-[#c8f31d] rounded-full flex items-center justify-center shrink-0">
+                      <span className="text-black text-sm font-bold">✓</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+
       <button
-        disabled={!hasData}
-        className={`w-full font-bold py-3.5 rounded-[20px] text-base transition-all flex justify-center items-center gap-2 ${
-          hasData
-            ? 'bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600'
-            : 'bg-zinc-900 text-zinc-600 cursor-not-allowed border border-zinc-800'
-        }`}
+        onClick={handleViewHistory}
+        disabled={historyLoading}
+        className={`w-full font-bold py-3.5 rounded-[20px] text-base transition-all flex justify-center items-center gap-2 ${historyLoading
+          ? 'bg-zinc-900 text-zinc-600 cursor-wait border border-zinc-800'
+          : 'bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600'
+          }`}
       >
-        <History size={18} />
-        Xem lịch sử hôm nay
+        {historyLoading ? (
+          <Loader size={18} className="animate-spin" />
+        ) : (
+          <History size={18} />
+        )}
+        {showHistory ? 'Ẩn lịch sử' : 'Xem lịch sử hôm nay'}
       </button>
     </div>
   );
@@ -203,28 +339,105 @@ const FutureButtons = ({ setView }) => (
   </div>
 );
 
-const PastButtons = ({ scheduledExercises }) => {
-  const hasData = scheduledExercises && scheduledExercises.length > 0;
+const PastButtons = ({ selectedDate }) => {
+  const { state, fetchExerciseHistory } = useWorkout();
+  const { exerciseHistory, historyLoading } = state;
+  const [showHistory, setShowHistory] = useState(false);
+
+  const handleViewHistory = async () => {
+    const dateString = selectedDate.toISOString().slice(0, 10);
+    await fetchExerciseHistory(dateString);
+    setShowHistory(true);
+  };
+
+  // Reset khi đổi ngày
+  useEffect(() => {
+    setShowHistory(false);
+  }, [selectedDate]);
 
   return (
     <div className="mt-auto flex flex-col gap-4">
-      {!hasData && (
+      {showHistory && (
+        <div className="mb-2">
+          <div className="flex items-center gap-2 mb-4">
+            <Dumbbell size={20} className="text-[#c8f31d]" />
+            <p className="font-bold text-lg text-white">Bài tập đã hoàn thành</p>
+          </div>
+
+          {historyLoading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader size={32} className="text-[#c8f31d] animate-spin" />
+            </div>
+          ) : exerciseHistory.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-zinc-600 gap-2">
+              <History size={40} className="opacity-40" />
+              <p className="font-bold text-base">Không có dữ liệu</p>
+              <p className="text-sm text-zinc-700">Ngày này chưa ghi nhận bài tập nào</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {exerciseHistory.map((entry, idx) => {
+                const img = entry.exerciseId?.imgURL;
+                return (
+                  <div key={entry._id || idx} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-zinc-800 rounded-xl flex items-center justify-center text-2xl shrink-0 overflow-hidden">
+                      {img && (img.startsWith('http') || img.startsWith('/')) ? (
+                        <img src={img} alt={entry.name} className="w-full h-full object-cover" />
+                      ) : (
+                        img || '🏋️'
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-sm text-white truncate">{entry.name || 'Bài tập'}</h4>
+                      <div className="flex items-center gap-2 text-xs font-bold text-zinc-400 mt-1 flex-wrap">
+                        {entry.sets && <span>{entry.sets} Sets</span>}
+                        {entry.reps && (
+                          <>
+                            <span>•</span>
+                            <span>{entry.reps} Reps</span>
+                          </>
+                        )}
+                        {entry.durationMinutes && (
+                          <>
+                            <span>•</span>
+                            <span>{entry.durationMinutes} phút</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="w-8 h-8 bg-[#c8f31d] rounded-full flex items-center justify-center shrink-0">
+                      <span className="text-black text-sm font-bold">✓</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {!showHistory && (
         <div className="flex flex-col items-center justify-center py-8 text-zinc-600 gap-2">
           <History size={40} className="opacity-40" />
           <p className="font-bold text-base">Ngày này đã qua</p>
-          <p className="text-sm text-zinc-700">Không có dữ liệu tập luyện</p>
+          <p className="text-sm text-zinc-700">Bấm nút bên dưới để xem lịch sử tập luyện</p>
         </div>
       )}
+
       <button
-        disabled={!hasData}
-        className={`w-full font-black py-5 rounded-[20px] text-xl transition-all flex justify-center items-center gap-2 ${
-          hasData
-            ? 'bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600'
-            : 'bg-zinc-900 text-zinc-600 cursor-not-allowed border border-zinc-800'
-        }`}
+        onClick={handleViewHistory}
+        disabled={historyLoading}
+        className={`w-full font-black py-5 rounded-[20px] text-xl transition-all flex justify-center items-center gap-2 ${historyLoading
+          ? 'bg-zinc-900 text-zinc-600 cursor-wait border border-zinc-800'
+          : 'bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600'
+          }`}
       >
-        <History size={22} />
-        Xem lịch sử
+        {historyLoading ? (
+          <Loader size={22} className="animate-spin" />
+        ) : (
+          <History size={22} />
+        )}
+        {showHistory ? 'Tải lại lịch sử' : 'Xem lịch sử'}
       </button>
     </div>
   );
@@ -235,6 +448,35 @@ const WorkoutSchedule = ({ setView, scheduledExercises }) => {
   const { selectedDate, selectedTime } = state;
 
   const dateType = getDateType(selectedDate);
+
+  // Thêm useEffect để theo dõi thời gian và hiển thị thông báo
+  useEffect(() => {
+    if (dateType !== 'today' || !selectedTime) return;
+
+    const intervalId = setInterval(() => {
+      const now = new Date();
+      const hStr = String(now.getHours()).padStart(2, '0');
+      const mStr = String(now.getMinutes()).padStart(2, '0');
+      const currentTimeStr = `${hStr}:${mStr}`;
+
+      if (currentTimeStr === selectedTime) {
+        // Phát thông báo bằng Browser Notification API
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          new Notification('💪 Đến giờ tập luyện rồi!', {
+            body: `Đã đến ${selectedTime}, hãy bắt đầu bài tập ngay thôi!`
+          });
+        } else {
+          // Fallback dùng Alert nếu trình duyệt không cấp quyền
+          alert(`💪 Đến giờ tập luyện rồi! (${selectedTime})`);
+        }
+        
+        // Xóa thời gian để tránh thông báo lặp lại liên tục trong cùng 1 phút
+        setWorkoutSelectedTime('');
+      }
+    }, 10000); // Kiểm tra mỗi 10 giây
+
+    return () => clearInterval(intervalId);
+  }, [selectedTime, dateType, setWorkoutSelectedTime]);
 
   const getDaysOfWeek = () => {
     const start = new Date(selectedDate);
@@ -286,9 +528,9 @@ const WorkoutSchedule = ({ setView, scheduledExercises }) => {
           dateType={dateType}
         />
 
-        {dateType === 'today' && <TodayButtons setView={setView} scheduledExercises={scheduledExercises} />}
+        {dateType === 'today' && <TodayButtons setView={setView} scheduledExercises={scheduledExercises} selectedDate={selectedDate} />}
         {dateType === 'future' && <FutureButtons setView={setView} />}
-        {dateType === 'past' && <PastButtons scheduledExercises={scheduledExercises} />}
+        {dateType === 'past' && <PastButtons selectedDate={selectedDate} />}
       </div>
     </div>
   );

@@ -49,4 +49,23 @@ router.put('/password',
     UserController.changePassword
 );
 
+/**
+ * @route   [POST] /api/user/weight/ensure
+ * @desc    Đảm bảo hôm nay có bản ghi cân nặng (auto-fill từ bản ghi gần nhất nếu cần)
+ */
+router.post('/weight/ensure',
+    authMiddleware,
+    UserController.ensureTodayWeight
+);
+
+/**
+ * @route   [PUT] /api/user/weight
+ * @desc    Cập nhật cân nặng hôm nay (upsert BodyMetricHistory + đồng bộ physicalDetail)
+ * @body    { weight: number }
+ */
+router.put('/weight',
+    authMiddleware,
+    UserController.updateTodayWeight
+);
+
 module.exports = router;

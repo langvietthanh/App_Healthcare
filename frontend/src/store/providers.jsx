@@ -69,7 +69,9 @@ const WorkoutProvider = ({ children }) => {
         setCurrentExerciseIndex: actions.setCurrentExerciseIndex(dispatch),
         setWorkoutSelectedDate: actions.setWorkoutSelectedDate(dispatch),
         setWorkoutSelectedTime: actions.setWorkoutSelectedTime(dispatch),
-        fetchExercisesFromBackend: actions.fetchExercisesFromBackend(dispatch, state)
+        fetchExercisesFromBackend: actions.fetchExercisesFromBackend(dispatch, state),
+        logExerciseEntry: actions.logExerciseEntry(dispatch),
+        fetchExerciseHistory: actions.fetchExerciseHistory(dispatch)
     };
 
     return (

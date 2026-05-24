@@ -121,13 +121,73 @@ export const DailyLogProvider = ({ children }) => {
     }
   }
 
-  const fetchReport = async () => {
+  // Cập nhật thông tin cá nhân (username, email, birthDate)
+  const updateUserInfo = async (data) => {
     try {
-      const res = await axiosClient.get('/reports/weekly');
-      const data = res.data || res;
-      setReport(data);
+      const response = await axiosClient.put('/user/info', data);
+      await fetchUserTarget(); // Refresh user data toàn cục
+      return response;
     } catch (err) {
-      console.error('Error fetching weekly report:', err);
+      console.error('Error updating user info:', err);
+      throw err;
+    }
+  };
+
+  // Cập nhật chỉ số thể chất (weight, height, gender, activityLevel)
+  const updatePhysicalDetail = async (data) => {
+    try {
+      const response = await axiosClient.put('/user/physical-detail', data);
+      await fetchUserTarget(); // Refresh user data toàn cục
+      return response;
+    } catch (err) {
+      console.error('Error updating physical detail:', err);
+      throw err;
+    }
+  };
+
+  // \u0110\u1ed5i m\u1eadt kh\u1ea9u
+  const changePassword = async (data) => {
+    try {
+      const response = await axiosClient.put('/user/password', data);
+      return response;
+    } catch (err) {
+      console.error('Error changing password:', err);
+      throw err;
+    }
+  };
+
+  // L\u1ea5y l\u1ecbch s\u1eed c\u00e2n n\u1eb7ng 7 ng\u00e0y
+  const fetchWeightHistory = async () => {
+    dispatch({ type: ACTIONS.FETCH_WEIGHT_HISTORY_START });
+    try {
+      const to = new Date().toISOString().slice(0, 10);
+      const from = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
+      const res = await axiosClient.get(`/reports/weight?from=${from}&to=${to}`);
+      const data = res.data || res;
+      dispatch({ type: ACTIONS.FETCH_WEIGHT_HISTORY_SUCCESS, payload: Array.isArray(data) ? data : [] });
+    } catch (err) {
+      console.error('Error fetching weight history:', err);
+      dispatch({ type: ACTIONS.FETCH_WEIGHT_HISTORY_FAILURE });
+    }
+  };
+
+  // \u0110\u1ea3m b\u1ea3o h\u00f4m nay c\u00f3 b\u1ea3n ghi c\u00e2n n\u1eb7ng
+  const ensureTodayWeight = async () => {
+    try {
+      await axiosClient.post('/user/weight/ensure');
+    } catch (err) {
+      console.error('Error ensuring today weight:', err);
+    }
+  };
+
+  // C\u1eadp nh\u1eadt c\u00e2n n\u1eb7ng h\u00f4m nay (upsert)
+  const updateTodayWeight = async (weight) => {
+    try {
+      await axiosClient.put('/user/weight', { weight });
+      await fetchWeightHistory(); // Refresh bi\u1ec3u \u0111\u1ed3 sau khi c\u1eadp nh\u1eadt
+    } catch (err) {
+      console.error('Error updating today weight:', err);
+      throw err;
     }
   };
 
@@ -143,6 +203,12 @@ export const DailyLogProvider = ({ children }) => {
     toggleFavorite,
     updateDietPreset,
     updateWaterIntake,
+    updateUserInfo,
+    updatePhysicalDetail,
+    changePassword,
+    fetchWeightHistory,
+    ensureTodayWeight,
+    updateTodayWeight,
   };
 
   return (

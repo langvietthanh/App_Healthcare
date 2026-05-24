@@ -34,6 +34,7 @@ const LoginForm = ({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            placeholder='NguyenVanA@gmail.com'
             className="w-full bg-transparent border border-gray-600 rounded-lg px-4 py-3.5 text-white placeholder-gray-500 focus:border-[#c8f31d] focus:outline-none transition-colors"
           />
           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#c8f31d] opacity-0 focus-within:opacity-100 transition-opacity">
@@ -53,6 +54,7 @@ const LoginForm = ({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            placeholder='••••••••'
             className="w-full bg-transparent border border-gray-600 rounded-lg px-4 py-3.5 text-white placeholder-gray-500 focus:border-[#c8f31d] focus:outline-none transition-colors"
           />
           <button

@@ -24,8 +24,8 @@ class AuthService {
 
 //      Kiem tra mat khau
         const passwordIsValid = passwordChecker(password);
-        if(!passwordIsValid) 
-            throw new AppError (passwordIsValid.msg,422);
+        if(!passwordIsValid.status) 
+            throw new AppError(passwordIsValid.msg, 422);
 
 //      Ma hoa mat khau
         const salt = await bcrypt.genSalt(10);

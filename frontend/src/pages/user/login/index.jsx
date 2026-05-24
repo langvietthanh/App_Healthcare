@@ -7,11 +7,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
 import LoginForm from './LoginForm';
-import SocialLogin from './SocialLogin';
+
 
 const Login = () => {
-  const [email, setEmail] = useState('LangThanh@Example.Com');
-  const [password, setPassword] = useState('12345678');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -76,12 +76,8 @@ const Login = () => {
         loading={loading}
         onSubmit={handleLogin}
       />
-
-      {/* Social Login */}
-      <SocialLogin />
-
       {/* Footer */}
-      <div className="text-center mt-8 text-sm text-gray-400 pb-4">
+      <div className="text-center text-sm text-gray-400 pb-4">
         Chưa có tài khoản?{' '}
         <Link to="/register" className="text-[#c8f31d] font-medium hover:underline">
           Đăng ký!

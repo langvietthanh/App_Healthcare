@@ -100,38 +100,46 @@ const RestTimer = ({ restTimeLeft, totalRestTime, addRestTime, skipRest, handleU
   </div>
 );
 
-const ExerciseTimer = ({ currentEx, totalSets, completedSets, handleSetComplete, handleUndoSet }) => (
-  <>
-    <div className="relative w-40 h-40 mb-4 flex items-center justify-center">
-      <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="46" fill="none" stroke="#27272a" strokeWidth="8" />
-        <circle
-          cx="50"
-          cy="50"
-          r="46"
-          fill="none"
-          stroke="#c8f31d"
-          strokeWidth="8"
-          strokeLinecap="round"
-          strokeDasharray={2 * Math.PI * 46}
-          strokeDashoffset={0}
-        />
-      </svg>
-      <span className="text-3xl font-bold tracking-wider relative z-10">
-        {currentEx.mode === 'reps' ? (
-          `${currentEx.repsOrTime} Reps`
-        ) : (
-          `00:${currentEx.repsOrTime < 10 ? `0${currentEx.repsOrTime}` : currentEx.repsOrTime}`
-        )}
-      </span>
-    </div>
-    <p className="text-zinc-500 font-bold tracking-wider uppercase text-xs mb-4">
-      {currentEx.mode === 'reps' ? 'Số lần thực hiện' : 'Thời gian mục tiêu'}
-    </p>
+const ExerciseTimer = ({ currentEx, totalSets, completedSets, handleSetComplete, handleUndoSet, exerciseTimeLeft }) => {
+  const totalTime = Number(currentEx.repsOrTime) || 1;
+  const displayTime = Math.ceil(exerciseTimeLeft);
+  const progressOffset = currentEx.mode === 'time'
+    ? 2 * Math.PI * 46 * (1 - exerciseTimeLeft / totalTime)
+    : 0;
 
-    <div className="flex gap-3 mt-2 flex-wrap justify-center">
-      {Array.from({ length: totalSets }).map((_, idx) => {
-        const isCompleted = idx < completedSets;
+  return (
+    <>
+      <div className="relative w-40 h-40 mb-4 flex items-center justify-center">
+        <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="46" fill="none" stroke="#27272a" strokeWidth="8" />
+          <circle
+            cx="50"
+            cy="50"
+            r="46"
+            fill="none"
+            stroke="#c8f31d"
+            strokeWidth="8"
+            strokeLinecap="round"
+            strokeDasharray={2 * Math.PI * 46}
+            strokeDashoffset={progressOffset}
+            className={currentEx.mode === 'time' ? "transition-all duration-100 ease-linear" : ""}
+          />
+        </svg>
+        <span className="text-3xl font-bold tracking-wider relative z-10">
+          {currentEx.mode === 'reps' ? (
+            `${currentEx.repsOrTime} Reps`
+          ) : (
+            `${Math.floor(displayTime / 60).toString().padStart(2, '0')}:${(displayTime % 60).toString().padStart(2, '0')}`
+          )}
+        </span>
+      </div>
+      <p className="text-zinc-500 font-bold tracking-wider uppercase text-xs mb-4">
+        {currentEx.mode === 'reps' ? 'Số lần thực hiện' : 'Thời gian mục tiêu'}
+      </p>
+  
+      <div className="flex gap-3 mt-2 flex-wrap justify-center">
+        {Array.from({ length: totalSets }).map((_, idx) => {
+          const isCompleted = idx < completedSets;
         return (
           <button
             key={idx}
@@ -151,22 +159,35 @@ const ExerciseTimer = ({ currentEx, totalSets, completedSets, handleSetComplete,
           </button>
         );
       })}
-    </div>
-    <p className="text-zinc-500 text-[10px] mt-2 uppercase tracking-wider">
-      Đánh dấu hoàn thành từng hiệp
-    </p>
-  </>
-);
+      </div>
+      <p className="text-zinc-500 text-[10px] mt-2 uppercase tracking-wider">
+        Đánh dấu hoàn thành từng hiệp
+      </p>
+    </>
+  );
+};
 
-const Controls = ({ currentEx, nextEx, currentExerciseIndex, setCurrentExerciseIndex, setView }) => (
+const Controls = ({ isResting, currentEx, nextEx, currentExerciseIndex, setCurrentExerciseIndex, setView, isExercisePlaying, setIsExercisePlaying }) => (
   <div className="flex gap-4 mt-2">
-    {currentEx.mode === 'time' && (
-      <button className="flex-1 border-2 border-[#c8f31d] text-white font-bold py-4 rounded-2xl flex justify-center items-center gap-2 hover:bg-zinc-800 transition-colors">
-        <div className="flex gap-1 items-center">
-          <div className="w-1 h-3.5 bg-[#c8f31d] rounded-sm"></div>
-          <div className="w-1 h-3.5 bg-[#c8f31d] rounded-sm"></div>
-        </div>
-        Stop
+    {currentEx.mode === 'time' && !isResting &&(
+      <button 
+        onClick={() => setIsExercisePlaying(!isExercisePlaying)}
+        className="flex-1 border-2 border-[#c8f31d] text-white font-bold py-4 rounded-2xl flex justify-center items-center gap-2 hover:bg-zinc-800 transition-colors"
+      >
+        {isExercisePlaying ? (
+          <>
+            <div className="flex gap-1 items-center">
+              <div className="w-1 h-3.5 bg-[#c8f31d] rounded-sm"></div>
+              <div className="w-1 h-3.5 bg-[#c8f31d] rounded-sm"></div>
+            </div>
+            Stop
+          </>
+        ) : (
+          <>
+            <div className="w-0 h-0 border-t-[7px] border-t-transparent border-l-[10px] border-l-[#c8f31d] border-b-[7px] border-b-transparent"></div>
+            Start
+          </>
+        )}
       </button>
     )}
     <button
@@ -309,6 +330,7 @@ const WorkoutSession = ({
   scheduledExercises,
   currentExerciseIndex,
   setCurrentExerciseIndex,
+  logExerciseEntry,
 }) => {
   const currentEx = scheduledExercises[currentExerciseIndex] || scheduledExercises[0];
   const nextEx = scheduledExercises[currentExerciseIndex + 1];
@@ -323,6 +345,9 @@ const WorkoutSession = ({
   const [workoutStatus, setWorkoutStatus] = useState('playing');
   const [workoutStartTime] = useState(Date.now());
   const shouldRestNext = useRef(false);
+
+  const [exerciseTimeLeft, setExerciseTimeLeft] = useState(0);
+  const [isExercisePlaying, setIsExercisePlaying] = useState(false);
 
   useEffect(() => {
     setCompletedSets(0);
@@ -351,6 +376,36 @@ const WorkoutSession = ({
     return () => clearInterval(timer);
   }, [isResting, restTimeLeft]);
 
+  useEffect(() => {
+    if (!isResting && currentEx?.mode === 'time') {
+      setExerciseTimeLeft(Number(currentEx.repsOrTime) || 0);
+      setIsExercisePlaying(true);
+    }
+  }, [currentExerciseIndex, isResting, currentEx]);
+
+  const handleSetCompleteRef = useRef(null);
+  useEffect(() => {
+    handleSetCompleteRef.current = handleSetComplete;
+  });
+
+  useEffect(() => {
+    let timer;
+    if (isExercisePlaying) {
+      timer = setInterval(() => {
+        setExerciseTimeLeft(prev => {
+          const next = prev - 0.1;
+          if (next <= 0.05) {
+            setIsExercisePlaying(false);
+            if (handleSetCompleteRef.current) handleSetCompleteRef.current();
+            return Number(currentEx?.repsOrTime) || 0;
+          }
+          return next;
+        });
+      }, 100);
+    }
+    return () => clearInterval(timer);
+  }, [isExercisePlaying, currentEx]);
+
   const handleSetComplete = () => {
     if (completedSets < totalSets) {
       const newCompleted = completedSets + 1;
@@ -364,6 +419,8 @@ const WorkoutSession = ({
         if (nextEx) {
           setWorkoutStatus('exercise_complete');
         } else {
+          // Lưu bài tập cuối cùng vào DB trước khi hiển thị màn hình chúc mừng
+          logExerciseEntry(currentEx);
           setWorkoutStatus('workout_complete');
         }
       }
@@ -375,6 +432,10 @@ const WorkoutSession = ({
       setCompletedSets(prev => prev - 1);
       setIsResting(false);
       setRestTimeLeft(0);
+      if (currentEx?.mode === 'time') {
+        setExerciseTimeLeft(Number(currentEx.repsOrTime) || 0);
+        setIsExercisePlaying(true);
+      }
     }
   };
 
@@ -395,8 +456,12 @@ const WorkoutSession = ({
           nextEx={nextEx}
           currentExerciseIndex={currentExerciseIndex}
           totalExercises={scheduledExercises.length}
-          onStartNext={() => setCurrentExerciseIndex(currentExerciseIndex + 1)}
+          onStartNext={() => {
+            logExerciseEntry(currentEx);
+            setCurrentExerciseIndex(currentExerciseIndex + 1);
+          }}
           onTakeRest={() => {
+            logExerciseEntry(currentEx);
             shouldRestNext.current = true;
             setCurrentExerciseIndex(currentExerciseIndex + 1);
           }}
@@ -435,16 +500,20 @@ const WorkoutSession = ({
               completedSets={completedSets}
               handleSetComplete={handleSetComplete}
               handleUndoSet={handleUndoSet}
+              exerciseTimeLeft={exerciseTimeLeft}
             />
           )}
         </div>
 
         <Controls
+          isResting={isResting}
           currentEx={currentEx}
           nextEx={nextEx}
           currentExerciseIndex={currentExerciseIndex}
           setCurrentExerciseIndex={setCurrentExerciseIndex}
           setView={setView}
+          isExercisePlaying={isExercisePlaying}
+          setIsExercisePlaying={setIsExercisePlaying}
         />
 
         <UpNext nextEx={nextEx} />
