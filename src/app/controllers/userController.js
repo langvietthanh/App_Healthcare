@@ -60,6 +60,19 @@ class UserController {
         const record = await UserService.updateTodayWeight({ userId, weight: parseFloat(weight) });
         res.json(record);
     })
+
+    // [GET] /api/user/admin/all
+    getAllUser = catchAsync(async (req, res, next) => {
+        const users = await UserService.getAllUser();
+        res.json(users);
+    })
+
+    // [DELETE] /api/user/admin/:id
+    deleteUser = catchAsync(async (req, res, next) => {
+        const userId = req.params.id;
+        const result = await UserService.deleteUser({ userId });
+        res.json(result);
+    })
 }
 
 module.exports = new UserController();

@@ -2,44 +2,48 @@
  * Tác dụng của file: Điều phối trang tổng quan hệ thống Admin, hiển thị biểu đồ người dùng mới theo tuần/tháng và các số liệu DailyLog hoạt động.
  * File này dùng cho component cha nào là chính: App.jsx (qua tệp barrel export pages/admin/index.js)
  */
-import React, { useState } from 'react';
-import { Users, Utensils, Dumbbell, UserPlus, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import StatCard from './StatCard';
-
-const weeklyData = [
-  { label: 'T1', value: 18 }, { label: 'T2', value: 24 }, { label: 'T3', value: 31 },
-  { label: 'T4', value: 19 }, { label: 'T5', value: 27 }, { label: 'T6', value: 35 },
-  { label: 'T7', value: 22 }, { label: 'T8', value: 29 }, { label: 'T9', value: 41 },
-  { label: 'T10', value: 33 }, { label: 'T11', value: 28 }, { label: 'T12', value: 38 },
-];
-const monthlyData = [
-  { label: 'Th1', value: 120 }, { label: 'Th2', value: 145 }, { label: 'Th3', value: 132 },
-  { label: 'Th4', value: 178 }, { label: 'Th5', value: 84 },
-];
-
-const STATS = [
-  { icon: Users, label: 'Tổng người dùng', value: '1,248', sub: '+12 hôm nay', color: '#c8f31d', trend: 5 },
-  { icon: UserPlus, label: 'Người dùng mới (7d)', value: '84', sub: 'so với tuần trước', color: '#22c55e', trend: 12 },
-  { icon: Utensils, label: 'Tổng món ăn', value: '3,412', sub: 'trong hệ thống', color: '#f97316', trend: 2 },
-  { icon: Dumbbell, label: 'Tổng bài tập', value: '529', sub: 'trong hệ thống', color: '#a78bfa', trend: 1 },
-];
+import { TrendingUp } from 'lucide-react';
+import { useAdminDashBoard } from '../../../context/admin/index';
 
 const AdminDashboard = () => {
   const [chartMode, setChartMode] = useState('week');
-  const chartData = chartMode === 'week' ? weeklyData : monthlyData;
-  const maxVal = Math.max(...chartData.map(d => d.value));
+  const {
+    state,
+    fetchAdminDashBoard
+  } = useAdminDashBoard();
+
+  useEffect(() => {
+    fetchAdminDashBoard();
+  }, []);
+
+  const chartData = chartMode === 'week' 
+    ? (state.newUsersWeekly?.chartData || []) 
+    : (state.newUsersMonthly?.chartData || []);
+
+  const maxVal = Math.max(...chartData.map(d => d.value), 1);
+
+  const activityData = state.dailyLogCount || [];
+  const maxActivityVal = Math.max(...activityData.map(d => d.value), 1);
+
+  const getTodayFormatted = () => {
+    const today = new Date();
+    const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+    return `${days[today.getDay()]} , ${today.getDate()} tháng ${today.getMonth() + 1}, ${today.getFullYear()}`;
+  };
 
   return (
     <div className="p-8 space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-black text-white mb-1">Tổng quan hệ thống</h1>
-        <p className="text-zinc-500 text-sm">Thứ Năm, 15 tháng 5, 2026</p>
+        <p className="text-zinc-500 text-sm">{getTodayFormatted()}</p>
       </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
-        {STATS.map((s, i) => <StatCard key={i} {...s} />)}
+        {state.stats.map((s, i) => <StatCard key={i} {...s} />)}
       </div>
 
       {/* Biểu đồ người dùng mới */}
@@ -61,10 +65,11 @@ const AdminDashboard = () => {
 
         <div className="flex items-end gap-2 h-48">
           {chartData.map((d, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
+            <div key={i} className="flex-1 h-full flex flex-col items-center gap-2 group">
               <div className="relative w-full flex flex-col justify-end" style={{ height: '85%' }}>
-                <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-zinc-700 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                  {d.value} users
+                <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-zinc-700 text-white text-[10px] font-bold px-2 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 text-center shadow-lg">
+                  <div className="text-[#c8f31d]">{d.value} users</div>
+                  {d.dateRange && <div className="text-[8px] text-zinc-300 font-normal">{d.dateRange}</div>}
                 </div>
                 <div className="w-full rounded-t-lg transition-all duration-500"
                   style={{ height: `${(d.value / maxVal) * 100}%`, backgroundColor: '#c8f31d', opacity: 0.6 + (d.value / maxVal) * 0.4 }} />
@@ -98,11 +103,16 @@ const AdminDashboard = () => {
           </div>
         </div>
         <div className="flex items-end gap-3 h-32">
-          {[65, 82, 74, 91, 88, 103, 97].map((v, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <div className="w-full bg-[#a78bfa]/80 rounded-t-lg hover:bg-[#a78bfa] transition-colors"
-                style={{ height: `${(v / 110) * 100}%` }} />
-              <span className="text-[10px] text-zinc-500 font-medium">{['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'][i]}</span>
+          {activityData.map((d, i) => (
+            <div key={i} className="flex-1 h-full flex flex-col items-center gap-1 group justify-end">
+              <div className="relative w-full flex flex-col justify-end" style={{ height: '80%' }}>
+                <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-zinc-700 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                  {d.value} logs
+                </div>
+                <div className="w-full bg-[#a78bfa]/80 rounded-t-lg hover:bg-[#a78bfa] transition-colors"
+                  style={{ height: `${(d.value / maxActivityVal) * 100}%` }} />
+              </div>
+              <span className="text-[10px] text-zinc-500 font-medium">{d.label}</span>
             </div>
           ))}
         </div>

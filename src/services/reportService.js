@@ -393,7 +393,7 @@ class ReportService {
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         const thirtyDaysAgo = new Date(now);
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
+        
         const [
             totalUsers,
             newUsers7d,
@@ -412,6 +412,48 @@ class ReportService {
             Exercise.countDocuments({ verifyStatus: 'pending', isDeleted: false })
         ]);
 
+        // Get new users chart data
+        const newUsersWeekly = await this.getNewUsersChartData({ mode: 'week' });
+        const newUsersMonthly = await this.getNewUsersChartData({ mode: 'month' });
+
+        // Get daily log counts for the last 7 days (including today) using basic find
+        const last7Days = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(now.getDate() - i);
+            last7Days.push(d.toISOString().split('T')[0]);
+        }
+
+        const startOf7DaysAgo = new Date(now);
+        startOf7DaysAgo.setDate(now.getDate() - 6);
+        startOf7DaysAgo.setHours(0, 0, 0, 0);
+
+        // Basic query using .find()
+        const logs = await DailyLog.find({
+            date: { $gte: startOf7DaysAgo }
+        }).select('date');
+
+        // Basic grouping/counting using Javascript
+        const logMap = {};
+        logs.forEach(log => {
+            if (log.date) {
+                const dateStr = new Date(log.date).toISOString().split('T')[0];
+                logMap[dateStr] = (logMap[dateStr] || 0) + 1;
+            }
+        });
+
+        const dailyLogCount = last7Days.map(dateStr => {
+            const dateObj = new Date(dateStr);
+            const day = dateObj.getDay();
+            const dayLabels = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+            const label = dayLabels[day];
+            return {
+                date: dateStr,
+                label,
+                value: logMap[dateStr] || 0
+            };
+        });
+
         return {
             totalUsers,
             newUsers7d,
@@ -420,9 +462,11 @@ class ReportService {
             totalExercises,
             pendingItems: {
                 foods: pendingFoods,
-                exercises: pendingExercises,
                 total: pendingFoods + pendingExercises
-            }
+            },
+            newUsersWeekly,
+            newUsersMonthly,
+            dailyLogCount
         };
     }
 
@@ -539,6 +583,94 @@ class ReportService {
             dailyLogCount,
             goalDistribution: goalDistributionWithPercent
         };
+    }
+
+    /**
+     * Biểu đồ thống kê người dùng mới (New Users)
+     * @param {Object} params
+     * @param {String} params.mode - 'week' (theo các tuần trong tháng) | 'month' (theo 12 tháng trong năm)
+     */
+    async getNewUsersChartData({ mode = 'week' } = {}) {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); 
+
+        if (mode === 'month') {
+            // CHẾ ĐỘ 2: Lấy dữ liệu 12 tháng trong năm hiện tại
+            const startOfYear = new Date(currentYear, 0, 1);
+            const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59, 999);
+
+            // Dùng Aggregation để group user theo từng tháng cực kỳ tối ưu
+            const usersByMonth = await User.aggregate([
+                { $match: { createdAt: { $gte: startOfYear, $lte: endOfYear } } },
+                { $group: { _id: { $month: "$createdAt" }, count: { $sum: 1 } } }
+            ]);
+
+            const monthMap = {};
+            usersByMonth.forEach(u => monthMap[u._id] = u.count);
+
+            let totalUsers = 0;
+            const chartData = [];
+
+            for (let i = 1; i <= 12; i++) {
+                const count = monthMap[i] || 0;
+                totalUsers += count;
+                chartData.push({
+                    label: `Thg ${i}`,
+                    value: count,
+                    isFuture: i > currentMonth + 1 // Nếu tháng duyệt lớn hơn tháng hiện tại -> true
+                });
+            }
+
+            return { totalUsers, chartData };
+        } 
+        else {
+            // CHẾ ĐỘ 1: Chia tháng hiện tại thành các tuần Lịch (Calendar Weeks)
+            const startOfMonth = new Date(currentYear, currentMonth, 1);
+            const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999);
+            
+            // Kéo toàn bộ user tạo trong tháng này lên (vì 1 tháng thường không quá lớn, filter JS sẽ nhanh hơn aggregate phức tạp)
+            const usersThisMonth = await User.find({
+                createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+            }).select('createdAt');
+
+            const chartData = [];
+            let totalUsers = 0;
+            let current = new Date(startOfMonth);
+            let weekNum = 1;
+            
+            const formatDay = (date) => `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+            while (current <= endOfMonth) {
+                const dayOfWeek = current.getDay(); 
+                // Tính số ngày còn lại đến Chủ Nhật (Chủ Nhật getDay() = 0)
+                const daysToSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+                
+                let weekEnd = new Date(current);
+                weekEnd.setDate(current.getDate() + daysToSunday);
+                weekEnd.setHours(23, 59, 59, 999);
+                if (weekEnd > endOfMonth) weekEnd = new Date(endOfMonth); // Chốt chặn ngày cuối tháng
+
+                // Đếm số user lọt vào khung thời gian của tuần này
+                const count = usersThisMonth.filter(u => u.createdAt >= current && u.createdAt <= weekEnd).length;
+                totalUsers += count;
+
+                chartData.push({
+                    label: `Tuần ${weekNum}`,
+                    dateRange: `${formatDay(current)} - ${formatDay(weekEnd)}`,
+                    value: count,
+                    isFuture: current > now 
+                });
+
+                // Dịch chuyển con trỏ sang Thứ 2 của tuần tiếp theo
+                current = new Date(weekEnd);
+                current.setDate(current.getDate() + 1);
+                current.setHours(0, 0, 0, 0);
+                weekNum++;
+            }
+
+            return { totalUsers, chartData };
+        }
     }
 }
 

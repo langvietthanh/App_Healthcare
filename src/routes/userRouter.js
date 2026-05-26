@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const UserController = require('../app/controllers/userController');
 const authMiddleware = require('../middleware/authMiddleware');
+const requireAdmin = require('../middleware/requireAdmin');
 const {
     validateInfomationInput,
     validatePhysicalDetailInput,
@@ -66,6 +67,28 @@ router.post('/weight/ensure',
 router.put('/weight',
     authMiddleware,
     UserController.updateTodayWeight
+);
+
+/**
+ * @route [GET] /api/user/admin/all
+ * @desc  Lấy tất cả user
+ * @access Private
+ */
+router.get('/admin/all',
+    authMiddleware,
+    requireAdmin,
+    UserController.getAllUser
+);
+
+/**
+ * @route [DELETE] /api/user/admin/:id
+ * @desc  Xóa user (chỉ Admin)
+ * @access Private/Admin
+ */
+router.delete('/admin/:id',
+    authMiddleware,
+    requireAdmin,
+    UserController.deleteUser
 );
 
 module.exports = router;

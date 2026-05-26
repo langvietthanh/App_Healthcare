@@ -35,7 +35,6 @@ function App() {
               {/* Public Routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-
               {/* Protected Admin Routes */}
               <Route element={<AdminRoute />}>
                 <Route path="/admin" element={<AdminLayout />}>

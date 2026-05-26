@@ -176,6 +176,30 @@ class UserService {
 
         return record;
     }
+
+    /**
+     * Lấy danh sách user 
+     */
+    async getAllUser() {
+        const users = await User.find().select('-passwordHash').sort({ createdAt: -1 });
+        return users;
+    }
+
+    /**
+     * Xóa user
+     */
+    async deleteUser({ userId }) {
+        const user = await User.findById(userId);
+        if (!user) throw new AppError('User không tồn tại', 404);
+        if (user.role === 'admin') throw new AppError('Không được phép xóa tài khoản Quản trị viên (Admin)', 403);
+        
+        await User.findByIdAndDelete(userId);
+        
+        // Clean up related data (BodyMetricHistory, DailyLogs, etc.) if needed
+        await BodyMetricHistory.deleteMany({ userId });
+        
+        return { message: 'Xóa người dùng thành công' };
+    }
 }
 
 module.exports = new UserService();
