@@ -10,12 +10,8 @@ const FoodFilter = ({
   setTab,
   search,
   setSearch,
-  dateFrom,
-  setDateFrom,
-  dateTo,
-  setDateTo,
-  showFilter,
-  setShowFilter,
+  macroFilter,
+  setMacroFilter,
   pendingCount,
 }) => {
   return (
@@ -56,51 +52,21 @@ const FoodFilter = ({
             className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-11 pr-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-[#c8f31d] transition-colors text-sm"
           />
         </div>
-        <button
-          onClick={() => setShowFilter((v) => !v)}
-          className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
-            showFilter || dateFrom || dateTo
-              ? 'border-[#c8f31d] text-[#c8f31d] bg-[#c8f31d]/10'
+        <select
+          value={macroFilter}
+          onChange={(e) => setMacroFilter(e.target.value)}
+          className={`px-4 py-3 rounded-xl border text-sm font-medium transition-all focus:outline-none cursor-pointer ${
+            macroFilter !== 'all'
+              ? 'border-[#c8f31d] text-[#c8f31d] bg-zinc-900'
               : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white'
           }`}
         >
-          <ChevronDown size={16} className={`transition-transform ${showFilter ? 'rotate-180' : ''}`} />
-          Lọc theo ngày
-        </button>
+          <option value="all">Tất cả món</option>
+          <option value="high_protein">Giàu Protein (&gt; 20g)</option>
+          <option value="low_fat">Ít Chất béo (&lt; 3g)</option>
+          <option value="low_carbs">Ít Tinh bột (&lt; 10g)</option>
+        </select>
       </div>
-
-      {/* Date filter panel */}
-      {showFilter && (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex items-end gap-4">
-          <div className="flex-1">
-            <label className="block text-xs text-zinc-500 font-semibold mb-1.5">Từ ngày</label>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#c8f31d] transition-colors cursor-pointer"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-xs text-zinc-500 font-semibold mb-1.5">Đến ngày</label>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#c8f31d] transition-colors cursor-pointer"
-            />
-          </div>
-          <button
-            onClick={() => {
-              setDateFrom('');
-              setDateTo('');
-            }}
-            className="px-4 py-2.5 rounded-xl bg-zinc-800 text-zinc-400 hover:text-white text-sm font-medium transition-colors"
-          >
-            Xóa lọc
-          </button>
-        </div>
-      )}
     </div>
   );
 };

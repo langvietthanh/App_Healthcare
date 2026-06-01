@@ -1,0 +1,11 @@
+export const SET_TAB = 'SET_TAB';
+export const SET_SEARCH = 'SET_SEARCH';
+export const SET_MACRO_FILTER = 'SET_MACRO_FILTER';
+export const SET_SHOW_FILTER = 'SET_SHOW_FILTER';
+export const SET_DELETE_ID = 'SET_DELETE_ID';
+export const UPDATE_FORM = 'UPDATE_FORM';
+export const SET_FOODS = 'SET_FOODS';
+export const SET_LOADING = 'SET_LOADING';
+export const OPEN_ADD_FORM = 'OPEN_ADD_FORM';
+export const OPEN_EDIT_FORM = 'OPEN_EDIT_FORM';
+export const CLOSE_FORM = 'CLOSE_FORM';

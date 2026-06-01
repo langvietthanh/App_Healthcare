@@ -67,11 +67,20 @@ class ExerciseService {
     }
 
     async updateExercise({ exerciseId, data }) {
-        const { name, category, targetMuscles, description, instructions } = data;
+        const { name, category, targetMuscles, description, instructions, isPublic, imgURL } = data;
         
+        const updateFields = {};
+        if (name !== undefined) updateFields.name = name;
+        if (category !== undefined) updateFields.category = category;
+        if (targetMuscles !== undefined) updateFields.targetMuscles = targetMuscles;
+        if (description !== undefined) updateFields.description = description;
+        if (instructions !== undefined) updateFields.instructions = instructions;
+        if (isPublic !== undefined) updateFields.isPublic = isPublic;
+        if (imgURL !== undefined) updateFields.imgURL = imgURL;
+
         const updatedExercise = await Exercise.findByIdAndUpdate(
             exerciseId,
-            { name, category, targetMuscles, description, instructions },
+            { $set: updateFields },
             { new: true, runValidators: true }
         );
 

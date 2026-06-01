@@ -2,10 +2,27 @@
  * Tác dụng của file: Form biểu mẫu pop-up cho phép Admin chỉnh sửa thông tin món ăn cũ hoặc nhập món ăn mới (Tên, Calo, Macros, định lượng phần ăn).
  * File này dùng cho component cha nào là chính: AdminFoods (src/pages/admin/foods/index.jsx)
  */
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { X, Check, ImagePlus } from 'lucide-react';
 
 const UNITS = ['g', 'lb', 'oz', 'ml'];
+const CONVERSION = { g: 1, ml: 1, oz: 28.3495, lb: 453.592 };
+
+const F = ({ label, name, type = 'text', placeholder, disabled, valueOverride, form, handleInputChange }) => (
+  <div>
+    <label className="block text-xs text-zinc-500 font-semibold mb-1.5">{label}</label>
+    <input
+      type={type}
+      placeholder={placeholder}
+      value={valueOverride !== undefined ? valueOverride : form[name]}
+      onChange={(e) => !disabled && handleInputChange(name, e.target.value)}
+      disabled={disabled}
+      className={`w-full border rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none transition-colors ${
+        disabled ? 'bg-zinc-800/50 border-zinc-800 text-zinc-500 cursor-not-allowed' : 'bg-zinc-800 border-zinc-700 focus:border-[#c8f31d]'
+      }`}
+    />
+  </div>
+);
 
 const FoodFormModal = ({
   editItem,
@@ -21,18 +38,20 @@ const FoodFormModal = ({
     setForm((p) => ({ ...p, [name]: val }));
   };
 
-  const F = ({ label, name, type = 'text', placeholder }) => (
-    <div>
-      <label className="block text-xs text-zinc-500 font-semibold mb-1.5">{label}</label>
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={form[name]}
-        onChange={(e) => handleInputChange(name, e.target.value)}
-        className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#c8f31d] transition-colors"
-      />
-    </div>
-  );
+  const protein = parseFloat(form.protein) || 0;
+  const carbs = parseFloat(form.carbs) || 0;
+  const fat = parseFloat(form.fat) || 0;
+  const computedCalories = Math.round(protein * 4 + carbs * 4 + fat * 9);
+  
+  const currentWeight = (parseFloat(form.amount) || 1) * (CONVERSION[form.unit || 'g'] || 1);
+  const displayWeight = Math.round(currentWeight * 10) / 10;
+  
+  // Tính toán chỉ số trên 100g
+  const ratio100g = currentWeight > 0 ? 100 / currentWeight : 0;
+  const p100 = (protein * ratio100g).toFixed(1);
+  const c100 = (carbs * ratio100g).toFixed(1);
+  const f100 = (fat * ratio100g).toFixed(1);
+  const cal100 = Math.round(computedCalories * ratio100g);
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-6">
@@ -79,15 +98,15 @@ const FoodFormModal = ({
               </div>
             </div>
           </div>
-          <F label="Tên món ăn *" name="name" placeholder="VD: Cơm trắng" />
+          <F label="Tên món ăn *" name="name" placeholder="VD: Cơm trắng" form={form} handleInputChange={handleInputChange} />
           <div className="grid grid-cols-2 gap-4">
-            <F label="Calo (kcal)" name="calories" type="number" placeholder="130" />
-            <F label="Protein (g)" name="protein" type="number" placeholder="2.7" />
-            <F label="Carbs (g)" name="carbs" type="number" placeholder="28" />
-            <F label="Fat (g)" name="fat" type="number" placeholder="0.3" />
+            <F label="Calo (kcal)" name="calories" type="number" valueOverride={computedCalories} disabled form={form} handleInputChange={handleInputChange} />
+            <F label="Protein (g)" name="protein" type="number" placeholder="2.7" form={form} handleInputChange={handleInputChange} />
+            <F label="Carbs (g)" name="carbs" type="number" placeholder="28" form={form} handleInputChange={handleInputChange} />
+            <F label="Fat (g)" name="fat" type="number" placeholder="0.3" form={form} handleInputChange={handleInputChange} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <F label="Số lượng" name="amount" type="number" placeholder="100" />
+          <div className="grid grid-cols-3 gap-4">
+            <F label="Số lượng" name="amount" type="number" placeholder="100" form={form} handleInputChange={handleInputChange} />
             <div>
               <label className="block text-xs text-zinc-500 font-semibold mb-1.5">Đơn vị</label>
               <select
@@ -101,6 +120,18 @@ const FoodFormModal = ({
                   </option>
                 ))}
               </select>
+            </div>
+            <F label="Trọng lượng thực (g)" name="weightInGram" type="number" valueOverride={displayWeight} disabled form={form} handleInputChange={handleInputChange} />
+          </div>
+
+          {/* Dải thông tin quy đổi 100g */}
+          <div className="mt-4 p-4 rounded-xl bg-[#c8f31d]/10 border border-[#c8f31d]/20 flex items-center justify-between text-[#c8f31d] text-sm">
+            <span className="font-semibold">Quy đổi 100g:</span>
+            <div className="flex gap-4 font-bold">
+              <span>🔥 {cal100} kcal</span>
+              <span>🥩 {p100}g P</span>
+              <span>🌾 {c100}g C</span>
+              <span>🥑 {f100}g F</span>
             </div>
           </div>
         </div>

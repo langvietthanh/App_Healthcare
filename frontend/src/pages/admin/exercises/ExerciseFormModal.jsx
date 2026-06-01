@@ -2,11 +2,9 @@
  * Tác dụng của file: Form biểu mẫu pop-up cho phép thêm bài tập mới hoặc chỉnh sửa chi tiết (nhập tên, danh mục, độ khó, nhóm cơ, mô tả ngắn, hướng dẫn từng bước).
  * File này dùng cho component cha nào là chính: AdminExercises (src/pages/admin/exercises/index.jsx)
  */
-import React, { useRef } from 'react';
+import { useRef } from 'react';
+import { CATEGORIES, MUSCLES } from '../../../constants'
 import { X, Plus, GripVertical, Check, ImagePlus } from 'lucide-react';
-
-const CATEGORIES = ['Cardio', 'Strength', 'Flexibility', 'Balance', 'HIIT', 'Yoga'];
-const MUSCLES = ['Ngực', 'Lưng', 'Vai', 'Tay trước', 'Tay sau', 'Bụng', 'Mông', 'Đùi trước', 'Đùi sau', 'Bắp chân', 'Toàn thân'];
 
 const ExerciseFormModal = ({
   editItem,
@@ -111,11 +109,10 @@ const ExerciseFormModal = ({
                   key={m}
                   type="button"
                   onClick={() => toggleMuscle(m)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
-                    form.muscles.includes(m)
-                      ? 'bg-[#c8f31d] text-black border-[#c8f31d]'
-                      : 'text-zinc-400 border-zinc-700 hover:border-zinc-500'
-                  }`}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${form.muscles.includes(m)
+                    ? 'bg-[#c8f31d] text-black border-[#c8f31d]'
+                    : 'text-zinc-400 border-zinc-700 hover:border-zinc-500'
+                    }`}
                 >
                   {m}
                 </button>

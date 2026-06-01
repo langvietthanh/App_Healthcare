@@ -18,7 +18,7 @@ const FoodTable = ({ tab, filtered, onEdit, onDelete, onVerify }) => {
         <thead>
           <tr className="text-zinc-500 text-xs uppercase border-b border-zinc-800">
             {tab === 'all'
-              ? ['Ảnh', 'Tên món', 'Calo', 'Protein', 'Carbs', 'Fat', 'Ngày thêm', 'Hành động'].map((h) => (
+              ? ['Ảnh', 'Tên món', 'Calo', 'Protein', 'Carbs', 'Fat', 'Ngày thêm', 'Trạng thái', 'Hành động'].map((h) => (
                   <th key={h} className="text-left px-5 py-4 font-semibold text-zinc-500">
                     {h}
                   </th>
@@ -51,12 +51,26 @@ const FoodTable = ({ tab, filtered, onEdit, onDelete, onVerify }) => {
                         )}
                       </div>
                     </td>
-                    <td className="px-5 py-3 font-semibold text-white">{f.name}</td>
+                    <td className="px-5 py-3">
+                      <p className="font-semibold text-white">{f.name}</p>
+                      <p className="text-xs text-zinc-500 mt-0.5">{f.amount} {f.unit}</p>
+                    </td>
                     <td className="px-5 py-3 text-[#c8f31d] font-bold">{f.calories}</td>
                     <td className="px-5 py-3 text-zinc-300">{f.protein}g</td>
                     <td className="px-5 py-3 text-zinc-300">{f.carbs}g</td>
                     <td className="px-5 py-3 text-zinc-300">{f.fat}g</td>
                     <td className="px-5 py-3 text-zinc-500 text-xs">{f.createdAt}</td>
+                    <td className="px-5 py-3">
+                      {f.isPublic ? (
+                        <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-[#c8f31d]/20 text-[#c8f31d]">
+                          Hệ thống
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-zinc-800 text-zinc-400">
+                          Cá nhân
+                        </span>
+                      )}
+                    </td>
                     <td className="px-5 py-3">
                       <div className="flex gap-3">
                         <button

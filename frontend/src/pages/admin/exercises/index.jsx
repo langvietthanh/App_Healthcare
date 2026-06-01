@@ -2,57 +2,27 @@
  * Tác dụng của file: Quản lý State tìm kiếm bài tập, bộ lọc, đóng/mở form modal thêm/sửa, modal xóa và gọi API quản lý bài tập thực tế từ Backend.
  * File này dùng cho component cha nào là chính: App.jsx (qua tệp barrel export pages/admin/index.js)
  */
-import React, { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
 
+import { muscleMapEV, muscleMapVE } from '../../../constants';
 import ExerciseSearch from './ExerciseSearch';
 import ExerciseTable from './ExerciseTable';
 import ExerciseFormModal from './ExerciseFormModal';
 import ExerciseDeleteModal from './ExerciseDeleteModal';
+import { useAdminExercises, ExerciseProvider } from '../../../context/admin/exercises';
 
-const emptyForm = { name: '', category: 'Strength', muscles: [], level: 'Trung bình', description: '', instructions: [''], image: '' };
-
-const muscleMapVE = {
-  'Ngực': 'Chest',
-  'Lưng': 'Back',
-  'Đùi trước': 'Legs',
-  'Đùi sau': 'Legs',
-  'Mông': 'Legs',
-  'Bắp chân': 'Legs',
-  'Vai': 'Shoulders',
-  'Tay trước': 'Arms',
-  'Tay sau': 'Arms',
-  'Bụng': 'Core',
-  'Toàn thân': 'Full Body'
-};
-
-const muscleMapEV = {
-  'Chest': 'Ngực',
-  'Back': 'Lưng',
-  'Legs': 'Đùi trước',
-  'Shoulders': 'Vai',
-  'Arms': 'Tay trước',
-  'Core': 'Bụng',
-  'Full Body': 'Toàn thân'
-};
-
-const AdminExercises = () => {
-  const [search, setSearch] = useState('');
-  const [exercises, setExercises] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [filterCategory, setFilterCategory] = useState('');
-  const [filterMuscle, setFilterMuscle] = useState('');
-  const [filterLevel, setFilterLevel] = useState('');
-  const [showFilter, setShowFilter] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [editItem, setEditItem] = useState(null);
-  const [form, setForm] = useState(emptyForm);
-  const [deleteId, setDeleteId] = useState(null);
+const AdminExercisesContent = () => {
+  const { state, dispatch } = useAdminExercises();
+  const {
+    search, exercises, loading, filterCategory, filterMuscle, filterLevel,
+    showFilter, showForm, editItem, form, deleteId
+  } = state;
 
   // Fetch exercises from backend
   const fetchExercises = async () => {
-    setLoading(true);
+    dispatch({ type: 'SET_LOADING', payload: true });
     try {
       const response = await axiosClient.get('/exercises');
       const data = response.data || response;
@@ -66,13 +36,13 @@ const AdminExercises = () => {
           description: e.description || '',
           instructions: e.instructions ? e.instructions.map(ins => ins.text) : [''],
           image: e.imgURL || '',
+          isPublic: e.isPublic || false,
         }));
-        setExercises(mapped);
+        dispatch({ type: 'SET_EXERCISES', payload: mapped });
       }
     } catch (err) {
       console.error('Error fetching exercises:', err);
-    } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
@@ -89,23 +59,14 @@ const AdminExercises = () => {
   });
   const activeFilters = [filterCategory, filterMuscle, filterLevel].filter(Boolean).length;
 
-  const openAdd = () => { setForm(emptyForm); setEditItem(null); setShowForm(true); };
-  const openEdit = (item) => {
-    setForm({
-      ...item,
-      description: item.description || '',
-      instructions: item.instructions?.length ? item.instructions : [''],
-      image: item.image || ''
-    });
-    setEditItem(item);
-    setShowForm(true);
-  };
-  const addStep = () => setForm(f => ({ ...f, instructions: [...f.instructions, ''] }));
-  const removeStep = (i) => setForm(f => ({ ...f, instructions: f.instructions.filter((_, idx) => idx !== i) }));
-  const updateStep = (i, val) => setForm(f => ({ ...f, instructions: f.instructions.map((s, idx) => idx === i ? val : s) }));
-  const toggleMuscle = (m) => setForm(f => ({ ...f, muscles: f.muscles.includes(m) ? f.muscles.filter(x => x !== m) : [...f.muscles, m] }));
-  const handleImageFile = (e) => { const file = e.target.files[0]; if (file) setForm(f => ({ ...f, image: URL.createObjectURL(file) })); };
-  
+  const openAdd = () => dispatch({ type: 'OPEN_ADD_FORM' });
+  const openEdit = (item) => dispatch({ type: 'OPEN_EDIT_FORM', payload: item });
+  const addStep = () => dispatch({ type: 'SET_FORM', payload: { ...form, instructions: [...form.instructions, ''] } });
+  const removeStep = (i) => dispatch({ type: 'SET_FORM', payload: { ...form, instructions: form.instructions.filter((_, idx) => idx !== i) } });
+  const updateStep = (i, val) => dispatch({ type: 'SET_FORM', payload: { ...form, instructions: form.instructions.map((s, idx) => idx === i ? val : s) } });
+  const toggleMuscle = (m) => dispatch({ type: 'SET_FORM', payload: { ...form, muscles: form.muscles.includes(m) ? form.muscles.filter(x => x !== m) : [...form.muscles, m] } });
+  const handleImageFile = (e) => { const file = e.target.files[0]; if (file) dispatch({ type: 'SET_FORM', payload: { ...form, image: URL.createObjectURL(file) } }); };
+
   const handleSave = async () => {
     if (!form.name.trim()) return;
 
@@ -113,7 +74,7 @@ const AdminExercises = () => {
     const instructionsMapped = form.instructions
       .filter(text => text.trim() !== '')
       .map((text, i) => ({ stepNumber: i + 1, text }));
-    
+
     const targetMusclesMapped = form.muscles.map(m => ({
       muscle: muscleMapVE[m] || 'Full Body',
       rating: 5
@@ -134,7 +95,7 @@ const AdminExercises = () => {
       } else {
         await axiosClient.post('/exercises', payload);
       }
-      setShowForm(false);
+      dispatch({ type: 'CLOSE_FORM' });
       fetchExercises(); // reload
     } catch (err) {
       console.error('Error saving exercise:', err);
@@ -145,11 +106,21 @@ const AdminExercises = () => {
   const handleDelete = async (id) => {
     try {
       await axiosClient.delete(`/exercises/${id}`);
-      setDeleteId(null);
+      dispatch({ type: 'SET_DELETE_ID', payload: null });
       fetchExercises(); // reload
     } catch (err) {
       console.error('Error deleting exercise:', err);
       alert(err.response?.data?.message || 'Có lỗi xảy ra khi xóa bài tập');
+    }
+  };
+
+  const handleTogglePublic = async (id, currentStatus) => {
+    try {
+      await axiosClient.put(`/exercises/${id}`, { isPublic: !currentStatus });
+      fetchExercises(); // reload
+    } catch (err) {
+      console.error('Error toggling public status:', err);
+      alert(err.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái');
     }
   };
 
@@ -169,30 +140,31 @@ const AdminExercises = () => {
 
       <ExerciseSearch
         search={search}
-        setSearch={setSearch}
+        setSearch={(val) => dispatch({ type: 'SET_SEARCH', payload: val })}
         showFilter={showFilter}
-        setShowFilter={setShowFilter}
+        setShowFilter={() => dispatch({ type: 'TOGGLE_FILTER' })}
         filterCategory={filterCategory}
-        setFilterCategory={setFilterCategory}
+        setFilterCategory={(val) => dispatch({ type: 'SET_FILTER_CATEGORY', payload: val })}
         filterMuscle={filterMuscle}
-        setFilterMuscle={setFilterMuscle}
+        setFilterMuscle={(val) => dispatch({ type: 'SET_FILTER_MUSCLE', payload: val })}
         filterLevel={filterLevel}
-        setFilterLevel={setFilterLevel}
+        setFilterLevel={(val) => dispatch({ type: 'SET_FILTER_LEVEL', payload: val })}
         activeFilters={activeFilters}
       />
 
       <ExerciseTable
         filtered={filtered}
         onEdit={openEdit}
-        onDelete={setDeleteId}
+        onDelete={(id) => dispatch({ type: 'SET_DELETE_ID', payload: id })}
+        onTogglePublic={handleTogglePublic}
       />
 
       {showForm && (
         <ExerciseFormModal
           editItem={editItem}
           form={form}
-          setForm={setForm}
-          onClose={() => setShowForm(false)}
+          setForm={(val) => dispatch({ type: 'SET_FORM', payload: typeof val === 'function' ? val(form) : val })}
+          onClose={() => dispatch({ type: 'CLOSE_FORM' })}
           onSave={handleSave}
           addStep={addStep}
           removeStep={removeStep}
@@ -204,11 +176,19 @@ const AdminExercises = () => {
 
       {deleteId && (
         <ExerciseDeleteModal
-          onClose={() => setDeleteId(null)}
+          onClose={() => dispatch({ type: 'SET_DELETE_ID', payload: null })}
           onDelete={() => handleDelete(deleteId)}
         />
       )}
     </div>
+  );
+};
+
+const AdminExercises = () => {
+  return (
+    <ExerciseProvider>
+      <AdminExercisesContent />
+    </ExerciseProvider>
   );
 };
 

@@ -2,11 +2,8 @@
  * Tác dụng của file: Hiển thị thanh tìm kiếm bài tập và các dropdown lọc độ khó, nhóm cơ, danh mục.
  * File này dùng cho component cha nào là chính: AdminExercises (src/pages/admin/exercises/index.jsx)
  */
-import React from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
-
-const CATEGORIES = ['Cardio', 'Strength', 'Flexibility', 'Balance', 'HIIT', 'Yoga'];
-const MUSCLES = ['Ngực', 'Lưng', 'Vai', 'Tay trước', 'Tay sau', 'Bụng', 'Mông', 'Đùi trước', 'Đùi sau', 'Bắp chân', 'Toàn thân'];
+import { CATEGORIES, MUSCLES } from '../../../constants';
 
 const ExerciseSearch = ({
   search,
@@ -36,11 +33,10 @@ const ExerciseSearch = ({
         </div>
         <button
           onClick={() => setShowFilter((v) => !v)}
-          className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
-            showFilter || activeFilters > 0
+          className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${showFilter || activeFilters > 0
               ? 'border-[#c8f31d] text-[#c8f31d] bg-[#c8f31d]/10'
               : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white'
-          }`}
+            }`}
         >
           <SlidersHorizontal size={16} />
           Bộ lọc
