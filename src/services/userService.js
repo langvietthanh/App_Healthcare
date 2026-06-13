@@ -181,24 +181,22 @@ class UserService {
      * Lấy danh sách user 
      */
     async getAllUser() {
-        const users = await User.find().select('-passwordHash').sort({ createdAt: -1 });
+        const users = await User.find({ role: { $ne: 'admin' } }).select('-passwordHash').sort({ createdAt: -1 });
         return users;
     }
 
     /**
-     * Xóa user
+     * Khóa/Mở khóa user
      */
-    async deleteUser({ userId }) {
+    async toggleLockUser({ userId }) {
         const user = await User.findById(userId);
         if (!user) throw new AppError('User không tồn tại', 404);
-        if (user.role === 'admin') throw new AppError('Không được phép xóa tài khoản Quản trị viên (Admin)', 403);
-        
-        await User.findByIdAndDelete(userId);
-        
-        // Clean up related data (BodyMetricHistory, DailyLogs, etc.) if needed
-        await BodyMetricHistory.deleteMany({ userId });
-        
-        return { message: 'Xóa người dùng thành công' };
+        if (user.role === 'admin') throw new AppError('Không được phép khóa tài khoản Quản trị viên (Admin)', 403);
+
+        user.status = user.status === 'locked' ? 'active' : 'locked';
+        await user.save();
+
+        return { message: user.status === 'locked' ? 'Khóa người dùng thành công' : 'Mở khóa người dùng thành công', user };
     }
 }
 

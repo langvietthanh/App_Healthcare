@@ -81,14 +81,14 @@ router.get('/admin/all',
 );
 
 /**
- * @route [DELETE] /api/user/admin/:id
- * @desc  Xóa user (chỉ Admin)
+ * @route [PATCH] /api/user/admin/:id/toggle-lock
+ * @desc  Khóa/Mở khóa user (chỉ Admin)
  * @access Private/Admin
  */
-router.delete('/admin/:id',
+router.patch('/admin/:id/toggle-lock',
     authMiddleware,
     requireAdmin,
-    UserController.deleteUser
+    UserController.toggleLockUser
 );
 
 module.exports = router;

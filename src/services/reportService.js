@@ -42,7 +42,7 @@ class ReportService {
      */
     async getWeeklyReport({ userId }) {
         const now = new Date();
-        
+
         // Tìm ngày Thứ 2 của tuần hiện tại (getDay() trả về 0 cho CN, 1-6 cho T2-T7)
         const currentDay = now.getDay();
         const distanceToMonday = currentDay === 0 ? 6 : currentDay - 1;
@@ -393,7 +393,7 @@ class ReportService {
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         const thirtyDaysAgo = new Date(now);
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        
+
         const [
             totalUsers,
             newUsers7d,
@@ -480,7 +480,7 @@ class ReportService {
         if (to) dateFilter.$lte = new Date(to + 'T23:59:59.999Z');
 
         const hasDateFilter = from || to;
-        const matchCondition = hasDateFilter 
+        const matchCondition = hasDateFilter
             ? { isDeleted: false, createdAt: dateFilter }
             : { isDeleted: false };
 
@@ -549,17 +549,6 @@ class ReportService {
 
         // Số DailyLog tạo mỗi ngày
         const logMatchCondition = hasDateFilter ? { date: dateFilter } : {};
-        const dailyLogCount = await DailyLog.aggregate([
-            { $match: logMatchCondition },
-            {
-                $group: {
-                    _id: { $dateToString: { format: '%Y-%m-%d', date: '$date' } },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { _id: 1 } },
-            { $project: { _id: 0, date: '$_id', count: 1 } }
-        ]);
 
         // Phân bố mục tiêu người dùng
         const goalDistribution = await User.aggregate([
@@ -578,9 +567,8 @@ class ReportService {
             ...g,
             percent: Math.round(g.count / totalUsers * 100)
         }));
-
+        console.log(goalDistributionWithPercent);
         return {
-            dailyLogCount,
             goalDistribution: goalDistributionWithPercent
         };
     }
@@ -593,7 +581,7 @@ class ReportService {
     async getNewUsersChartData({ mode = 'week' } = {}) {
         const now = new Date();
         const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth(); 
+        const currentMonth = now.getMonth();
 
         if (mode === 'month') {
             // CHẾ ĐỘ 2: Lấy dữ liệu 12 tháng trong năm hiện tại
@@ -623,12 +611,12 @@ class ReportService {
             }
 
             return { totalUsers, chartData };
-        } 
+        }
         else {
             // CHẾ ĐỘ 1: Chia tháng hiện tại thành các tuần Lịch (Calendar Weeks)
             const startOfMonth = new Date(currentYear, currentMonth, 1);
             const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999);
-            
+
             // Kéo toàn bộ user tạo trong tháng này lên (vì 1 tháng thường không quá lớn, filter JS sẽ nhanh hơn aggregate phức tạp)
             const usersThisMonth = await User.find({
                 createdAt: { $gte: startOfMonth, $lte: endOfMonth }
@@ -638,14 +626,14 @@ class ReportService {
             let totalUsers = 0;
             let current = new Date(startOfMonth);
             let weekNum = 1;
-            
+
             const formatDay = (date) => `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
 
             while (current <= endOfMonth) {
-                const dayOfWeek = current.getDay(); 
+                const dayOfWeek = current.getDay();
                 // Tính số ngày còn lại đến Chủ Nhật (Chủ Nhật getDay() = 0)
                 const daysToSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
-                
+
                 let weekEnd = new Date(current);
                 weekEnd.setDate(current.getDate() + daysToSunday);
                 weekEnd.setHours(23, 59, 59, 999);
@@ -659,7 +647,7 @@ class ReportService {
                     label: `Tuần ${weekNum}`,
                     dateRange: `${formatDay(current)} - ${formatDay(weekEnd)}`,
                     value: count,
-                    isFuture: current > now 
+                    isFuture: current > now
                 });
 
                 // Dịch chuyển con trỏ sang Thứ 2 của tuần tiếp theo

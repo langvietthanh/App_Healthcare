@@ -1,8 +1,4 @@
-/**
- * Tác dụng của file: Điều phối chính quản lý State họ tên, SĐT, email/password đăng ký, gửi yêu cầu đăng ký, tự động đăng nhập và chuyển hướng sang Onboarding.
- * File này dùng cho component cha nào là chính: App.jsx (qua tệp barrel export pages/user/index.js)
- */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
@@ -11,7 +7,6 @@ import RegisterForm from './RegisterForm';
 const Register = () => {
   const navigate = useNavigate();
 
-  // Khai báo state cho form
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -26,8 +21,6 @@ const Register = () => {
     setLoading(true);
 
     try {
-      // Vì API yêu cầu thêm các trường bodymetric nên ta gửi giá trị mặc định tạm thời.
-      // Khi nào có Frame nhập Bodymetric, ta sẽ đổi sau.
       const payload = {
         username: fullName,
         email: email,
@@ -52,8 +45,6 @@ const Register = () => {
       if (token) {
         localStorage.setItem('token', token);
       }
-
-      // Chuyển thẳng sang trang điền BodyMetric (Onboarding)
       navigate('/onboarding');
     } catch (err) {
       setError(err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.');

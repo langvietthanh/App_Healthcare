@@ -4,6 +4,7 @@
  */
 import React, { useRef, useEffect } from 'react';
 import { X, Check, ImagePlus } from 'lucide-react';
+import { useAdminFoods } from '../../../providers/admin';
 
 const UNITS = ['g', 'lb', 'oz', 'ml'];
 const CONVERSION = { g: 1, ml: 1, oz: 28.3495, lb: 453.592 };
@@ -24,14 +25,15 @@ const F = ({ label, name, type = 'text', placeholder, disabled, valueOverride, f
   </div>
 );
 
-const FoodFormModal = ({
-  editItem,
-  form,
-  setForm,
-  onClose,
-  onSave,
-  handleImageFile,
-}) => {
+const FoodFormModal = () => {
+  const {
+    state,
+    setForm,
+    closeForm: onClose,
+    handleSave: onSave,
+    handleImageFile
+  } = useAdminFoods();
+  const { form, editItem } = state;
   const fileRef = useRef(null);
 
   const handleInputChange = (name, val) => {

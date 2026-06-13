@@ -67,10 +67,10 @@ class UserController {
         res.json(users);
     })
 
-    // [DELETE] /api/user/admin/:id
-    deleteUser = catchAsync(async (req, res, next) => {
+    // [PATCH] /api/user/admin/:id/toggle-lock
+    toggleLockUser = catchAsync(async (req, res, next) => {
         const userId = req.params.id;
-        const result = await UserService.deleteUser({ userId });
+        const result = await UserService.toggleLockUser({ userId });
         res.json(result);
     })
 }

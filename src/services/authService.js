@@ -82,6 +82,7 @@ class AuthService {
 //      Kiem tra tai khoan ton tai hay khong
         const user  = await User.findOne({email});
         if(! user) throw new AppError('Sai thông tin đăng nhập',401);
+        if(user.status === 'locked') throw new AppError('Tài khoản của bạn đã bị khóa',403);
 
 //      Kiem tra mat khau hop le khong
         const isMacth = await bcrypt.compare(password, user.passwordHash);

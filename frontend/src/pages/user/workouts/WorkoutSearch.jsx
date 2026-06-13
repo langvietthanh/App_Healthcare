@@ -1,31 +1,41 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Search, Filter, Star, Plus } from 'lucide-react';
+import { useWorkout } from '../../../providers/user/workout';
+import { CATEGORIES, MUSCLES } from '../../../constants';
+import CustomExerciseModal from './CustomExerciseModal';
 
-const SearchHeader = ({ setView }) => (
-  <div className="px-8 pt-8 pb-4 flex items-center gap-4">
+const SearchHeader = ({ setView, setShowCustomModal }) => (
+  <div className="px-8 pt-8 pb-4 flex items-center justify-between">
+    <div className="flex items-center gap-4">
+      <button
+        onClick={() => setView('schedule')}
+        className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center text-white hover:bg-zinc-700 transition-colors shadow-inner"
+      >
+        <ArrowLeft size={24} />
+      </button>
+      <h2 className="text-2xl font-black">Tìm bài tập</h2>
+    </div>
     <button
-      onClick={() => setView('schedule')}
-      className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center text-white hover:bg-zinc-700 transition-colors shadow-inner"
+      onClick={() => setShowCustomModal(true)}
+      className="bg-[#c8f31d] text-black font-bold px-4 py-2.5 rounded-2xl flex items-center gap-2 hover:scale-105 transition-transform shadow-[0_0_15px_rgba(200,243,29,0.2)] text-sm"
     >
-      <ArrowLeft size={24} />
+      <Plus size={18} strokeWidth={3} /> Tạo mới
     </button>
-    <h2 className="text-2xl font-black">Tìm bài tập</h2>
   </div>
 );
 
-const SearchTabs = ({ tabs, activeTab, setActiveTab }) => (
+const SearchTabs = ({ activeTab, setActiveTab }) => (
   <div className="px-8 mb-6">
     <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
-      {tabs.map((tab) => (
+      {CATEGORIES.map((tab) => (
         <button
           key={tab}
           onClick={() => setActiveTab(tab)}
           style={activeTab === tab ? { color: 'black', backgroundColor: 'rgb(200 243 29 / 82%)' } : {}}
-          className={`px-6 py-3.5 rounded-2xl font-bold whitespace-nowrap transition-all ${
-            activeTab === tab
-              ? 'shadow-[0_0_15px_rgba(200,243,29,0.3)]'
-              : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
-          }`}
+          className={`px-6 py-3.5 rounded-2xl font-bold whitespace-nowrap transition-all ${activeTab === tab
+            ? 'shadow-[0_0_15px_rgba(200,243,29,0.3)]'
+            : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
+            }`}
         >
           {tab}
         </button>
@@ -48,11 +58,10 @@ const SearchBar = ({ search, setSearch, showFilters, setShowFilters }) => (
     </div>
     <button
       onClick={() => setShowFilters(!showFilters)}
-      className={`w-[60px] border rounded-2xl flex items-center justify-center transition-colors shrink-0 shadow-inner ${
-        showFilters
-          ? 'bg-[#c8f31d] border-[#c8f31d] text-black'
-          : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-[#c8f31d] hover:border-[#c8f31d]'
-      }`}
+      className={`w-[60px] border rounded-2xl flex items-center justify-center transition-colors shrink-0 shadow-inner ${showFilters
+        ? 'bg-[#c8f31d] border-[#c8f31d] text-black'
+        : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-[#c8f31d] hover:border-[#c8f31d]'
+        }`}
     >
       <Filter size={24} />
     </button>
@@ -60,7 +69,7 @@ const SearchBar = ({ search, setSearch, showFilters, setShowFilters }) => (
 );
 
 const FilterPanel = ({
-  muscles, selectedMuscles, toggleMuscle,
+  selectedMuscles, toggleMuscle,
   ratingFilter, setRatingFilter,
   isCustom, setIsCustom,
   isFavorite, setIsFavorite,
@@ -70,7 +79,7 @@ const FilterPanel = ({
     <div>
       <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-3">Nhóm cơ</h3>
       <div className="grid grid-cols-3 gap-3">
-        {muscles.map((m) => (
+        {MUSCLES.map((m) => (
           <label
             key={m}
             className="flex items-center gap-3 p-3 rounded-xl border border-zinc-800 bg-zinc-900/50 cursor-pointer hover:bg-zinc-800 transition-colors"
@@ -209,63 +218,97 @@ const ExerciseList = ({ listExercises, handleSelectExercise }) => (
   </div>
 );
 
-const WorkoutSearch = ({
-  setView,
-  tabs,
-  activeTab,
-  setActiveTab,
-  showFilters,
-  setShowFilters,
-  muscles,
-  selectedMuscles,
-  toggleMuscle,
-  ratingFilter,
-  setRatingFilter,
-  isCustom,
-  setIsCustom,
-  isFavorite,
-  setIsFavorite,
-  handleResetFilters,
-  listExercises,
-  handleSelectExercise,
-  search,
-  setSearch,
-}) => {
+const WorkoutSearch = () => {
+  const [showCustomModal, setShowCustomModal] = useState(false);
+  const {
+    state,
+    setWorkoutView,
+    setWorkoutActiveTab,
+    setWorkoutSearch,
+    setWorkoutShowFilters,
+    setWorkoutSelectedMuscles,
+    setWorkoutRatingFilter,
+    setWorkoutIsCustom,
+    setWorkoutIsFavorite,
+    setWorkoutSelectedExercise,
+    fetchExercisesFromBackend
+  } = useWorkout();
+
+  const {
+    activeTab, search, showFilters, selectedMuscles, ratingFilter,
+    isCustom, isFavorite, listExercises
+  } = state;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchExercisesFromBackend();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search, activeTab, isCustom, isFavorite, selectedMuscles, ratingFilter]);
+
+  const toggleMuscle = (m) => {
+    if (selectedMuscles.includes(m)) {
+      setWorkoutSelectedMuscles(selectedMuscles.filter((x) => x !== m));
+    } else {
+      setWorkoutSelectedMuscles([...selectedMuscles, m]);
+    }
+  };
+
+  const handleResetFilters = () => {
+    setWorkoutSelectedMuscles([]);
+    setWorkoutRatingFilter({ min: '', max: '' });
+    setWorkoutIsCustom(false);
+    setWorkoutIsFavorite(false);
+  };
+
+  const handleSelectExercise = (ex) => {
+    setWorkoutSelectedExercise(ex);
+    setWorkoutView('detail');
+  };
   return (
     <div className="h-full bg-[#111] text-white relative font-sans overflow-hidden flex flex-col">
-      <SearchHeader setView={setView} />
-      
+      <SearchHeader setView={setWorkoutView} setShowCustomModal={setShowCustomModal} />
+
       <div className="flex-1 overflow-y-auto pb-20 scrollbar-hide">
-        <SearchTabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
-        
-        <SearchBar 
-          search={search} 
-          setSearch={setSearch} 
-          showFilters={showFilters} 
-          setShowFilters={setShowFilters} 
+        <SearchTabs CATEGORIES={CATEGORIES} activeTab={activeTab} setActiveTab={setWorkoutActiveTab} />
+
+        <SearchBar
+          search={search}
+          setSearch={setWorkoutSearch}
+          showFilters={showFilters}
+          setShowFilters={setWorkoutShowFilters}
         />
 
         {showFilters && (
           <FilterPanel
-            muscles={muscles}
             selectedMuscles={selectedMuscles}
             toggleMuscle={toggleMuscle}
             ratingFilter={ratingFilter}
-            setRatingFilter={setRatingFilter}
+            setRatingFilter={setWorkoutRatingFilter}
             isCustom={isCustom}
-            setIsCustom={setIsCustom}
+            setIsCustom={setWorkoutIsCustom}
             isFavorite={isFavorite}
-            setIsFavorite={setIsFavorite}
+            setIsFavorite={setWorkoutIsFavorite}
             handleResetFilters={handleResetFilters}
-            setShowFilters={setShowFilters}
+            setShowFilters={setWorkoutShowFilters}
           />
         )}
 
-        <ExerciseList 
-          listExercises={listExercises} 
-          handleSelectExercise={handleSelectExercise} 
+        <ExerciseList
+          listExercises={listExercises}
+          handleSelectExercise={handleSelectExercise}
         />
       </div>
+
+      {showCustomModal && (
+        <CustomExerciseModal
+          onClose={() => setShowCustomModal(false)}
+          onSuccess={() => {
+            setShowCustomModal(false);
+            fetchExercisesFromBackend();
+          }}
+        />
+      )}
     </div>
   );
 };

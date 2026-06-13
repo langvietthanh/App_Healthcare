@@ -1,9 +1,3 @@
-/**
- * Tác dụng của file: Component tái sử dụng dùng để vẽ các biểu đồ cột dạng dashed line cho lượng calo tiêu thụ và thặng dư calo
- * File này dùng cho component cha nào là chính: StatisticsPage (src/pages/user/dashboard/StatisticsPage.jsx)
- */
-import React from 'react';
-
 const BarChart = ({ data, maxVal, goalLine, height = 160, barColor = '#22c55e' }) => (
   <div className="relative" style={{ height }}>
     {[...Array(5)].map((_, i) => (

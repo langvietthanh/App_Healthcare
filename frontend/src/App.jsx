@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
@@ -18,14 +17,14 @@ import {
   AdminDashboard,
   AdminUsers,
   AdminFoods,
-  AdminExercises,
-  AdminReports
+  AdminExercises
 } from './pages/admin';
-import { DailyLogProvider } from './context/DailyLogContext';
-import { MealPlanProvider } from './context/MealPlanContext';
-import { WorkoutProvider } from './store';
+import DailyLogProvider from './providers/user/dailyLog';
+import MealPlanProvider from './providers/user/mealplan';
+import WorkoutProvider from './providers/user/workout';
 
 function App() {
+  localStorage.clear();
   return (
     <WorkoutProvider>
       <MealPlanProvider>
@@ -35,6 +34,7 @@ function App() {
               {/* Public Routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+
               {/* Protected Admin Routes */}
               <Route element={<AdminRoute />}>
                 <Route path="/admin" element={<AdminLayout />}>
@@ -43,7 +43,6 @@ function App() {
                   <Route path="users" element={<AdminUsers />} />
                   <Route path="foods" element={<AdminFoods />} />
                   <Route path="exercises" element={<AdminExercises />} />
-                  <Route path="reports" element={<AdminReports />} />
                 </Route>
               </Route>
 

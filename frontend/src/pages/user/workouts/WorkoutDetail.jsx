@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { useWorkout } from '../../../providers/user/workout';
 
 const DetailHeader = ({ setView }) => (
   <div className="px-8 pt-8 pb-4 flex items-center gap-4">
@@ -191,38 +192,53 @@ const ActionButtons = ({ handleSaveToSchedule, setView }) => (
   </div>
 );
 
-const WorkoutDetail = ({
-  setView,
-  selectedExercise,
-  exerciseMode,
-  setExerciseMode,
-  sets,
-  setSets,
-  repsOrTime,
-  setRepsOrTime,
-  restTime,
-  setRestTime,
-  handleSaveToSchedule,
-}) => {
+const WorkoutDetail = () => {
+  const {
+    state,
+    setWorkoutView,
+    setWorkoutExerciseMode,
+    setWorkoutSets,
+    setWorkoutRepsOrTime,
+    setWorkoutRestTime,
+    setScheduledExercises
+  } = useWorkout();
+
+  const {
+    selectedExercise, exerciseMode, sets, repsOrTime, restTime, scheduledExercises
+  } = state;
+
+  const handleSaveToSchedule = () => {
+    setScheduledExercises([
+      ...scheduledExercises,
+      {
+        ...selectedExercise,
+        mode: exerciseMode,
+        sets,
+        repsOrTime,
+        restTime,
+      },
+    ]);
+    setWorkoutView('search');
+  };
   return (
     <div className="h-full bg-[#111] text-white relative font-sans overflow-hidden flex flex-col">
-      <DetailHeader setView={setView} />
+      <DetailHeader setView={setWorkoutView} />
 
       <div className="flex-1 overflow-y-auto px-8 pb-20 scrollbar-hide animate-in slide-in-from-right-8 duration-300">
         <ExerciseInfo selectedExercise={selectedExercise} />
 
         <div className="space-y-8">
-          <ModeSelection exerciseMode={exerciseMode} setExerciseMode={setExerciseMode} />
+          <ModeSelection exerciseMode={exerciseMode} setExerciseMode={setWorkoutExerciseMode} />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormInputs
               exerciseMode={exerciseMode}
               sets={sets}
-              setSets={setSets}
+              setSets={setWorkoutSets}
               repsOrTime={repsOrTime}
-              setRepsOrTime={setRepsOrTime}
+              setRepsOrTime={setWorkoutRepsOrTime}
               restTime={restTime}
-              setRestTime={setRestTime}
+              setRestTime={setWorkoutRestTime}
             />
 
             <SummaryBlock
@@ -233,7 +249,7 @@ const WorkoutDetail = ({
             />
           </div>
 
-          <ActionButtons handleSaveToSchedule={handleSaveToSchedule} setView={setView} />
+          <ActionButtons handleSaveToSchedule={handleSaveToSchedule} setView={setWorkoutView} />
         </div>
       </div>
     </div>

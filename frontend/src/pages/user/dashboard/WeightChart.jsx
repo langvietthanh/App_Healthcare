@@ -4,7 +4,7 @@
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { useDailyLog } from '../../../context/DailyLogContext';
+import { useDailyLog } from '../../../providers/user/dailyLog';
 
 const WeightChart = ({ onBack }) => {
   const { state, ensureTodayWeight, fetchWeightHistory, updateTodayWeight } = useDailyLog();
@@ -46,9 +46,9 @@ const WeightChart = ({ onBack }) => {
   const DAY_LABELS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
   const data = weightHistory.length > 0
     ? weightHistory.map((item) => ({
-        label: DAY_LABELS[new Date(item.dateRecorded).getDay()],
-        value: item.weight,
-      }))
+      label: DAY_LABELS[new Date(item.dateRecorded).getDay()],
+      value: item.weight,
+    }))
     : [{ label: '--', value: parseFloat(currentWeight) || 70 }];
 
   const initW = parseFloat(initialWeight) || 74;

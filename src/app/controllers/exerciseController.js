@@ -15,7 +15,8 @@ class ExerciseController {
     searchExercise = catchAsync(async (req, res, next) => {
         const data = req.query;
         const userId = req.user.userId;
-        const listExercises = await ExerciseService.searchExercise({ data, userId });
+        const role = req.user.role;
+        const listExercises = await ExerciseService.searchExercise({ data, userId, role });
         res.status(200).json(listExercises);
     });
 

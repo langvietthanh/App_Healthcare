@@ -4,7 +4,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
-import { useDailyLog } from '../../../context/DailyLogContext';
+import { useDailyLog } from '../../../providers/user/dailyLog';
 
 import StomachIcon from './StomachIcon';
 import BatteryInfo from './BatteryInfo';
@@ -38,11 +38,10 @@ const DatePicker = ({ daysOfWeek, selectedDate, setSelectedDate }) => (
         <button
           key={i}
           onClick={() => setSelectedDate(day)}
-          className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-            isSelected
-              ? 'bg-[#c8f31d] text-black shadow-[0_0_15px_rgba(200,243,29,0.4)] scale-110 font-black'
-              : 'text-zinc-500 hover:text-white hover:bg-zinc-800/40'
-          }`}
+          className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${isSelected
+            ? 'bg-[#c8f31d] text-black shadow-[0_0_15px_rgba(200,243,29,0.4)] scale-110 font-black'
+            : 'text-zinc-500 hover:text-white hover:bg-zinc-800/40'
+            }`}
         >
           {day.getDate()}
         </button>
@@ -75,55 +74,53 @@ const NutritionCard = ({
 
   return (
     <div className="px-8 mb-8">
-    <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-[32px] p-8 shadow-2xl relative overflow-hidden">
-      <div className="flex justify-between items-center mb-10">
-        <h2 className="text-2xl font-bold tracking-tight">Calo & Dinh dưỡng</h2>
-        <div className="bg-zinc-800/80 rounded-xl flex p-1 border border-zinc-700/50">
-          <button
-            onClick={() => setViewMode('day')}
-            className={`px-5 py-1.5 rounded-lg text-sm font-bold transition-all ${
-              viewMode === 'day' ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Ngày
-          </button>
-          <button
-            onClick={() => setViewMode('week')}
-            className={`px-5 py-1.5 rounded-lg text-sm font-bold transition-all ${
-              viewMode === 'week' ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Tuần
-          </button>
+      <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-[32px] p-8 shadow-2xl relative overflow-hidden">
+        <div className="flex justify-between items-center mb-10">
+          <h2 className="text-2xl font-bold tracking-tight">Calo & Dinh dưỡng</h2>
+          <div className="bg-zinc-800/80 rounded-xl flex p-1 border border-zinc-700/50">
+            <button
+              onClick={() => setViewMode('day')}
+              className={`px-5 py-1.5 rounded-lg text-sm font-bold transition-all ${viewMode === 'day' ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-400 hover:text-white'
+                }`}
+            >
+              Ngày
+            </button>
+            <button
+              onClick={() => setViewMode('week')}
+              className={`px-5 py-1.5 rounded-lg text-sm font-bold transition-all ${viewMode === 'week' ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-400 hover:text-white'
+                }`}
+            >
+              Tuần
+            </button>
+          </div>
         </div>
-      </div>
 
-      {viewMode === 'day' ? (
-        <>
-          <div className="flex items-center justify-between mb-12 px-2 flex-col md:flex-row gap-8">
-            <div className="flex-1 flex justify-center">
-              <StomachIcon level={percentage} current={currentKcal} goal={goalKcal} />
+        {viewMode === 'day' ? (
+          <>
+            <div className="flex items-center justify-between mb-12 px-2 flex-col md:flex-row gap-8">
+              <div className="flex-1 flex justify-center">
+                <StomachIcon level={percentage} current={currentKcal} goal={goalKcal} />
+              </div>
+              <div className="flex-1 flex flex-col justify-center w-full">
+                <BatteryInfo current={currentKcal} goal={goalKcal} />
+              </div>
             </div>
-            <div className="flex-1 flex flex-col justify-center w-full">
-              <BatteryInfo current={currentKcal} goal={goalKcal} />
+            <div className="relative w-full mb-8 flex items-center justify-center">
+              <div className="absolute w-full border-t-2 border-dashed border-zinc-800"></div>
             </div>
-          </div>
-          <div className="relative w-full mb-8 flex items-center justify-center">
-            <div className="absolute w-full border-t-2 border-dashed border-zinc-800"></div>
-          </div>
-          <div className="flex justify-between items-center px-1 gap-2 flex-wrap sm:flex-nowrap mb-8">
-            <CircularMacro label="Carbs" current={currentCarbs} total={targetCarbs} color="#eab308" />
-            <CircularMacro label="Protein" current={currentProtein} total={targetProtein} color="#ef4444" />
-            <CircularMacro label="Fat" current={currentFat} total={targetFat} color="#22c55e" />
-            <CircularMacro label="Nước" current={currentWater} total={targetWater} color="#0ea5e9" unit="ml" />
-          </div>
-        </>
-      ) : (
-        <WeeklyView targetKcal={goalKcal} todayKcal={currentKcal} targetCarbs={targetCarbs} targetProtein={targetProtein} targetFat={targetFat} targetWater={targetWater} />
-      )}
+            <div className="flex justify-between items-center px-1 gap-2 flex-wrap sm:flex-nowrap mb-8">
+              <CircularMacro label="Carbs" current={currentCarbs} total={targetCarbs} color="#eab308" />
+              <CircularMacro label="Protein" current={currentProtein} total={targetProtein} color="#ef4444" />
+              <CircularMacro label="Fat" current={currentFat} total={targetFat} color="#22c55e" />
+              <CircularMacro label="Nước" current={currentWater} total={targetWater} color="#0ea5e9" unit="ml" />
+            </div>
+          </>
+        ) : (
+          <WeeklyView targetKcal={goalKcal} todayKcal={currentKcal} targetCarbs={targetCarbs} targetProtein={targetProtein} targetFat={targetFat} targetWater={targetWater} />
+        )}
+      </div>
     </div>
-  </div>
-    );
+  );
 };
 
 const Diary = () => {
@@ -183,20 +180,20 @@ const Diary = () => {
 
   return (
     <div className="flex flex-col min-h-full pb-10 text-white bg-transparent">
-      <DiaryHeader 
-        getHeaderDateLabel={getHeaderDateLabel} 
-        loading={loading} 
-        setSelectedDate={setSelectedDate} 
+      <DiaryHeader
+        getHeaderDateLabel={getHeaderDateLabel}
+        loading={loading}
+        setSelectedDate={setSelectedDate}
         Calendar={Calendar}
       />
 
-      <DatePicker 
-        daysOfWeek={daysOfWeek} 
-        selectedDate={selectedDate} 
-        setSelectedDate={setSelectedDate} 
+      <DatePicker
+        daysOfWeek={daysOfWeek}
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
       />
 
-      <NutritionCard 
+      <NutritionCard
         viewMode={viewMode}
         setViewMode={setViewMode}
       />

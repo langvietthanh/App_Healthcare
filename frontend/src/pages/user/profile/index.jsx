@@ -11,7 +11,7 @@ import HealthIndexes from './HealthIndexes';
 import ProfileGoals from './ProfileGoals';
 import MacronutrientGoals from './MacronutrientGoals';
 import EditProfileModal from './EditProfileModal';
-import { useDailyLog } from '../../../context/DailyLogContext';
+import { useDailyLog } from '../../../providers/user/dailyLog';
 
 const Profile = () => {
   const navigate = useNavigate();

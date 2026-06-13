@@ -4,7 +4,7 @@ const AdminRoute = () => {
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
 
-  console.log('Token:', token);
+  console.log('Token in admin route:', token);
   console.log('Role:', role);
 
   if (!token) return <Navigate to="/login" replace />;

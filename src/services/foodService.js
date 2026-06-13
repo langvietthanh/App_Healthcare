@@ -37,7 +37,7 @@ class FoodService{
             name,
             servingSize,
             nutrients,
-            creatorId: userId,
+            creatorId: role === 'admin' ? null : userId,
             isPublic : finalIsPublic,
             verifyStatus : finalVerifyStatus
         });
@@ -46,23 +46,26 @@ class FoodService{
         return newFood;
     }
     
-    async searchFood({data, userId}){
+    async searchFood({data, userId, role}){
         const keyword = data.q;
-        // 1. Điều kiện CỐ ĐỊNH: Chỉ lấy món Public HOẶC món do chính tôi tạo
-        const query = {
-            $or: [
+        const query = { isDeleted: false };
+
+        // 1. Điều kiện: User thường chỉ xem món Public hoặc tự tạo. Admin thì xem hết.
+        if (role !== 'admin') {
+            query.$or = [
                 { isPublic: true },
                 { creatorId: userId }
-            ],
-            isDeleted: false
-        };
+            ];
+        }
 
         // 2. Điều kiện THÊM: Nếu có gõ từ khóa tìm kiếm thì thêm vào query
         // Mặc định MongoDB sẽ nối các thuộc tính bằng toán tử AND
         if (keyword) {
             query.name = { $regex: keyword, $options: 'i' };
         } 
-        const publicListFoods = await Food.find(query).limit(50);
+        let limit = 50;
+        if (role === 'admin') limit = 0;
+        const publicListFoods = await Food.find(query).limit(limit);
         return publicListFoods;
     }
  
@@ -115,12 +118,10 @@ class FoodService{
             isPublic,
         } = food;
 
-        if (isPublic && role !== 'admin') 
+        if (isPublic && role !== 'admin') {
             throw new AppError('Món ăn đã chia sẻ cho cộng đồng. Chỉ Admin mới được phép chỉnh sửa!', 403);
-
-        else {
-            if(creatorId.toString() !== userId && role !== 'admin') 
-                throw new AppError ('Bạn không có quyền sửa món ăn của người khác!', 403);
+        } else if (role !== 'admin' && (!creatorId || creatorId.toString() !== userId)) {
+            throw new AppError ('Bạn không có quyền sửa món ăn của người khác!', 403);
         }
 
         // Xử lý kịch bản: User thường sửa món và muốn xin Public
@@ -130,26 +131,26 @@ class FoodService{
         }
         const {name, protein, carbs, fat, unit, amount} = data;
         const calories = calculateTotalCalories({
-            protein : protein || food.nutrients.protein, 
-            carbs : carbs || food.nutrients.carbs, 
-            fat : fat || food.nutrients.fat 
+            protein : protein !== undefined ? protein : food.nutrients.protein, 
+            carbs : carbs !== undefined ? carbs : food.nutrients.carbs, 
+            fat : fat !== undefined ? fat : food.nutrients.fat 
         });
 
         const weightInGram = convertToGram({
-            unit : unit || food.servingSize.unit ,
-            amount : amount || food.servingSize.amount 
+            unit : unit !== undefined ? unit : food.servingSize.unit,
+            amount : amount !== undefined ? amount : food.servingSize.amount 
         });
 
         const nutrients = {
-            protein : protein || food.nutrients.protein, 
-            carbs : carbs || food.nutrients.carbs, 
-            fat : fat || food.nutrients.fat ,
+            protein : protein !== undefined ? protein : food.nutrients.protein, 
+            carbs : carbs !== undefined ? carbs : food.nutrients.carbs, 
+            fat : fat !== undefined ? fat : food.nutrients.fat,
             calories
         } 
 
         const servingSize = {
-            unit : unit || food.servingSize.unit ,
-            amount : amount || food.servingSize.amount ,
+            unit : unit !== undefined ? unit : food.servingSize.unit,
+            amount : amount !== undefined ? amount : food.servingSize.amount,
             weightInGram
         }
         // Tiến hành update

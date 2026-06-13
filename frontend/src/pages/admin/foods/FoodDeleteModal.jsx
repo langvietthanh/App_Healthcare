@@ -4,8 +4,14 @@
  */
 import React from 'react';
 import { Trash2 } from 'lucide-react';
+import { useAdminFoods } from '../../../providers/admin';
 
-const FoodDeleteModal = ({ onClose, onDelete }) => {
+const FoodDeleteModal = () => {
+  const { state, setDeleteId, handleDelete } = useAdminFoods();
+  
+  const onClose = () => setDeleteId(null);
+  const onDelete = () => handleDelete(state.deleteId);
+
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-6">
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 w-full max-w-sm text-center shadow-2xl">

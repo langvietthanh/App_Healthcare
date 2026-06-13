@@ -5,8 +5,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Coffee, Sun, Moon, Cookie, ChevronRight, ChevronLeft, Heart } from 'lucide-react';
-import { useDailyLog } from '../../../context/DailyLogContext';
-import { useMealPlan } from '../../../context/MealPlanContext';
+import { useDailyLog } from '../../../providers/user/dailyLog';
+import { useMealPlan } from '../../../providers/user/mealplan';
 
 import MealCard from './MealCard';
 import CustomFoodForm from './CustomFoodForm';
@@ -105,9 +105,8 @@ const OverlayHeader = ({ handleCloseSearch, isCreatingFood, selectedFood, active
     {selectedFood && !isCreatingFood ? (
       <button
         onClick={handleToggleFavorite}
-        className={`p-2 rounded-full transition-colors ${
-          isFavorite ? 'bg-rose-500/20 text-rose-500' : 'bg-zinc-800 text-zinc-400 hover:text-white'
-        }`}
+        className={`p-2 rounded-full transition-colors ${isFavorite ? 'bg-rose-500/20 text-rose-500' : 'bg-zinc-800 text-zinc-400 hover:text-white'
+          }`}
       >
         <Heart size={24} fill={isFavorite ? 'currentColor' : 'none'} />
       </button>
@@ -274,14 +273,14 @@ const MealPlan = () => {
       {/* Scrollable Main Content */}
       <div className="flex-1 overflow-y-auto pt-10 pb-20 scrollbar-hide">
         <MealPlanHeader displayMonth={displayMonth} displayDay={displayDay} />
-        
-        <SummaryBanner 
-          totalCaloriesLogged={totalCaloriesLogged} 
-          targetCalories={targetCalories} 
-          navigate={navigate} 
+
+        <SummaryBanner
+          totalCaloriesLogged={totalCaloriesLogged}
+          targetCalories={targetCalories}
+          navigate={navigate}
         />
 
-        <MealsList 
+        <MealsList
           getMealCalories={getMealCalories}
           targetCalories={targetCalories}
           getMealItems={getMealItems}
@@ -304,7 +303,7 @@ const MealPlan = () => {
             }
           `}</style>
 
-          <OverlayHeader 
+          <OverlayHeader
             handleCloseSearch={handleCloseSearch}
             isCreatingFood={isCreatingFood}
             selectedFood={selectedFood}

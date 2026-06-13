@@ -1,4 +1,5 @@
 import { CATEGORIES, MUSCLES, levelColor, titleTable, muscleMapEV, muscleMapVE } from './exerciseConstant';
+import { STATUS_CONFIG } from './dashboardConstant';
 
 export {
     CATEGORIES,
@@ -6,5 +7,6 @@ export {
     levelColor,
     titleTable,
     muscleMapEV,
-    muscleMapVE
+    muscleMapVE,
+    STATUS_CONFIG
 }

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, ChevronLeft, ChevronRight, Clock, ChevronDown, Plus, History, BookmarkCheck, Dumbbell, Loader } from 'lucide-react';
-import { useWorkout } from '../../../store';
+import { useWorkout } from '../../../providers/user/workout';
 
 // Helper: so sánh ngày (bỏ phần giờ)
 const toMidnight = (date) => {
@@ -166,11 +166,11 @@ const TimeSection = ({ selectedTime, setWorkoutSelectedTime, dateType }) => {
       <div className="mt-10 mb-12 flex items-center justify-between">
         <div className="flex items-center gap-3 font-bold text-xl">
           <Clock size={24} className="text-[#c8f31d]" />
-          Nhắc tôi tập luyện: 
+          Nhắc tôi tập luyện:
         </div>
-        
+
         {selectedTime ? (
-          <div 
+          <div
             onClick={() => setShowModal(true)}
             className="border border-[#c8f31d] rounded-2xl px-5 py-3 flex items-center gap-4 cursor-pointer hover:bg-zinc-900 transition-colors"
           >
@@ -178,7 +178,7 @@ const TimeSection = ({ selectedTime, setWorkoutSelectedTime, dateType }) => {
             <ChevronDown size={24} className="text-[#c8f31d]" />
           </div>
         ) : (
-          <button 
+          <button
             onClick={() => setShowModal(true)}
             className="bg-[#c8f31d] text-black font-bold px-5 py-3 rounded-2xl flex items-center gap-2 hover:scale-105 transition-transform shadow-[0_0_15px_rgba(200,243,29,0.2)]"
           >
@@ -187,9 +187,9 @@ const TimeSection = ({ selectedTime, setWorkoutSelectedTime, dateType }) => {
         )}
       </div>
 
-      <TimePickerModal 
-        isOpen={showModal} 
-        onClose={() => setShowModal(false)} 
+      <TimePickerModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
         onSave={(timeVal) => {
           if (timeVal) {
             if (typeof Notification !== 'undefined' && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
@@ -199,14 +199,14 @@ const TimeSection = ({ selectedTime, setWorkoutSelectedTime, dateType }) => {
             setWorkoutSelectedTime(timeVal);
           }
           setShowModal(false);
-        }} 
+        }}
       />
     </>
   );
 };
 
-const TodayButtons = ({ setView, scheduledExercises, selectedDate }) => {
-  const { state, fetchExerciseHistory } = useWorkout();
+const TodayButtons = ({ selectedDate }) => {
+  const { state, setWorkoutView, fetchExerciseHistory } = useWorkout();
   const { exerciseHistory, historyLoading } = state;
   const [showHistory, setShowHistory] = useState(false);
 
@@ -229,13 +229,13 @@ const TodayButtons = ({ setView, scheduledExercises, selectedDate }) => {
     <div className="mt-auto flex flex-col gap-3">
       <div className="flex gap-4">
         <button
-          onClick={() => setView('list')}
+          onClick={() => setWorkoutView('list')}
           className="flex-1 bg-[#c8f31d] text-black font-black py-5 rounded-[20px] text-xl hover:scale-[1.02] transition-transform shadow-[0_0_20px_rgba(200,243,29,0.15)] tracking-wide"
         >
           Bắt đầu tập
         </button>
         <button
-          onClick={() => setView('search')}
+          onClick={() => setWorkoutView('search')}
           className="flex-1 bg-transparent border-2 border-zinc-700 text-[#c8f31d] font-black py-5 rounded-[20px] text-xl hover:bg-zinc-800 hover:border-zinc-600 transition-all flex justify-center items-center gap-2"
         >
           <Plus size={24} strokeWidth={3} />
@@ -321,23 +321,27 @@ const TodayButtons = ({ setView, scheduledExercises, selectedDate }) => {
   );
 };
 
-const FutureButtons = ({ setView }) => (
-  <div className="mt-auto flex gap-4">
-    <button
-      className="flex-1 bg-[#c8f31d] text-black font-black py-5 rounded-[20px] text-xl hover:scale-[1.02] transition-transform shadow-[0_0_20px_rgba(200,243,29,0.15)] tracking-wide flex justify-center items-center gap-2"
-    >
-      <BookmarkCheck size={22} />
-      Lưu lịch
-    </button>
-    <button
-      onClick={() => setView('search')}
-      className="flex-1 bg-transparent border-2 border-zinc-700 text-[#c8f31d] font-black py-5 rounded-[20px] text-xl hover:bg-zinc-800 hover:border-zinc-600 transition-all flex justify-center items-center gap-2"
-    >
-      <Plus size={24} strokeWidth={3} />
-      Thêm bài tập
-    </button>
-  </div>
-);
+const FutureButtons = () => {
+  const { setWorkoutView } = useWorkout();
+
+  return (
+    <div className="mt-auto flex gap-4">
+      <button
+        className="flex-1 bg-[#c8f31d] text-black font-black py-5 rounded-[20px] text-xl hover:scale-[1.02] transition-transform shadow-[0_0_20px_rgba(200,243,29,0.15)] tracking-wide flex justify-center items-center gap-2"
+      >
+        <BookmarkCheck size={22} />
+        Lưu lịch
+      </button>
+      <button
+        onClick={() => setWorkoutView('search')}
+        className="flex-1 bg-transparent border-2 border-zinc-700 text-[#c8f31d] font-black py-5 rounded-[20px] text-xl hover:bg-zinc-800 hover:border-zinc-600 transition-all flex justify-center items-center gap-2"
+      >
+        <Plus size={24} strokeWidth={3} />
+        Thêm bài tập
+      </button>
+    </div>
+  );
+};
 
 const PastButtons = ({ selectedDate }) => {
   const { state, fetchExerciseHistory } = useWorkout();
@@ -443,7 +447,7 @@ const PastButtons = ({ selectedDate }) => {
   );
 };
 
-const WorkoutSchedule = ({ setView, scheduledExercises }) => {
+const WorkoutSchedule = () => {
   const { state, setWorkoutSelectedDate, setWorkoutSelectedTime } = useWorkout();
   const { selectedDate, selectedTime } = state;
 
@@ -469,7 +473,7 @@ const WorkoutSchedule = ({ setView, scheduledExercises }) => {
           // Fallback dùng Alert nếu trình duyệt không cấp quyền
           alert(`💪 Đến giờ tập luyện rồi! (${selectedTime})`);
         }
-        
+
         // Xóa thời gian để tránh thông báo lặp lại liên tục trong cùng 1 phút
         setWorkoutSelectedTime('');
       }
@@ -528,8 +532,8 @@ const WorkoutSchedule = ({ setView, scheduledExercises }) => {
           dateType={dateType}
         />
 
-        {dateType === 'today' && <TodayButtons setView={setView} scheduledExercises={scheduledExercises} selectedDate={selectedDate} />}
-        {dateType === 'future' && <FutureButtons setView={setView} />}
+        {dateType === 'today' && <TodayButtons selectedDate={selectedDate} />}
+        {dateType === 'future' && <FutureButtons />}
         {dateType === 'past' && <PastButtons selectedDate={selectedDate} />}
       </div>
     </div>

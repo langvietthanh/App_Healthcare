@@ -2,14 +2,14 @@ const Exercise = require('../app/models/Exercise');
 const FavoriteExercise = require('../app/models/FavoriteExercise');
 const User = require('../app/models/User');
 const AppError = require('../utils/appError');
-const { 
-    EXERCISE_CATEGORIES, 
-    EXERCISE_MUSCLES 
+const {
+    EXERCISE_CATEGORIES,
+    EXERCISE_MUSCLES
 } = require('../constants/exercise');
 
 class ExerciseService {
     async createNewExercise({ data, userId, role }) {
-        const { name, category, targetMuscles, description, instructions } = data;
+        const { name, category, targetMuscles, description, instructions, imgURL } = data;
 
         // Admin tạo bài tập hệ thống (public) — User tạo bài tập cá nhân (private, không lên hệ thống)
         const isAdmin = role === 'admin';
@@ -20,6 +20,7 @@ class ExerciseService {
             targetMuscles,
             description,
             instructions,
+            imgURL,
             isPublic: isAdmin,
             verifyStatus: isAdmin ? 'approved' : 'none',
             creatorId: isAdmin ? null : userId,
@@ -29,20 +30,24 @@ class ExerciseService {
         return newExercise;
     }
 
-    async searchExercise({ data, userId }) {
+    async searchExercise({ data, userId, role }) {
         const keyword = data.q;
         const category = data.category;
         const muscle = data.muscle;
 
-        // Chỉ lấy bài tập Public HOẶC bài do chính user tạo (giống logic Food)
+        // Chỉ lấy bài tập Public HOẶC bài do chính user tạo
+        // Nếu là admin thì lấy toàn bộ
         const query = {
-            $or: [
-                { isPublic: true },
-                { creatorId: userId }
-            ],
             isDeleted: false
         };
-        
+
+        if (role !== 'admin') {
+            query.$or = [
+                { isPublic: true },
+                { creatorId: userId }
+            ];
+        }
+
         if (keyword) {
             query.name = { $regex: keyword, $options: 'i' };
         }
@@ -56,7 +61,10 @@ class ExerciseService {
             //  các trường khác (như rating) có là gì thì kệ nó
             query['targetMuscles.muscle'] = muscle;
         }
-        const listExercises = await Exercise.find(query).limit(50);
+        // Lấy limit từ query, nếu không truyền thì mặc định không giới hạn (0 trong mongoose là không giới hạn)
+        const limit = data.limit ? parseInt(data.limit) : 0;
+
+        const listExercises = await Exercise.find(query).limit(limit);
         return listExercises;
     }
 
@@ -68,7 +76,7 @@ class ExerciseService {
 
     async updateExercise({ exerciseId, data }) {
         const { name, category, targetMuscles, description, instructions, isPublic, imgURL } = data;
-        
+
         const updateFields = {};
         if (name !== undefined) updateFields.name = name;
         if (category !== undefined) updateFields.category = category;
@@ -109,7 +117,7 @@ class ExerciseService {
         if (!exercise) throw new AppError('Không tìm thấy bài tập', 404);
 
         const muscles = exercise.targetMuscles.map(m => m.muscle);
-        
+
         const related = await Exercise.find({
             _id: { $ne: exerciseId },
             isDeleted: false,
@@ -118,11 +126,11 @@ class ExerciseService {
                 { 'targetMuscles.muscle': { $in: muscles } }
             ]
         })
-        .sort({ 'targetMuscles.rating': -1 })
-        .limit(5);
+            .sort({ 'targetMuscles.rating': -1 })
+            .limit(5);
         const result = related.map(exercise => {
-            const { name, category, targetMuscles} = exercise;
-            return { name, category, targetMuscles}  
+            const { name, category, targetMuscles } = exercise;
+            return { name, category, targetMuscles }
         }
         )
         return result;
@@ -139,7 +147,7 @@ class ExerciseService {
         } else {
             const newFav = new FavoriteExercise({ userId, exerciseId });
             await newFav.save();
-            return { name: exercise.name ,isFavorite: true, msg: 'Đã lưu bài tập vào danh sách yêu thích' };
+            return { name: exercise.name, isFavorite: true, msg: 'Đã lưu bài tập vào danh sách yêu thích' };
         }
     }
 
@@ -148,18 +156,18 @@ class ExerciseService {
         // Chỉ lấy những bài tập chưa bị xóa mềm
         const validFavorites = favorites.filter(fav => fav.exerciseId && !fav.exerciseId.isDeleted);
         return validFavorites.map(fav => {
-            const {_id, name, category} = fav.exerciseId;
+            const { _id, name, category } = fav.exerciseId;
             return { _id, name, category };
         });
     }
 
     async getRecommendations({ userId }) {
         const user = await User.findById(userId);
-        if (!user) 
+        if (!user)
             throw new AppError('Không tìm thấy người dùng', 404);
 
         // Logic: Giảm cân -> Cardio, Tăng cân -> Strength, Giữ dáng -> Flexibility
-        let recommendedCategory = 'Strength'; 
+        let recommendedCategory = 'Strength';
         if (user.goals && user.physicalDetail) {
             const currentWeight = user.physicalDetail.weight;
             const weightGoal = user.goals.weightGoal;
@@ -175,7 +183,7 @@ class ExerciseService {
         const recommendations = await Exercise.find({ category: recommendedCategory, isDeleted: false })
             .sort({ 'targetMuscles.rating': -1 })
             .limit(5);
-            
+
         return recommendations;
     }
 }

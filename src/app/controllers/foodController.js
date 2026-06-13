@@ -15,7 +15,8 @@ class FoodController {
     searchFood = catchAsync (async (req, res, next ) => {
         const data = req.query;
         const userId = req.user.userId;
-        const listFoods = await FoodService.searchFood({data, userId, });
+        const role = req.user.role;
+        const listFoods = await FoodService.searchFood({data, userId, role});
         res.status(200).json(listFoods);
     })
 

@@ -21,3 +21,4 @@ export const muscleMapEV = {
     'Core': 'Bụng',
     'Full Body': 'Toàn thân'
 };
+

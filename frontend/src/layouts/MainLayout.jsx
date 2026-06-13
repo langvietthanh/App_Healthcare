@@ -1,12 +1,11 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Utensils, Dumbbell, User, BookOpen } from 'lucide-react';
-import { useDailyLog } from '../context/DailyLogContext';
+import { useDailyLog } from '../providers/user/dailyLog';
 import defaultAvatar from '../assets/images/defaultAvarta.png';
 
 const MainLayout = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { state, fetchUserTarget } = useDailyLog();
   const { user } = state;
 
@@ -65,9 +64,9 @@ const MainLayout = () => {
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full border-2 border-[#c8f31d] overflow-hidden p-0.5">
               <div className="w-full h-full rounded-full overflow-hidden">
-                <img 
-                  src={user?.imgURL || defaultAvatar} 
-                  alt="Avatar" 
+                <img
+                  src={user?.imgURL || defaultAvatar}
+                  alt="Avatar"
                   className="w-full h-full object-cover"
                   onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }}
                 />

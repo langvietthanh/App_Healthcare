@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 const User = new Schema({
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  status: { type: String, enum: ['active', 'locked'], default: 'active' },
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   passwordHash: { type: String, required: true },

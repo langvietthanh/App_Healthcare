@@ -1,9 +1,4 @@
-/**
- * Tác dụng của file: Bảng hiển thị thông tin danh sách người dùng (Họ tên, email, mục tiêu tập luyện, cân nặng, chiều cao, ngày tham gia, trạng thái hoạt động).
- * File này dùng cho component cha nào là chính: AdminUsers (src/pages/admin/users/index.jsx)
- */
-import React from 'react';
-import { Eye, Trash2 } from 'lucide-react';
+import { Eye, Lock, Unlock } from 'lucide-react';
 
 const goalColor = { 'lose_weight': '#f97316', 'gain_muscle': '#22c55e', 'balance': '#c8f31d' };
 const goalLabel = {
@@ -26,7 +21,7 @@ const UserTable = ({ filtered, onViewDetails, onDeleteUser }) => {
       <table className="w-full text-sm">
         <thead>
           <tr className="text-zinc-500 text-xs uppercase border-b border-zinc-800">
-            {['Người dùng', 'Mục tiêu', 'Thể trạng', 'BMI', 'Ngày tham gia', 'Hành động'].map((h) => (
+            {['Người dùng', 'Mục tiêu', 'Thể trạng', 'Trạng thái', 'Ngày tham gia', 'Hành động'].map((h) => (
               <th key={h} className="text-left px-6 py-4 font-semibold text-zinc-500">
                 {h}
               </th>
@@ -69,10 +64,15 @@ const UserTable = ({ filtered, onViewDetails, onDeleteUser }) => {
                     {u.physicalDetail?.height} cm / {u.physicalDetail?.weight} kg
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-white">{bmi ? bmi.toFixed(1) : '-'}</span>
-                      <span className={`text-[10px] font-bold ${bmiStatus.color}`}>{bmiStatus.label}</span>
-                    </div>
+                    {u.status === 'locked' ? (
+                      <span className="px-3 py-1 bg-red-500/10 text-red-500 rounded-lg text-xs font-bold">
+                        Bị khóa
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg text-xs font-bold">
+                        Hoạt động
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-zinc-500 text-xs">{new Date(u.createdAt).toLocaleDateString('vi-VN')}</td>
                   <td className="px-6 py-4">
@@ -85,10 +85,12 @@ const UserTable = ({ filtered, onViewDetails, onDeleteUser }) => {
                       </button>
                       {u.role !== 'admin' && (
                         <button
-                          onClick={() => onDeleteUser(u._id, u.username)}
-                          className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-red-400 transition-colors"
+                          onClick={() => onDeleteUser(u._id, u.username, u.status)}
+                          className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${u.status === 'locked' ? 'text-green-500 hover:text-green-400' : 'text-red-500 hover:text-red-400'
+                            }`}
                         >
-                          <Trash2 size={14} /> Xóa
+                          {u.status === 'locked' ? <Unlock size={14} /> : <Lock size={14} />}
+                          {u.status === 'locked' ? 'Mở khóa' : 'Khóa'}
                         </button>
                       )}
                     </div>

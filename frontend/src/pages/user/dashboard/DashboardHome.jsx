@@ -1,31 +1,20 @@
-/**
- * Tác dụng của file: Giao diện trang chủ Dashboard chính hiển thị lời chào, các widget tương tác Cân nặng, Lượng nước uống có tăng/giảm, Số bước chân đi bộ kèm tiến độ
- * File này dùng cho component cha nào là chính: Dashboard (src/pages/user/dashboard/index.jsx)
- */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Bell, BarChart2, Scale, Droplets, Minus, Plus, Footprints, Play, X } from 'lucide-react';
-import { useDailyLog } from '../../../context/DailyLogContext';
+import { useDailyLog } from '../../../providers/user/dailyLog';
 import defaultAvatar from '../../../assets/images/defaultAvarta.png';
 
 const DashboardHeader = ({ user, setPage, BarChart2, Bell }) => (
   <div className="bg-[#c8f31d] rounded-b-[40px] px-6 pt-12 pb-10 text-black relative z-10 shadow-lg">
     <div className="flex justify-between items-center mb-8">
       <div className="w-12 h-12 rounded-full overflow-hidden shadow-md">
-        <img 
-          src={user?.imgURL || defaultAvatar} 
-          alt="Avatar" 
+        <img
+          src={user?.imgURL || defaultAvatar}
+          alt="Avatar"
           className="w-full h-full object-cover"
           onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }}
         />
       </div>
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => setPage('stats')}
-          className="w-10 h-10 bg-black/10 rounded-xl flex items-center justify-center hover:bg-black/20 transition-colors"
-          title="Xem thống kê"
-        >
-          <BarChart2 size={22} className="text-black" />
-        </button>
         <button className="w-10 h-10 bg-black/10 rounded-xl flex items-center justify-center hover:bg-black/20 transition-colors">
           <Bell size={22} className="text-black" />
         </button>
@@ -62,8 +51,8 @@ const WorkoutBanner = ({ showWorkoutBanner, setShowWorkoutBanner, Play, X }) => 
 };
 
 const MetricsWidgets = ({
-  user, setPage, water, waterGoal, waterPct, steps, stepsGoal, stepsPct, updateWaterIntake,
-  Scale, Droplets, Minus, Plus, Footprints
+  user, setPage, water, waterGoal, waterPct, updateWaterIntake,
+  Scale, Droplets, Minus, Plus, BarChart2
 }) => (
   <>
     <div className="grid grid-cols-3 gap-4">
@@ -103,21 +92,19 @@ const MetricsWidgets = ({
         </div>
       </div>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 flex flex-col items-center gap-2 shadow-lg">
-        <div className="w-11 h-11 bg-orange-500/10 rounded-2xl flex items-center justify-center">
-          <Footprints size={22} className="text-orange-400" />
+      <button
+        onClick={() => setPage('stats')}
+        className="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 flex flex-col items-center justify-center gap-2 hover:border-purple-500/50 hover:bg-zinc-800 transition-all shadow-lg group text-center"
+      >
+        <div className="w-11 h-11 bg-purple-500/10 rounded-2xl flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
+          <BarChart2 size={22} className="text-purple-400" />
         </div>
-        <p className="text-xl font-black text-white">{steps.toLocaleString()}</p>
-        <p className="text-[10px] text-zinc-500 font-semibold">/ {stepsGoal.toLocaleString()}</p>
-        <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden mt-1">
-          <div className="h-full bg-orange-400 rounded-full transition-all" style={{ width: `${stepsPct}%` }} />
-        </div>
-        <p className="text-[10px] text-[#c8f31d] font-bold mt-1">{stepsPct.toFixed(0)}%</p>
-      </div>
+        <p className="text-[12px] font-semibold text-white mt-1">Chi tiết</p>
+      </button>
     </div>
 
     <div className="grid grid-cols-3 gap-4 -mt-3">
-      {['Cân nặng', 'Lượng nước', 'Bước chân'].map((label, i) => (
+      {['Cân nặng', 'Lượng nước', 'Thống kê'].map((label, i) => (
         <p key={i} className="text-center text-[11px] text-zinc-500 font-semibold">
           {label}
         </p>
@@ -137,42 +124,40 @@ const DashboardHome = ({ setPage }) => {
   const waterGoal = user?.physicalDetail?.weight
     ? Math.round(user.physicalDetail.weight * 35)
     : 2500;
-  const stepsGoal = 10000;
   const waterPct = Math.min(((water <= waterGoal ? water : waterGoal) / waterGoal) * 100, 100);
-  const stepsPct = Math.min((steps / stepsGoal) * 100, 100);
 
   return (
     <div className="flex flex-col pb-6 text-white bg-[#111]">
-      <DashboardHeader 
-        user={user} 
-        setPage={setPage} 
-        BarChart2={BarChart2} 
-        Bell={Bell} 
+      <DashboardHeader
+        user={user}
+        setPage={setPage}
+        BarChart2={BarChart2}
+        Bell={Bell}
       />
 
       <div className="px-6 -mt-4 relative z-20 space-y-5 pt-8">
-        <WorkoutBanner 
-          showWorkoutBanner={showWorkoutBanner} 
-          setShowWorkoutBanner={setShowWorkoutBanner} 
-          Play={Play} 
-          X={X} 
+        <WorkoutBanner
+          showWorkoutBanner={showWorkoutBanner}
+          setShowWorkoutBanner={setShowWorkoutBanner}
+          Play={Play}
+          X={X}
         />
 
-        <MetricsWidgets 
+        <MetricsWidgets
           user={user}
           setPage={setPage}
           water={water}
           waterGoal={waterGoal}
           waterPct={waterPct}
           steps={steps}
-          stepsGoal={stepsGoal}
-          stepsPct={stepsPct}
+          // stepsGoal={stepsGoal}
+          // stepsPct={stepsPct}
           updateWaterIntake={updateWaterIntake}
           Scale={Scale}
           Droplets={Droplets}
           Minus={Minus}
           Plus={Plus}
-          Footprints={Footprints}
+          BarChart2={BarChart2}
         />
       </div>
     </div>

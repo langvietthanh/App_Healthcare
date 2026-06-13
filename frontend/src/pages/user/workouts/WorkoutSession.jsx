@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronDown, ChevronUp } from 'lucide-react';
+import { useWorkout } from '../../../providers/user/workout';
 
 const TopImage = ({ currentEx, setView }) => (
   <div className="h-1/2 relative rounded-b-[40px] overflow-hidden shrink-0 shadow-2xl bg-zinc-900 flex items-center justify-center">
@@ -325,13 +326,9 @@ const WorkoutCompleteScreen = ({ totalExercises, workoutStartTime, setView }) =>
   );
 };
 
-const WorkoutSession = ({
-  setView,
-  scheduledExercises,
-  currentExerciseIndex,
-  setCurrentExerciseIndex,
-  logExerciseEntry,
-}) => {
+const WorkoutSession = () => {
+  const { state, setWorkoutView, setCurrentExerciseIndex, logExerciseEntry } = useWorkout();
+  const { scheduledExercises, currentExerciseIndex } = state;
   const currentEx = scheduledExercises[currentExerciseIndex] || scheduledExercises[0];
   const nextEx = scheduledExercises[currentExerciseIndex + 1];
 
@@ -471,11 +468,11 @@ const WorkoutSession = ({
         <WorkoutCompleteScreen
           totalExercises={scheduledExercises.length}
           workoutStartTime={workoutStartTime}
-          setView={setView}
+          setView={setWorkoutView}
         />
       )}
 
-      <TopImage currentEx={currentEx} setView={setView} />
+      <TopImage currentEx={currentEx} setView={setWorkoutView} />
 
       <div className="flex-1 px-8 pt-6 flex flex-col">
         <ExerciseHeader
@@ -511,7 +508,7 @@ const WorkoutSession = ({
           nextEx={nextEx}
           currentExerciseIndex={currentExerciseIndex}
           setCurrentExerciseIndex={setCurrentExerciseIndex}
-          setView={setView}
+          setView={setWorkoutView}
           isExercisePlaying={isExercisePlaying}
           setIsExercisePlaying={setIsExercisePlaying}
         />

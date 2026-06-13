@@ -1,8 +1,4 @@
-/**
- * Tác dụng của file: Điều phối chính quản lý State điều hướng giữa các màn hình (home, stats, weight) và render component tương ứng
- * File này dùng cho component cha nào là chính: App.jsx (qua tệp barrel export pages/user/index.js)
- */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import DashboardHome from './DashboardHome';
 import WeightChart from './WeightChart';
 import StatisticsPage from './StatisticsPage';

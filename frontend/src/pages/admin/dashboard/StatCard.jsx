@@ -1,8 +1,3 @@
-/**
- * Tác dụng của file: Hiển thị các thẻ chỉ số tổng quan hệ thống (Tổng người dùng, Món ăn, Bài tập...) với hiệu ứng hover và trend % tăng trưởng.
- * File này dùng cho component cha nào là chính: AdminDashboard (src/pages/admin/dashboard/index.jsx)
- */
-import React from 'react';
 import { TrendingUp } from 'lucide-react';
 
 const StatCard = ({ icon: Icon, label, value, sub, color, trend }) => {
