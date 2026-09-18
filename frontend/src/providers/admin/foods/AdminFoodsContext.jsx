@@ -38,25 +38,27 @@ const AdminFoodsProvider = ({ children }) => {
                     status: e.verifyStatus || 'approved',
                     createdAt: e.createdAt ? e.createdAt.slice(0, 10) : '',
                     creator: e.creatorId ? 'Người dùng' : 'Hệ thống',
-                    image: e.imgURL || '',
+                    image: e.imgURL ? `http://localhost:3000${e.imgURL}` : '',
                     isPublic: e.isPublic !== undefined ? e.isPublic : true
                 }));
                 
                 let hiddenCount = state.hiddenCount;
                 let pendingCount = state.pendingCount;
+                let userCount = state.userCount;
                 let totalCount = state.totalCount;
 
                 if (state.tab === 'pending') {
                     pendingCount = mapped.length;
                 } else {
-                    hiddenCount = mapped.filter(f => !f.isPublic && f.status !== 'pending').length;
+                    hiddenCount = mapped.filter(f => !f.isPublic && f.status !== 'pending' && f.creator === 'Hệ thống').length;
+                    userCount = mapped.filter(f => !f.isPublic && f.creator === 'Người dùng').length;
                     if (pendingCount === 0) {
                         pendingCount = mapped.filter(f => f.status === 'pending').length;
                     }
                     totalCount = mapped.length;
                 }
 
-                dispatch({ type: 'SET_FOODS_DATA', payload: { mapped, hiddenCount, pendingCount, totalCount } });
+                dispatch({ type: 'SET_FOODS_DATA', payload: { mapped, hiddenCount, pendingCount, userCount, totalCount } });
             }
         } catch (err) {
             console.error('Error fetching foods:', err);
@@ -67,7 +69,7 @@ const AdminFoodsProvider = ({ children }) => {
     const openAdd = () => dispatch({ type: TYPES.OPEN_ADD_FORM });
     const openEdit = (item) => dispatch({ type: TYPES.OPEN_EDIT_FORM, payload: item });
     const closeForm = () => dispatch({ type: TYPES.CLOSE_FORM });
-    const handleImageFile = (e) => { const f = e.target.files[0]; if (f) setForm(p => ({ ...p, image: URL.createObjectURL(f) })); };
+    const handleImageFile = (e) => { const f = e.target.files[0]; if (f) setForm(p => ({ ...p, image: URL.createObjectURL(f), imageFile: f })); };
 
     const handleSave = async () => {
         if (!state.form.name.trim()) return;
@@ -77,23 +79,31 @@ const AdminFoodsProvider = ({ children }) => {
         const f = +state.form.fat || 0;
         const computedCalories = Math.round(p * 4 + c * 4 + f * 9);
 
-        const payload = {
-            name: state.form.name,
-            protein: p,
-            carbs: c,
-            fat: f,
-            calories: computedCalories,
-            unit: state.form.unit || 'g',
-            amount: +state.form.amount || 100,
-            isPublic: true,
-            image: state.form.image
-        };
+        const formData = new FormData();
+        formData.append('name', state.form.name);
+        formData.append('protein', p);
+        formData.append('carbs', c);
+        formData.append('fat', f);
+        formData.append('calories', computedCalories);
+        formData.append('unit', state.form.unit || 'g');
+        formData.append('amount', +state.form.amount || 100);
+        formData.append('isPublic', true);
+
+        if (state.form.imageFile) {
+            formData.append('image', state.form.imageFile);
+        } else if (state.form.image) {
+            formData.append('imgURL', state.form.image);
+        }
 
         try {
             if (state.editItem) {
-                await axiosClient.patch(`/foods/${state.editItem.id}`, payload);
+                await axiosClient.patch(`/foods/${state.editItem.id}?type=food`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
             } else {
-                await axiosClient.post('/foods', payload);
+                await axiosClient.post('/foods?type=food', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
             }
             dispatch({ type: TYPES.CLOSE_FORM });
             fetchFoods();

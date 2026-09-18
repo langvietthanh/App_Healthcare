@@ -1,8 +1,4 @@
-/**
- * Tác dụng của file: Điều phối chính quản lý State nhập email/password, gửi yêu cầu đăng nhập, lưu token/role vào localStorage và chuyển trang.
- * File này dùng cho component cha nào là chính: App.jsx (qua tệp barrel export pages/user/index.js)
- */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
@@ -50,6 +46,7 @@ const Login = () => {
   };
 
   return (
+    // GIAO DIỆN LOGIN
     <div className="min-h-screen bg-[#0a0a0a] text-white px-6 py-8 flex flex-col relative font-sans">
       {/* Nút Back */}
       <div className="mb-8 mt-4">

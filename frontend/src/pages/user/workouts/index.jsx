@@ -1,10 +1,10 @@
 import { useWorkout } from '../../../providers/user/workout';
 
-import WorkoutSchedule from './WorkoutSchedule';
-import WorkoutList from './WorkoutList';
-import WorkoutSession from './WorkoutSession';
-import WorkoutDetail from './WorkoutDetail';
-import WorkoutSearch from './WorkoutSearch';
+import WorkoutSchedule from './components/views/WorkoutSchedule';
+import WorkoutList from './components/views/WorkoutList';
+import WorkoutSession from './components/views/WorkoutSession';
+import WorkoutDetail from './components/views/WorkoutDetail';
+import WorkoutSearch from './components/views/WorkoutSearch';
 
 const Workouts = () => {
   const { state } = useWorkout();

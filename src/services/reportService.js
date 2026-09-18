@@ -17,7 +17,7 @@ class ReportService {
      * Biểu đồ cân nặng theo khoảng thời gian
      * Query BodyMetricHistory sort theo ngày tăng dần
      */
-    async getWeightReport({ userId, from, to }) {
+    async getWeightReport({ userId, from, to, viewMode = 'day', fallbackInitial, fallbackCurrent }) {
         const filter = { userId };
 
         if (from || to) {
@@ -30,9 +30,195 @@ class ReportService {
             .sort({ dateRecorded: 1 })
             .select('dateRecorded weight -_id');
 
+        const userInfo = await User.findById(userId).select('physicalDetail.weight').lean();
+        const userBaseWeight = userInfo?.physicalDetail?.weight || 70;
+
+        let processedData = [];
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+        const currentDate = now.getDate();
+
+        const fromDate = from ? new Date(from) : now;
+        const reqYear = fromDate.getFullYear();
+        const reqMonth = fromDate.getMonth();
+
+        const isCurrentMonthQuery = reqYear === currentYear && reqMonth === currentMonth;
+        const isCurrentYearQuery = reqYear === currentYear;
+
+        if (viewMode === 'day') {
+            const daysInMonth = new Date(reqYear, reqMonth + 1, 0).getDate();
+            let lastKnownWeight = records[0]?.weight || parseFloat(fallbackInitial) || userBaseWeight;
+            const recordsMap = {};
+            records.forEach(item => {
+                const day = new Date(item.dateRecorded).getDate();
+                recordsMap[day] = item.weight;
+            });
+            for (let i = 1; i <= daysInMonth; i++) {
+                let isFuture = isCurrentMonthQuery && i > currentDate;
+                if (!isFuture && recordsMap[i]) lastKnownWeight = recordsMap[i];
+                processedData.push({ label: `${i}`, value: isFuture ? null : lastKnownWeight });
+            }
+        } else if (viewMode === 'week') {
+            const daysInMonth = new Date(reqYear, reqMonth + 1, 0).getDate();
+            const weeks = [];
+            for (let i = 1; i <= daysInMonth; i += 7) {
+                let end = Math.min(i + 6, daysInMonth);
+                weeks.push({ start: i, end: end, label: `${i}-${end}` });
+            }
+            let lastKnownWeight = records[0]?.weight || parseFloat(fallbackInitial) || userBaseWeight;
+            const recordsMap = {};
+            records.forEach(item => {
+                const day = new Date(item.dateRecorded).getDate();
+                recordsMap[day] = item.weight;
+            });
+            weeks.forEach(w => {
+                let isFuture = isCurrentMonthQuery && (w.start > currentDate || (w.start <= currentDate && currentDate <= w.end));
+                if (!isFuture) {
+                    let sum = 0;
+                    let count = 0;
+                    for (let day = w.start; day <= w.end; day++) {
+                        if (recordsMap[day]) {
+                            sum += recordsMap[day];
+                            count++;
+                        }
+                    }
+                    if (count > 0) {
+                        lastKnownWeight = Math.round((sum / count) * 10) / 10;
+                    }
+                }
+                processedData.push({ label: w.label, value: isFuture ? null : lastKnownWeight });
+            });
+        } else if (viewMode === 'month') {
+            let lastKnownWeight = records[0]?.weight || parseFloat(fallbackInitial) || userBaseWeight;
+            const monthSums = {};
+            const monthCounts = {};
+            records.forEach(item => {
+                const m = new Date(item.dateRecorded).getMonth();
+                monthSums[m] = (monthSums[m] || 0) + item.weight;
+                monthCounts[m] = (monthCounts[m] || 0) + 1;
+            });
+            for (let i = 0; i < 12; i++) {
+                let isFuture = isCurrentYearQuery && i >= currentMonth;
+                if (!isFuture && monthCounts[i]) {
+                    lastKnownWeight = Math.round((monthSums[i] / monthCounts[i]) * 10) / 10;
+                }
+                processedData.push({ label: `${i + 1}`, value: isFuture ? null : lastKnownWeight });
+            }
+        }
+
+        if (processedData.length === 0) {
+            processedData = [{ label: '--', value: parseFloat(fallbackCurrent) || userBaseWeight }];
+        }
         return {
             totalRecords: records.length,
-            data: records
+            data: processedData
+        };
+    }
+
+    /**
+     * Báo cáo Thống kê Calo (Mức tiêu thụ và Thặng dư)
+     */
+    async getCalorieReport({ userId, from, to, viewMode = 'day', goalKcal = 2000 }) {
+        goalKcal = parseFloat(goalKcal) || 2000;
+
+        let matchStage = { userId };
+        if (from || to) {
+            matchStage.date = {};
+            if (from) matchStage.date.$gte = new Date(from);
+            if (to) matchStage.date.$lte = new Date(to);
+        }
+
+        const records = await DailyLog.find(matchStage).sort({ date: 1 }).lean();
+
+        let chartData = [];
+        let surplusChart = [];
+
+        const now = new Date();
+        const currentDate = now.getDate();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const fromDate = from ? new Date(from) : now;
+        const reqYear = fromDate.getFullYear();
+        const reqMonth = fromDate.getMonth();
+
+        const isCurrentMonthQuery = reqYear === currentYear && reqMonth === currentMonth;
+        const isCurrentYearQuery = reqYear === currentYear;
+
+        if (viewMode === 'day') {
+            const daysInMonth = new Date(reqYear, reqMonth + 1, 0).getDate();
+            const recordsMap = {};
+            records.forEach(item => {
+                const day = new Date(item.date).getDate();
+                recordsMap[day] = item.totals?.caloriesIn || 0;
+            });
+            for (let i = 1; i <= daysInMonth; i++) {
+                let isFuture = isCurrentMonthQuery && i > currentDate;
+                let val = isFuture ? null : (recordsMap[i] || 0);
+                chartData.push({ label: `${i}`, value: val });
+                surplusChart.push({ label: `${i}`, value: val !== null ? val - goalKcal : null });
+            }
+        } else if (viewMode === 'week') {
+            const daysInMonth = new Date(reqYear, reqMonth + 1, 0).getDate();
+            const weeks = [];
+            for (let i = 1; i <= daysInMonth; i += 7) {
+                let end = Math.min(i + 6, daysInMonth);
+                weeks.push({ start: i, end: end, label: `${i}-${end}` });
+            }
+            const recordsMap = {};
+            records.forEach(item => {
+                const day = new Date(item.date).getDate();
+                recordsMap[day] = item.totals?.caloriesIn || 0;
+            });
+            weeks.forEach(w => {
+                let isFuture = isCurrentMonthQuery && (w.start > currentDate || (w.start <= currentDate && currentDate <= w.end));
+                if (isFuture) {
+                    chartData.push({ label: w.label, value: null });
+                    surplusChart.push({ label: w.label, value: null });
+                } else {
+                    let sum = 0;
+                    let daysToDivide = w.end - w.start + 1;
+                    if (isCurrentMonthQuery && currentDate >= w.start && currentDate <= w.end) {
+                        daysToDivide = currentDate - w.start + 1;
+                    }
+                    let limitDay = (isCurrentMonthQuery && currentDate <= w.end) ? currentDate : w.end;
+                    for (let day = w.start; day <= limitDay; day++) {
+                        sum += (recordsMap[day] || 0);
+                    }
+                    let avg = daysToDivide > 0 ? Math.round(sum / daysToDivide) : 0;
+                    chartData.push({ label: w.label, value: avg });
+                    surplusChart.push({ label: w.label, value: avg - goalKcal });
+                }
+            });
+        } else if (viewMode === 'month') {
+            const monthSums = {};
+            records.forEach(item => {
+                const m = new Date(item.date).getMonth();
+                monthSums[m] = (monthSums[m] || 0) + (item.totals?.caloriesIn || 0);
+            });
+            for (let i = 0; i < 12; i++) {
+                let isFuture = isCurrentYearQuery && i > currentMonth;
+                if (isFuture) {
+                    chartData.push({ label: `${i + 1}`, value: null });
+                    surplusChart.push({ label: `${i + 1}`, value: null });
+                } else {
+                    let sum = monthSums[i] || 0;
+                    let daysToDivide = new Date(reqYear, i + 1, 0).getDate();
+                    if (isCurrentYearQuery && i === currentMonth) {
+                        daysToDivide = currentDate;
+                    }
+                    let avg = Math.round(sum / daysToDivide);
+                    chartData.push({ label: `${i + 1}`, value: avg });
+                    surplusChart.push({ label: `${i + 1}`, value: avg - goalKcal });
+                }
+            }
+        }
+
+        return {
+            chartData,
+            surplusChart,
+            goalKcal
         };
     }
 

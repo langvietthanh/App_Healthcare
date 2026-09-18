@@ -34,8 +34,6 @@ axiosClient.interceptors.response.use(
     if (status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      // Uncomment dòng dưới nếu muốn tự động đá về trang login
-      // window.location.href = '/login'; 
     }
 
     return Promise.reject(error);

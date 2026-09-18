@@ -6,6 +6,7 @@ import React from 'react';
 
 const StepFinish = ({ onSubmit }) => {
   return (
+    // GIAO DIỆN STEP FINISH
     <div className="flex flex-col flex-1 items-center justify-center w-full px-6 text-center text-white">
       <h2 className="text-4xl font-bold mb-4 mt-10">Bắt đầu nào!</h2>
       <p className="text-zinc-400 mb-10">

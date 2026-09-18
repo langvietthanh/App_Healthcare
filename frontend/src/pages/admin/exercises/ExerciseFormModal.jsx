@@ -1,9 +1,9 @@
-import { useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CATEGORIES, MUSCLES } from '../../../constants'
 import { X, Plus, GripVertical, Check, ImagePlus, Star } from 'lucide-react';
 import { useAdminExercises } from '../../../providers/admin/exercises';
 
-const ImageSection = ({ form, setForm, fileInputRef, handleImageFile }) => (
+const ImageSection = ({ form, fileInputRef, handleImageFile }) => (
   <div>
     <label className="block text-xs text-zinc-500 font-semibold mb-2">Ảnh minh họa</label>
     <div className="flex items-start gap-4">
@@ -15,18 +15,6 @@ const ImageSection = ({ form, setForm, fileInputRef, handleImageFile }) => (
         )}
       </div>
       <div className="flex-1 space-y-2">
-        <input
-          type="text"
-          placeholder="Dán URL ảnh..."
-          value={form.image}
-          onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))}
-          className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#c8f31d] transition-colors"
-        />
-        <div className="flex items-center gap-2 text-xs text-zinc-600">
-          <div className="flex-1 h-px bg-zinc-700" />
-          hoặc
-          <div className="flex-1 h-px bg-zinc-700" />
-        </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -198,19 +186,64 @@ const FormActions = ({ editItem, closeForm, handleSave }) => (
   </div>
 );
 
+const emptyForm = { name: '', category: 'Strength', targetMuscles: [], level: 'Trung bình', description: '', instructions: [''], image: '', imageFile: null };
+
 const ExerciseFormModal = () => {
   const {
-    state: { editItem, form },
-    setForm,
+    state: { editItem },
     closeForm,
-    handleSave,
-    addStep,
-    removeStep,
-    updateStep,
-    toggleMuscle,
-    updateMuscleRating,
-    handleImageFile
+    handleSave: contextHandleSave
   } = useAdminExercises();
+
+  const [form, setForm] = useState(emptyForm);
+
+  useEffect(() => {
+    if (editItem) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setForm({
+        ...editItem,
+        targetMuscles: editItem.targetMuscles ? editItem.targetMuscles.map(m => ({
+          muscle: m.muscle,
+          rating: m.rating || 5
+        })) : [],
+        description: editItem.description || '',
+        instructions: editItem.instructions?.length ? editItem.instructions : [''],
+        image: editItem.image || '',
+        imageFile: null
+      });
+    } else {
+      setForm(emptyForm);
+    }
+  }, [editItem]);
+
+  const addStep = () => setForm(prev => ({ ...prev, instructions: [...prev.instructions, ''] }));
+  const removeStep = (i) => setForm(prev => ({ ...prev, instructions: prev.instructions.filter((_, idx) => idx !== i) }));
+  const updateStep = (i, val) => setForm(prev => ({ ...prev, instructions: prev.instructions.map((s, idx) => idx === i ? val : s) }));
+
+  const toggleMuscle = (m) => setForm(prev => {
+    const isSelected = prev.targetMuscles.some(x => x.muscle === m);
+    return {
+      ...prev,
+      targetMuscles: isSelected
+        ? prev.targetMuscles.filter(x => x.muscle !== m)
+        : [...prev.targetMuscles, { muscle: m, rating: 5 }]
+    };
+  });
+
+  const updateMuscleRating = (m, rating) => setForm(prev => ({
+    ...prev,
+    targetMuscles: prev.targetMuscles.map(x => x.muscle === m ? { ...x, rating } : x)
+  }));
+
+  const handleImageFile = (e) => {
+    const file = e.target.files[0];
+    if (file) setForm(prev => ({ ...prev, image: URL.createObjectURL(file), imageFile: file }));
+  };
+
+  const handleSave = () => {
+    // Pass local form state up to Context's handleSave
+    contextHandleSave(form);
+  };
 
   const fileInputRef = useRef(null);
 

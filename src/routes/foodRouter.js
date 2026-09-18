@@ -3,13 +3,15 @@ const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const requireAdmin = require('../middleware/requireAdmin');
 const FoodController = require('../app/controllers/foodController');
+const upload = require('../middleware/uploadMiddleware');
 
 /**
  * @route   [POST] /api/foods
  * @desc    Tạo món mới (Tạo tùng món)
  */
 router.post('/', 
-    authMiddleware, 
+    authMiddleware,
+    upload.single('image'), 
     FoodController.createNewFood
 );
 
@@ -93,6 +95,7 @@ router.patch('/:id/verify',
  */
 router.patch('/:id', 
     authMiddleware, 
+    upload.single('image'),
     FoodController.updateFood
 );
 

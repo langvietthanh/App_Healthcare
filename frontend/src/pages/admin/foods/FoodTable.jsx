@@ -16,7 +16,8 @@ const FoodTable = () => {
 
     let matchTab = true;
     if (tab === 'all') matchTab = f.isPublic === true && f.status !== 'pending';
-    if (tab === 'hidden') matchTab = f.isPublic === false && f.status !== 'pending';
+    if (tab === 'hidden') matchTab = f.isPublic === false && f.status !== 'pending' && f.creator === 'Hệ thống';
+    if (tab === 'user_private') matchTab = f.isPublic === false && f.creator === 'Người dùng';
 
     let matchOrigin = true;
     if (originFilter === 'system') matchOrigin = f.creator === 'Hệ thống';
@@ -37,13 +38,19 @@ const FoodTable = () => {
       <table className="w-full text-sm">
         <thead>
           <tr className="text-zinc-500 text-xs uppercase border-b border-zinc-800">
-            {tab === 'all' || tab === 'hidden'
-              ? ['Ảnh', 'Tên món', 'Calo', 'Protein', 'Carbs', 'Fat', 'Ngày thêm', 'Nguồn gốc', 'Hành động'].map((h) => (
+            {tab === 'pending'
+              ? ['Tên món', 'Calo', 'Protein', 'Carbs', 'Fat', 'Người gửi', 'Ngày gửi', 'Duyệt'].map((h) => (
                 <th key={h} className="text-left px-5 py-4 font-semibold text-zinc-500">
                   {h}
                 </th>
               ))
-              : ['Tên món', 'Calo', 'Protein', 'Carbs', 'Fat', 'Người gửi', 'Ngày gửi', 'Duyệt'].map((h) => (
+              : tab === 'user_private'
+              ? ['Ảnh', 'Tên món', 'Calo', 'Protein', 'Carbs', 'Fat', 'Ngày thêm', 'Nguồn gốc'].map((h) => (
+                <th key={h} className="text-left px-5 py-4 font-semibold text-zinc-500">
+                  {h}
+                </th>
+              ))
+              : ['Ảnh', 'Tên món', 'Calo', 'Protein', 'Carbs', 'Fat', 'Ngày thêm', 'Nguồn gốc', 'Hành động'].map((h) => (
                 <th key={h} className="text-left px-5 py-4 font-semibold text-zinc-500">
                   {h}
                 </th>
@@ -60,7 +67,7 @@ const FoodTable = () => {
           ) : (
             filtered.map((f) => (
               <tr key={f.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
-                {tab === 'all' || tab === 'hidden' ? (
+                {tab !== 'pending' ? (
                   <>
                     <td className="px-5 py-3">
                       <div className="w-10 h-10 rounded-xl overflow-hidden bg-zinc-800 flex items-center justify-center border border-zinc-850">
@@ -91,29 +98,31 @@ const FoodTable = () => {
                         </span>
                       )}
                     </td>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => onTogglePublic(f.id, f.isPublic)}
-                          className={`transition-colors ${f.isPublic ? 'text-[#c8f31d] hover:text-[#a0c517]' : 'text-zinc-500 hover:text-zinc-300'}`}
-                          title={f.isPublic ? 'Đang công khai - Bấm để ẩn' : 'Đang ẩn - Bấm để công khai'}
-                        >
-                          {f.isPublic ? <Eye size={15} /> : <EyeOff size={15} />}
-                        </button>
-                        <button
-                          onClick={() => onEdit(f)}
-                          className="text-zinc-400 hover:text-[#c8f31d] transition-colors"
-                        >
-                          <Pencil size={15} />
-                        </button>
-                        <button
-                          onClick={() => onDelete(f.id)}
-                          className="text-zinc-400 hover:text-red-400 transition-colors"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </td>
+                    {tab !== 'user_private' && (
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => onTogglePublic(f.id, f.isPublic)}
+                            className={`transition-colors ${f.isPublic ? 'text-[#c8f31d] hover:text-[#a0c517]' : 'text-zinc-500 hover:text-zinc-300'}`}
+                            title={f.isPublic ? 'Đang công khai - Bấm để ẩn' : 'Đang ẩn - Bấm để công khai'}
+                          >
+                            {f.isPublic ? <Eye size={15} /> : <EyeOff size={15} />}
+                          </button>
+                          <button
+                            onClick={() => onEdit(f)}
+                            className="text-zinc-400 hover:text-[#c8f31d] transition-colors"
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          <button
+                            onClick={() => onDelete(f.id)}
+                            className="text-zinc-400 hover:text-red-400 transition-colors"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </>
                 ) : (
                   <>

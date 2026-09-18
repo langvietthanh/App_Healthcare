@@ -19,6 +19,10 @@ export const initState = {
   // Weight history (biểu đồ cân nặng)
   weightHistory: [],
   weightLoading: false,
+
+  // Calorie history (biểu đồ calo)
+  calorieHistory: { chartData: [], surplusChart: [], goalKcal: 2000 },
+  calorieLoading: false,
 };
 
 export const reducer = (state, action) => {
@@ -59,6 +63,13 @@ export const reducer = (state, action) => {
       return { ...state, weightLoading: false, weightHistory: action.payload };
     case ACTIONS.FETCH_WEIGHT_HISTORY_FAILURE:
       return { ...state, weightLoading: false, weightHistory: [] };
+
+    case ACTIONS.FETCH_CALORIE_HISTORY_START:
+      return { ...state, calorieLoading: true };
+    case ACTIONS.FETCH_CALORIE_HISTORY_SUCCESS:
+      return { ...state, calorieLoading: false, calorieHistory: action.payload };
+    case ACTIONS.FETCH_CALORIE_HISTORY_FAILURE:
+      return { ...state, calorieLoading: false, calorieHistory: { chartData: [], surplusChart: [], goalKcal: 2000 } };
 
     default:
       return state;

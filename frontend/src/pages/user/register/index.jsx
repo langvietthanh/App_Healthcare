@@ -11,6 +11,8 @@ const Register = () => {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [gender, setGender] = useState('male');
+  const [activityLevel, setActivityLevel] = useState('sedentary');
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,11 +28,13 @@ const Register = () => {
         email: email,
         password: password,
         phone: phone, // Gửi kèm số điện thoại
+        gender: gender,
+        activityLevel: activityLevel,
         // --- Giá trị giả định để tránh bị lỗi 400 Bad Request từ server ---
         height: 170,
         weight: 60,
-        gender: 'male',
-        birthDate: '2000-01-01'
+        birthDate: '2000-01-01',
+        goal: 'balance'
       };
 
       await axiosClient.post('/auth/register', payload);
@@ -54,6 +58,7 @@ const Register = () => {
   };
 
   return (
+    // GIAO DIỆN REGISTER
     <div className="min-h-screen bg-[#0a0a0a] text-white px-6 py-8 flex flex-col relative font-sans">
       {/* Nút Back */}
       <div className="mb-6 mt-4">
@@ -78,6 +83,10 @@ const Register = () => {
         setEmail={setEmail}
         password={password}
         setPassword={setPassword}
+        gender={gender}
+        setGender={setGender}
+        activityLevel={activityLevel}
+        setActivityLevel={setActivityLevel}
         error={error}
         loading={loading}
         onSubmit={handleRegister}

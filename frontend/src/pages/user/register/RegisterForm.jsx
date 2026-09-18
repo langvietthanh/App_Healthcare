@@ -14,6 +14,10 @@ const RegisterForm = ({
   setEmail,
   password,
   setPassword,
+  gender,
+  setGender,
+  activityLevel,
+  setActivityLevel,
   error,
   loading,
   onSubmit,
@@ -34,6 +38,7 @@ const RegisterForm = ({
   };
 
   return (
+    // GIAO DIỆN REGISTER FORM
     <form onSubmit={handleSubmit} className="space-y-5 flex-1">
       {/* Thông báo lỗi từ server */}
       {error && (
@@ -84,6 +89,37 @@ const RegisterForm = ({
               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
           </span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        {/* Gender */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Giới tính</label>
+          <select
+            value={gender}
+            onChange={(e) => setGender(e.target.value)}
+            className="w-full bg-[#1a1a1a] border border-gray-600 rounded-lg px-4 py-3.5 text-white focus:border-[#c8f31d] focus:outline-none transition-colors"
+          >
+            <option value="male">Nam</option>
+            <option value="female">Nữ</option>
+          </select>
+        </div>
+
+        {/* Activity Level */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Mức độ vận động</label>
+          <select
+            value={activityLevel}
+            onChange={(e) => setActivityLevel(e.target.value)}
+            className="w-full bg-[#1a1a1a] border border-gray-600 rounded-lg px-4 py-3.5 text-white focus:border-[#c8f31d] focus:outline-none transition-colors"
+          >
+            <option value="sedentary">Ít vận động</option>
+            <option value="light">Vận động nhẹ</option>
+            <option value="moderate">Vận động vừa</option>
+            <option value="active">Vận động nhiều</option>
+            <option value="very_active">Vận động rất nhiều</option>
+          </select>
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import React from 'react';
 
 const StepAge = ({ age, setAge, onNext, onPrev }) => {
   return (
+    // GIAO DIỆN STEP AGE
     <div className="flex flex-col items-center w-full max-w-sm mx-auto">
       <h2 className="text-3xl font-bold mb-2 text-center text-white">Bạn bao nhiêu tuổi?</h2>
       <p className="text-zinc-500 text-sm mb-6 text-center">Chúng tôi dùng tuổi của bạn để thiết lập kế hoạch tập luyện phù hợp.</p>

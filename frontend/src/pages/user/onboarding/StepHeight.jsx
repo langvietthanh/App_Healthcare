@@ -5,6 +5,7 @@
 import React from 'react';
 
 const UnitToggle = ({ unit, setUnit, label1 = 'FEET', label2 = 'CM' }) => (
+  // GIAO DIỆN UNIT TOGGLE
   <div className="flex justify-center mb-6">
     <div className="bg-zinc-800/80 rounded-lg p-1 flex border border-zinc-700/50">
       <button
@@ -30,6 +31,7 @@ const UnitToggle = ({ unit, setUnit, label1 = 'FEET', label2 = 'CM' }) => (
 );
 
 const HeightInput = ({ height, setHeight, unit }) => (
+  // GIAO DIỆN HEIGHT INPUT
   <div className="text-center w-full flex justify-center mb-8">
     <div className="flex items-center border border-zinc-800 focus-within:border-[#c8f31d] rounded-2xl py-3 px-6 bg-zinc-900/40 text-white transition-all shadow-inner focus-within:shadow-[0_0_15px_rgba(200,243,29,0.1)]">
       <input
@@ -62,6 +64,7 @@ const StepHeight = ({
   onPrev,
 }) => {
   return (
+    // GIAO DIỆN STEP HEIGHT
     <div className="flex flex-col items-center w-full max-w-sm mx-auto">
       <h2 className="text-3xl font-bold mb-2 text-center text-white">Chiều cao của bạn?</h2>
       <p className="text-zinc-500 text-sm mb-6 text-center">Chiều cao giúp xác định chỉ số BMI chính xác hơn.</p>

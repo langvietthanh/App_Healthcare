@@ -1,4 +1,3 @@
-
 import * as ACTIONS from './types';
 
 export const initState = {

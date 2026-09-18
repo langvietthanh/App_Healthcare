@@ -1,7 +1,3 @@
-/**
- * Tác dụng của file: Quản lý State tìm kiếm bài tập, bộ lọc, đóng/mở form modal thêm/sửa, modal xóa và gọi API quản lý bài tập thực tế từ Backend.
- * File này dùng cho component cha nào là chính: App.jsx (qua tệp barrel export pages/admin/index.js)
- */
 import { useEffect } from 'react';
 import { Plus } from 'lucide-react';
 

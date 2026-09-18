@@ -1,14 +1,37 @@
 const ExerciseService = require('../../services/exerciseService');
 const catchAsync = require('../../utils/catchAsync');
+const fs = require('fs');
 
 class ExerciseController {
 //  [POST] /api/exercises
     createNewExercise = catchAsync(async (req, res, next) => {
         const data = req.body;
+
+        if (typeof data.instructions === 'string') {
+            try { data.instructions = JSON.parse(data.instructions); } catch (e) {}
+        }
+        if (typeof data.targetMuscles === 'string') {
+            try { data.targetMuscles = JSON.parse(data.targetMuscles); } catch (e) {}
+        }
+
+        if (req.file) {
+            data.imgURL = `/uploads/exercise/${req.file.filename}`;
+        }
+
         const userId = req.user.userId;
         const role = req.user.role;
-        const newExercise = await ExerciseService.createNewExercise({ data, userId, role });
-        res.status(201).json(newExercise);
+
+        try {
+            const newExercise = await ExerciseService.createNewExercise({ data, userId, role });
+            res.status(201).json(newExercise);
+        } catch (error) {
+            if (req.file) {
+                fs.unlink(req.file.path, (err) => {
+                    if (err) console.error("Lỗi xóa file rác exercise:", err);
+                });
+            }
+            return next(error);
+        }
     });
 
 //  [GET] /api/exercises
@@ -31,14 +54,40 @@ class ExerciseController {
     updateExercise = catchAsync(async (req, res, next) => {
         const exerciseId = req.params.id;
         const data = req.body;
-        const updatedExercise = await ExerciseService.updateExercise({ exerciseId, data });
-        res.status(200).json(updatedExercise);
+
+        if (typeof data.instructions === 'string') {
+            try { data.instructions = JSON.parse(data.instructions); } catch (e) {}
+        }
+        if (typeof data.targetMuscles === 'string') {
+            try { data.targetMuscles = JSON.parse(data.targetMuscles); } catch (e) {}
+        }
+
+        if (req.file) {
+            data.imgURL = `/uploads/exercise/${req.file.filename}`;
+        }
+
+        const userId = req.user.userId;
+        const role = req.user.role;
+
+        try {
+            const updatedExercise = await ExerciseService.updateExercise({ exerciseId, userId, role, data });
+            res.status(200).json(updatedExercise);
+        } catch (error) {
+            if (req.file) {
+                fs.unlink(req.file.path, (err) => {
+                    if (err) console.error("Lỗi xóa file rác exercise:", err);
+                });
+            }
+            return next(error);
+        }
     });
 
 //  [DELETE] /api/exercises/:id
     deleteExercise = catchAsync(async (req, res, next) => {
         const exerciseId = req.params.id;
-        await ExerciseService.deleteExercise({ exerciseId });
+        const userId = req.user.userId;
+        const role = req.user.role;
+        await ExerciseService.deleteExercise({ exerciseId, userId, role });
         res.status(200).json({ msg: "Xóa bài tập thành công" });
     });
 

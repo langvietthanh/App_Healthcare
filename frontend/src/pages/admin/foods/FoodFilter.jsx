@@ -109,6 +109,18 @@ const FoodFilter = () => {
             </span>
           )}
         </button>
+        <button
+          onClick={() => setTab('user_private')}
+          className={`px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${tab === 'user_private' ? 'bg-blue-500/20 text-blue-400' : 'text-zinc-400 hover:text-white'
+            }`}
+        >
+          Người dùng
+          {state.userCount > 0 && (
+            <span className="w-5 h-5 bg-blue-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
+              {state.userCount}
+            </span>
+          )}
+        </button>
       </div>
 
       <SearchBar

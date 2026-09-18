@@ -5,6 +5,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
+import axiosClient from '../../../config/axiosClient';
 
 import StepAge from './StepAge';
 import StepWeightCurrent from './StepWeightCurrent';
@@ -15,6 +16,7 @@ import StepGoal from './StepGoal';
 import StepFinish from './StepFinish';
 
 const OnboardingHeader = ({ step, totalSteps, handlePrev, handleSkip, ChevronLeft }) => (
+  // GIAO DIỆN ONBOARDING HEADER
   <div className="flex items-center justify-between px-6 pt-6 pb-2">
     <button onClick={handlePrev} className="text-zinc-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-zinc-800">
       <ChevronLeft size={24} />
@@ -39,6 +41,7 @@ const getStepIllustration = (step) => {
   switch (step) {
     case 2: // Age
       return (
+        // GIAO DIỆN ONBOARDING HEADER
         <svg width="140" height="140" viewBox="0 0 24 24" fill="none" stroke="#c8f31d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
           <circle cx="12" cy="12" r="10" strokeDasharray="3 3" />
           <path d="M12 6v6l4 2" />
@@ -48,6 +51,7 @@ const getStepIllustration = (step) => {
       );
     case 3: // Current Weight
       return (
+        // GIAO DIỆN ONBOARDING HEADER
         <svg width="140" height="140" viewBox="0 0 24 24" fill="none" stroke="#c8f31d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="hover:scale-105 transition-transform duration-300">
           <rect x="3" y="4" width="18" height="16" rx="3" />
           <circle cx="12" cy="11" r="4" />
@@ -57,6 +61,7 @@ const getStepIllustration = (step) => {
       );
     case 4: // Goal Weight
       return (
+        // GIAO DIỆN ONBOARDING HEADER
         <svg width="140" height="140" viewBox="0 0 24 24" fill="none" stroke="#c8f31d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="hover:scale-105 transition-transform duration-300">
           <circle cx="12" cy="12" r="10" />
           <circle cx="12" cy="12" r="6" />
@@ -66,6 +71,7 @@ const getStepIllustration = (step) => {
       );
     case 5: // Height
       return (
+        // GIAO DIỆN ONBOARDING HEADER
         <svg width="140" height="140" viewBox="0 0 24 24" fill="none" stroke="#c8f31d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="hover:scale-105 transition-transform duration-300">
           <line x1="6" y1="2" x2="6" y2="22" strokeWidth="2" />
           <line x1="6" y1="5" x2="14" y2="5" />
@@ -80,12 +86,14 @@ const getStepIllustration = (step) => {
       );
     case 6: // Fitness Level
       return (
+        // GIAO DIỆN ONBOARDING HEADER
         <svg width="140" height="140" viewBox="0 0 24 24" fill="none" stroke="#c8f31d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="animate-bounce" style={{ animationDuration: '3s' }}>
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg>
       );
     case 7: // Goal
       return (
+        // GIAO DIỆN ONBOARDING HEADER
         <svg width="140" height="140" viewBox="0 0 24 24" fill="none" stroke="#c8f31d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="hover:rotate-12 transition-transform duration-300">
           <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
           <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
@@ -148,15 +156,53 @@ const Onboarding = () => {
     if (step <= totalSteps) setStep(step + 1);
   };
 
-  const submitMetrics = () => {
-    console.log('Submitting metrics:', formData);
-    window.location.href = '/dashboard';
+  const submitMetrics = async () => {
+    try {
+      console.log('Submitting metrics:', formData);
+      const activityLevelMap = {
+        'Mới bắt đầu': 'sedentary',
+        'Trung bình': 'moderate',
+        'Nâng cao': 'very_active'
+      };
+      
+      const goalMap = {
+        'Giảm cân': 'lose_weight',
+        'Tăng cơ': 'gain_muscle',
+        'Cải thiện thể lực': 'balance'
+      };
+
+      const birthYear = new Date().getFullYear() - formData.age;
+      const birthDate = `${birthYear}-01-01`;
+
+      // Update info (birthDate)
+      await axiosClient.put('/user/info', { birthDate });
+
+      // Update physical details
+      await axiosClient.put('/user/physical-detail', {
+        height: parseFloat(formData.height),
+        weight: parseFloat(formData.weight),
+        activityLevel: activityLevelMap[formData.fitnessLevel] || 'sedentary'
+      });
+
+      // Update goals
+      await axiosClient.put('/user/goals', {
+        goal: goalMap[formData.goal] || 'balance',
+        weightGoal: parseFloat(formData.goalWeight)
+      });
+
+      window.location.href = '/dashboard';
+    } catch (err) {
+      console.error('Error submitting metrics:', err);
+      // fallback
+      window.location.href = '/dashboard';
+    }
   };
 
   const renderStepContent = () => {
     switch (step) {
       case 2:
         return (
+          // GIAO DIỆN ONBOARDING
           <StepAge
             age={formData.age}
             setAge={(newAge) => setFormData({ ...formData, age: newAge })}
@@ -166,6 +212,7 @@ const Onboarding = () => {
         );
       case 3:
         return (
+          // GIAO DIỆN ONBOARDING
           <StepWeightCurrent
             weight={formData.weight}
             setWeight={(val) => setFormData({ ...formData, weight: val })}
@@ -177,6 +224,7 @@ const Onboarding = () => {
         );
       case 4:
         return (
+          // GIAO DIỆN ONBOARDING
           <StepWeightGoal
             goalWeight={formData.goalWeight}
             setGoalWeight={(val) => setFormData({ ...formData, goalWeight: val })}
@@ -188,6 +236,7 @@ const Onboarding = () => {
         );
       case 5:
         return (
+          // GIAO DIỆN ONBOARDING
           <StepHeight
             height={formData.height}
             setHeight={(val) => setFormData({ ...formData, height: val })}
@@ -199,6 +248,7 @@ const Onboarding = () => {
         );
       case 6:
         return (
+          // GIAO DIỆN ONBOARDING
           <StepFitnessLevel
             fitnessLevel={formData.fitnessLevel}
             setFitnessLevel={(level) => setFormData({ ...formData, fitnessLevel: level })}
@@ -208,6 +258,7 @@ const Onboarding = () => {
         );
       case 7:
         return (
+          // GIAO DIỆN ONBOARDING
           <StepGoal
             goal={formData.goal}
             setGoal={(goal) => setFormData({ ...formData, goal })}
@@ -223,6 +274,7 @@ const Onboarding = () => {
   };
 
   return (
+    // GIAO DIỆN ONBOARDING
     <div className="min-h-screen bg-[#070707] text-white flex items-center justify-center p-4 md:p-8 font-sans">
       <div className="w-full max-w-5xl bg-zinc-900/60 border border-zinc-800/80 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col md:flex-row min-h-[600px] backdrop-blur-md">
         

@@ -1,14 +1,42 @@
 const FoodService = require('../../services/foodService');
 const catchAsync = require('../../utils/catchAsync');
+const fs = require('fs');
 
 class FoodController {
 //  [POST] /api/foods
     createNewFood = catchAsync (async (req, res, next) => {
+        console.log("req.body:", req.body);
+        console.log("req.file:", req.file);
+        
         const data = req.body;
+        
+        if (req.file) {
+            const type = req.query.type || 'others';
+            data.imgURL = `/uploads/${type}/${req.file.filename}`;
+        }
+
+        // Ép kiểu các trường từ FormData (string) sang đúng định dạng
+        if (data.amount) data.amount = Number(data.amount);
+        if (data.protein) data.protein = Number(data.protein);
+        if (data.carbs) data.carbs = Number(data.carbs);
+        if (data.fat) data.fat = Number(data.fat);
+        if (data.isPublic === 'false') data.isPublic = false;
+        if (data.isPublic === 'true') data.isPublic = true;
+
         const userId = req.user.userId;
         const role = req.user.role;
-        const newFood = await FoodService.createNewFood({data, userId, role,});
-        res.status(201).json(newFood);
+
+        try {
+            const newFood = await FoodService.createNewFood({data, userId, role});
+            res.status(201).json(newFood);
+        } catch (error) {
+            if (req.file) {
+                fs.unlink(req.file.path, (err) => {
+                    if (err) console.error("Lỗi xóa file rác food:", err);
+                });
+            }
+            return next(error);
+        }
     });
 
 //  [GET] /api/foods
@@ -31,7 +59,7 @@ class FoodController {
     getMyFoods = catchAsync(async (req, res, next) => {
         const userId = req.user.userId;
         const listFoods = await FoodService.getMyFoods({userId});
-        res.status(200).json(listFoods.map( food => ({name: food.name, creatorId: food.creatorId})));
+        res.status(200).json(listFoods);
     });
 
     getPendingFoods = catchAsync (async (req, res, next) => { 
@@ -55,8 +83,32 @@ class FoodController {
         const userId = req.user.userId;
         const role = req.user.role;
         const data = req.body;
-        const updatedFood = await FoodService.updateFood({foodId, userId, role, data});
-        res.status(201).json(updatedFood);
+
+        if (req.file) {
+            const type = req.query.type || 'others';
+            data.imgURL = `/uploads/${type}/${req.file.filename}`;
+        }
+
+        // Ép kiểu
+        if (data.amount) data.amount = Number(data.amount);
+        if (data.protein) data.protein = Number(data.protein);
+        if (data.carbs) data.carbs = Number(data.carbs);
+        if (data.fat) data.fat = Number(data.fat);
+        if (data.calories) data.calories = Number(data.calories);
+        if (data.isPublic === 'false') data.isPublic = false;
+        if (data.isPublic === 'true') data.isPublic = true;
+
+        try {
+            const updatedFood = await FoodService.updateFood({foodId, userId, role, data});
+            res.status(200).json(updatedFood);
+        } catch (error) {
+            if (req.file) {
+                fs.unlink(req.file.path, (err) => {
+                    if (err) console.error("Lỗi xóa file rác food update:", err);
+                });
+            }
+            return next(error);
+        }
     });
 
 //  [DELETE] /api/foods/:id - Xóa món

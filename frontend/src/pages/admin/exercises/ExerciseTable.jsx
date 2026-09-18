@@ -2,17 +2,23 @@ import { Pencil, Trash2, ImagePlus, Eye, EyeOff, Star } from 'lucide-react';
 import { titleTable, muscleMapEV } from '../../../constants';
 import { useAdminExercises } from '../../../providers/admin/exercises';
 
-const TableHeader = () => (
-  <thead>
-    <tr className="text-zinc-500 text-xs uppercase border-b border-zinc-800">
-      {titleTable.map((h) => (
-        <th key={h} className="text-left px-5 py-4 font-semibold text-zinc-500">
-          {h}
-        </th>
-      ))}
-    </tr>
-  </thead>
-);
+const TableHeader = ({ tab }) => {
+  const headers = tab === 'user_private' 
+    ? ['Ảnh', 'Tên bài tập', 'Danh mục', 'Nhóm cơ']
+    : titleTable;
+
+  return (
+    <thead>
+      <tr className="text-zinc-500 text-xs uppercase border-b border-zinc-800">
+        {headers.map((h) => (
+          <th key={h} className="text-left px-5 py-4 font-semibold text-zinc-500">
+            {h}
+          </th>
+        ))}
+      </tr>
+    </thead>
+  );
+};
 
 const TableEmpty = () => (
   <tr>
@@ -22,7 +28,7 @@ const TableEmpty = () => (
   </tr>
 );
 
-const TableRow = ({ e, handleTogglePublic, openEdit, setDeleteId }) => (
+const TableRow = ({ e, handleTogglePublic, openEdit, setDeleteId, tab }) => (
   <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
     <td className="px-5 py-3">
       <div className="w-10 h-10 rounded-xl overflow-hidden bg-zinc-800 shrink-0 flex items-center justify-center border border-zinc-800">
@@ -51,39 +57,43 @@ const TableRow = ({ e, handleTogglePublic, openEdit, setDeleteId }) => (
         ))}
       </div>
     </td>
-    <td className="px-5 py-3">
-      <span
-        className={`px-3 py-1 rounded-full text-xs font-bold ${e.isPublic
-          ? 'bg-[#c8f31d]/20 text-[#c8f31d]'
-          : 'bg-zinc-800 text-zinc-400'
-          }`}
-      >
-        {e.isPublic ? 'Công khai' : 'Ẩn'}
-      </span>
-    </td>
-    <td className="px-5 py-3">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => handleTogglePublic(e.id, e.isPublic)}
-          className={`transition-colors ${e.isPublic ? 'text-[#c8f31d] hover:text-[#a0c517]' : 'text-zinc-500 hover:text-zinc-300'}`}
-          title={e.isPublic ? 'Đang công khai - Bấm để ẩn' : 'Đang ẩn - Bấm để công khai'}
-        >
-          {e.isPublic ? <Eye size={15} /> : <EyeOff size={15} />}
-        </button>
-        <button
-          onClick={() => openEdit(e)}
-          className="text-zinc-400 hover:text-[#c8f31d] transition-colors"
-        >
-          <Pencil size={15} />
-        </button>
-        <button
-          onClick={() => setDeleteId(e.id)}
-          className="text-zinc-400 hover:text-red-400 transition-colors"
-        >
-          <Trash2 size={15} />
-        </button>
-      </div>
-    </td>
+    {tab !== 'user_private' && (
+      <>
+        <td className="px-5 py-3">
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-bold ${e.isPublic
+              ? 'bg-[#c8f31d]/20 text-[#c8f31d]'
+              : 'bg-zinc-800 text-zinc-400'
+              }`}
+          >
+            {e.isPublic ? 'Công khai' : 'Ẩn'}
+          </span>
+        </td>
+        <td className="px-5 py-3">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => handleTogglePublic(e.id, e.isPublic)}
+              className={`transition-colors ${e.isPublic ? 'text-[#c8f31d] hover:text-[#a0c517]' : 'text-zinc-500 hover:text-zinc-300'}`}
+              title={e.isPublic ? 'Đang công khai - Bấm để ẩn' : 'Đang ẩn - Bấm để công khai'}
+            >
+              {e.isPublic ? <Eye size={15} /> : <EyeOff size={15} />}
+            </button>
+            <button
+              onClick={() => openEdit(e)}
+              className="text-zinc-400 hover:text-[#c8f31d] transition-colors"
+            >
+              <Pencil size={15} />
+            </button>
+            <button
+              onClick={() => setDeleteId(e.id)}
+              className="text-zinc-400 hover:text-red-400 transition-colors"
+            >
+              <Trash2 size={15} />
+            </button>
+          </div>
+        </td>
+      </>
+    )}
   </tr>
 );
 
@@ -102,7 +112,8 @@ const ExerciseTable = () => {
     
     let matchTab = true;
     if (tab === 'all') matchTab = e.isPublic === true;
-    if (tab === 'hidden') matchTab = e.isPublic === false;
+    if (tab === 'hidden') matchTab = e.isPublic === false && e.creator === 'Hệ thống';
+    if (tab === 'user_private') matchTab = e.isPublic === false && e.creator === 'Người dùng';
 
     return matchSearch && matchCat && matchMuscle && matchTab;
   });
@@ -110,7 +121,7 @@ const ExerciseTable = () => {
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
       <table className="w-full text-sm">
-        <TableHeader />
+        <TableHeader tab={tab} />
         <tbody>
           {filtered.length === 0 ? (
             <TableEmpty />
@@ -122,6 +133,7 @@ const ExerciseTable = () => {
                 handleTogglePublic={handleTogglePublic}
                 openEdit={openEdit}
                 setDeleteId={setDeleteId}
+                tab={tab}
               />
             ))
           )}

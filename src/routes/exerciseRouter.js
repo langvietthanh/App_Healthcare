@@ -3,13 +3,15 @@ const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const requireAdmin = require('../middleware/requireAdmin');
 const ExerciseController = require('../app/controllers/exerciseController');
+const upload = require('../middleware/uploadMiddleware');
 
 /**
  * @route   [POST] /api/exercises
  * @desc    Tạo bài tập mới (Admin: public, User: cá nhân)
  */
-router.post('/', 
-    authMiddleware, 
+router.post('/',
+    authMiddleware,
+    upload.single('image'),
     ExerciseController.createNewExercise
 );
 
@@ -17,8 +19,8 @@ router.post('/',
  * @route   [GET] /api/exercises
  * @desc    Tìm kiếm danh sách bài tập (hỗ trợ query ?q=...&category=...)
  */
-router.get('/', 
-    authMiddleware, 
+router.get('/',
+    authMiddleware,
     ExerciseController.searchExercise
 );
 
@@ -34,8 +36,8 @@ router.get('/metadata',
  * @route   [GET] /api/exercises/recommendations
  * @desc    Gợi ý bài tập thông minh theo mục tiêu User
  */
-router.get('/recommendations', 
-    authMiddleware, 
+router.get('/recommendations',
+    authMiddleware,
     ExerciseController.getRecommendations
 );
 
@@ -43,8 +45,8 @@ router.get('/recommendations',
  * @route   [GET] /api/exercises/favorites
  * @desc    Lấy danh sách bài tập đã lưu
  */
-router.get('/favorites', 
-    authMiddleware, 
+router.get('/favorites',
+    authMiddleware,
     ExerciseController.getMyFavorites
 );
 
@@ -53,27 +55,26 @@ router.get('/favorites',
  * @desc    Chi tiết bài tập
  */
 router.get('/:id',
-    authMiddleware, 
+    authMiddleware,
     ExerciseController.getDetailExercise
 );
 
 /**
  * @route   [PUT] /api/exercises/:id
- * @desc    Admin sửa thông tin bài tập
+ * @desc    Sửa thông tin bài tập (Admin: public, User: cá nhân)
  */
-router.put('/:id', 
-    authMiddleware, 
-    requireAdmin,
+router.put('/:id',
+    authMiddleware,
+    upload.single('image'),
     ExerciseController.updateExercise
 );
 
 /**
  * @route   [DELETE] /api/exercises/:id
- * @desc    Admin xóa bài tập
+ * @desc    Xóa bài tập (Admin: public, User: cá nhân)
  */
-router.delete('/:id', 
-    authMiddleware, 
-    requireAdmin,
+router.delete('/:id',
+    authMiddleware,
     ExerciseController.deleteExercise
 );
 
@@ -81,8 +82,8 @@ router.delete('/:id',
  * @route   [POST] /api/exercises/:id/favorite
  * @desc    Lưu / Bỏ lưu bài tập (Toggle)
  */
-router.post('/:id/favorite', 
-    authMiddleware, 
+router.post('/:id/favorite',
+    authMiddleware,
     ExerciseController.toggleFavorite
 );
 
@@ -90,8 +91,8 @@ router.post('/:id/favorite',
  * @route   [GET] /api/exercises/:id/related
  * @desc    Lấy danh sách bài tập liên quan
  */
-router.get('/:id/related', 
-    authMiddleware, 
+router.get('/:id/related',
+    authMiddleware,
     ExerciseController.getRelatedExercises
 );
 

@@ -1,14 +1,15 @@
-import { useState } from 'react';
-import { Bell, BarChart2, Scale, Droplets, Minus, Plus, Footprints, Play, X } from 'lucide-react';
-import { useDailyLog } from '../../../providers/user/dailyLog';
+import { useNavigate } from 'react-router-dom';
+import { Bell, BarChart2, Scale, Droplets, Minus, Plus, Play } from 'lucide-react';
+import { useDailyLog, useWorkout } from '../../../providers/user';
 import defaultAvatar from '../../../assets/images/defaultAvarta.png';
 
-const DashboardHeader = ({ user, setPage, BarChart2, Bell }) => (
+const DashboardHeader = ({ user }) => (
+  // GIAO DIỆN DASHBOARD HEADER
   <div className="bg-[#c8f31d] rounded-b-[40px] px-6 pt-12 pb-10 text-black relative z-10 shadow-lg">
     <div className="flex justify-between items-center mb-8">
       <div className="w-12 h-12 rounded-full overflow-hidden shadow-md">
         <img
-          src={user?.imgURL || defaultAvatar}
+          src={user?.imgURL ? (user.imgURL.startsWith('/') ? `http://localhost:3000${user.imgURL}` : user.imgURL) : defaultAvatar}
           alt="Avatar"
           className="w-full h-full object-cover"
           onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }}
@@ -21,39 +22,45 @@ const DashboardHeader = ({ user, setPage, BarChart2, Bell }) => (
       </div>
     </div>
     <div>
-      <p className="text-xl font-extrabold mb-1 text-white">Xin chào, Buổi sáng tốt lành 👋</p>
+      <p className="text-xl font-extrabold mb-1 text-white">Xin chào, Buổi sáng tốt lành</p>
       <h1 className="text-3xl font-extrabold tracking-tight text-white">{user?.username || "Đang tải..."}</h1>
     </div>
   </div>
 );
 
-const WorkoutBanner = ({ showWorkoutBanner, setShowWorkoutBanner, Play, X }) => {
-  if (!showWorkoutBanner) return null;
+const WorkoutBanner = () => {
+  const { state, setWorkoutView } = useWorkout();
+  const count = state.scheduledExercises?.length || 0;
+  const navigate = useNavigate();
+  const handleClick = () => {
+    setWorkoutView('list');
+    navigate('/workouts');
+  };
+
   return (
-    <div className="bg-gradient-to-r from-zinc-800 to-zinc-900 border border-zinc-700 rounded-3xl p-5 flex items-center gap-4 relative shadow-xl overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-[#c8f31d]/10 to-transparent pointer-events-none" />
+    // GIAO DIỆN WORKOUT BANNER
+    <div
+      onClick={handleClick}
+      className="bg-gradient-to-r from-zinc-800 to-zinc-900 border border-zinc-700 rounded-3xl p-5 flex items-center gap-4 relative shadow-xl overflow-hidden cursor-pointer hover:border-[#c8f31d]/50 transition-colors group"
+    >
+      <div className="absolute inset-0 bg-gradient-to-r from-[#c8f31d]/10 to-transparent pointer-events-none group-hover:from-[#c8f31d]/20 transition-colors" />
       <div className="w-14 h-14 bg-[#c8f31d] rounded-2xl flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(200,243,29,0.4)]">
         <Play size={26} className="text-black fill-black" />
       </div>
       <div className="flex-1">
         <p className="text-xs text-zinc-400 font-medium mb-1">Buổi tập hôm nay</p>
-        <h3 className="font-black text-white text-base">Bắt đầu luyện tập ngay!</h3>
-        <p className="text-xs text-zinc-500 mt-0.5">3 bài tập · ~45 phút</p>
+        <h3 className="font-black text-white text-base">
+          {count > 0 ? `Bạn có ${count} bài tập` : 'Chưa có lịch tập'}
+        </h3>
       </div>
-      <button
-        onClick={() => setShowWorkoutBanner(false)}
-        className="absolute top-3 right-3 text-zinc-600 hover:text-zinc-400 transition-colors"
-      >
-        <X size={18} />
-      </button>
     </div>
   );
 };
 
 const MetricsWidgets = ({
-  user, setPage, water, waterGoal, waterPct, updateWaterIntake,
-  Scale, Droplets, Minus, Plus, BarChart2
+  user, setPage, water, waterGoal, waterPct, updateWaterIntake
 }) => (
+  // GIAO DIỆN METRICS WIDGETS
   <>
     <div className="grid grid-cols-3 gap-4">
       <button
@@ -64,7 +71,9 @@ const MetricsWidgets = ({
           <Scale size={22} className="text-[#c8f31d]" />
         </div>
         <p className="text-xl font-black text-white">{user?.physicalDetail?.weight || '--'}</p>
-        <p className="text-[10px] text-zinc-500 font-semibold">kg</p>
+        <p className="text-[10px] text-zinc-500 font-semibold">
+          {user?.goals?.weightGoal ? `/ ${user.goals.weightGoal} kg` : 'kg'}
+        </p>
       </button>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 flex flex-col items-center gap-2 shadow-lg">
@@ -105,6 +114,7 @@ const MetricsWidgets = ({
 
     <div className="grid grid-cols-3 gap-4 -mt-3">
       {['Cân nặng', 'Lượng nước', 'Thống kê'].map((label, i) => (
+        // GIAO DIỆN METRICS WIDGETS
         <p key={i} className="text-center text-[11px] text-zinc-500 font-semibold">
           {label}
         </p>
@@ -116,10 +126,7 @@ const MetricsWidgets = ({
 const DashboardHome = ({ setPage }) => {
   const { state, updateWaterIntake } = useDailyLog();
   const { user, dailyLog } = state;
-  const water = dailyLog?.waterIntake || 1500;
-  const [steps] = useState(4328);
-  const [showWorkoutBanner, setShowWorkoutBanner] = useState(true);
-
+  const water = dailyLog?.waterIntake || 0;
   // Tính toán lượng nước mục tiêu: 35ml cho mỗi kg cân nặng
   const waterGoal = user?.physicalDetail?.weight
     ? Math.round(user.physicalDetail.weight * 35)
@@ -127,21 +134,12 @@ const DashboardHome = ({ setPage }) => {
   const waterPct = Math.min(((water <= waterGoal ? water : waterGoal) / waterGoal) * 100, 100);
 
   return (
+    // GIAO DIỆN DASHBOARD HOME
     <div className="flex flex-col pb-6 text-white bg-[#111]">
-      <DashboardHeader
-        user={user}
-        setPage={setPage}
-        BarChart2={BarChart2}
-        Bell={Bell}
-      />
+      <DashboardHeader user={user} />
 
       <div className="px-6 -mt-4 relative z-20 space-y-5 pt-8">
-        <WorkoutBanner
-          showWorkoutBanner={showWorkoutBanner}
-          setShowWorkoutBanner={setShowWorkoutBanner}
-          Play={Play}
-          X={X}
-        />
+        <WorkoutBanner />
 
         <MetricsWidgets
           user={user}
@@ -149,15 +147,7 @@ const DashboardHome = ({ setPage }) => {
           water={water}
           waterGoal={waterGoal}
           waterPct={waterPct}
-          steps={steps}
-          // stepsGoal={stepsGoal}
-          // stepsPct={stepsPct}
           updateWaterIntake={updateWaterIntake}
-          Scale={Scale}
-          Droplets={Droplets}
-          Minus={Minus}
-          Plus={Plus}
-          BarChart2={BarChart2}
         />
       </div>
     </div>

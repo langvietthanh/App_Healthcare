@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Home, Utensils, Dumbbell, User, BookOpen } from 'lucide-react';
-import { useDailyLog } from '../providers/user/dailyLog';
+import { useDailyLog } from '../providers/user';
 import defaultAvatar from '../assets/images/defaultAvarta.png';
 
 const MainLayout = () => {
@@ -65,7 +65,7 @@ const MainLayout = () => {
             <div className="w-12 h-12 rounded-full border-2 border-[#c8f31d] overflow-hidden p-0.5">
               <div className="w-full h-full rounded-full overflow-hidden">
                 <img
-                  src={user?.imgURL || defaultAvatar}
+                  src={user?.imgURL ? (user.imgURL.startsWith('/') ? `http://localhost:3000${user.imgURL}` : user.imgURL) : defaultAvatar}
                   alt="Avatar"
                   className="w-full h-full object-cover"
                   onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }}

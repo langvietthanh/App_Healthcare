@@ -27,6 +27,7 @@ const StepGoal = ({ goal, setGoal, onNext, onPrev }) => {
   ];
 
   return (
+    // GIAO DIỆN STEP GOAL
     <div className="flex flex-col items-center w-full max-w-2xl mx-auto">
       <h2 className="text-3xl font-bold mb-2 text-center text-white">Mục tiêu của bạn?</h2>
       <p className="text-zinc-500 text-sm mb-8 text-center">Chúng tôi sẽ tùy chỉnh kế hoạch dinh dưỡng và tập luyện theo mục tiêu này.</p>
@@ -36,6 +37,7 @@ const StepGoal = ({ goal, setGoal, onNext, onPrev }) => {
         {goals.map((g) => {
           const isSelected = goal === g.id;
           return (
+            // GIAO DIỆN STEP GOAL
             <button
               key={g.id}
               type="button"

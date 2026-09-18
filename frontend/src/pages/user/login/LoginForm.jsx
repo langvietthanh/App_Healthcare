@@ -1,8 +1,4 @@
-/**
- * Tác dụng của file: Biểu mẫu nhập Email và Mật khẩu (có tính năng ẩn/hiện mật khẩu, xử lý gửi đăng nhập lên server).
- * File này dùng cho component cha nào là chính: Login (src/pages/user/login/index.jsx)
- */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
 const LoginForm = ({
@@ -17,6 +13,7 @@ const LoginForm = ({
   const [showPassword, setShowPassword] = useState(false);
 
   return (
+    // GIAO DIỆN LOGIN FORM
     <form onSubmit={onSubmit} className="space-y-6 flex-1">
       {/* Báo lỗi nếu có */}
       {error && (

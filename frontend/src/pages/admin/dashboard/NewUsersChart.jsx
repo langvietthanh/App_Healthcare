@@ -1,6 +1,3 @@
-import React from 'react';
-import { TrendingUp } from 'lucide-react';
-
 const NewUsersChart = ({ chartMode, setChartMode, chartData, maxVal }) => {
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">

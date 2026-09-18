@@ -7,11 +7,19 @@ class ReportController {
     // USER REPORTS
     // =====================================================================
 
-    // [GET] /api/reports/weight?from=...&to=...
+    // [GET] /api/reports/weight?from=...&to=...&viewMode=...
     getWeightReport = catchAsync(async (req, res, next) => {
         const userId = req.user.userId;
-        const { from, to } = req.query;
-        const result = await ReportService.getWeightReport({ userId, from, to });
+        const { from, to, viewMode, fallbackInitial, fallbackCurrent } = req.query;
+        const result = await ReportService.getWeightReport({ userId, from, to, viewMode, fallbackInitial, fallbackCurrent });
+        res.status(200).json(result);
+    });
+
+    // [GET] /api/reports/calories?from=...&to=...&viewMode=...&goalKcal=...
+    getCalorieReport = catchAsync(async (req, res, next) => {
+        const userId = req.user.userId;
+        const { from, to, viewMode, goalKcal } = req.query;
+        const result = await ReportService.getCalorieReport({ userId, from, to, viewMode, goalKcal });
         res.status(200).json(result);
     });
 

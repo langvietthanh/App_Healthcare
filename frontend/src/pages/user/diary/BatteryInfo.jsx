@@ -1,10 +1,5 @@
-/**
- * Tác dụng của file: Hiển thị lượng Calo còn lại có thể nạp hoặc cảnh báo vượt mức dưới hình thức một viên Pin đứng chuyển động đầy dần kèm hiệu ứng phát sáng neon.
- * File này dùng cho component cha nào là chính: Diary (src/pages/user/diary/index.jsx)
- */
-import React from 'react';
-
 const BatteryGraphic = ({ percentage, color }) => (
+  // GIAO DIỆN BATTERY GRAPHIC
   <div className="relative w-10 h-16 border-2 border-zinc-500 rounded-md p-[2px] flex flex-col justify-end opacity-90">
     {/* Battery Nipple */}
     <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-4 h-1.5 bg-zinc-500 rounded-t-sm"></div>
@@ -14,6 +9,7 @@ const BatteryGraphic = ({ percentage, color }) => (
 );
 
 const BatteryText = ({ isOver, remaining, goal }) => (
+  // GIAO DIỆN BATTERY TEXT
   <div className="flex flex-col">
     <span className="text-[12px] text-zinc-400 font-semibold uppercase tracking-widest mb-1">
       {isOver ? "Vượt mức (Quá calo)" : "Còn lại có thể nạp"}
@@ -38,6 +34,7 @@ const BatteryInfo = ({ current, goal }) => {
   }
 
   return (
+    // GIAO DIỆN BATTERY INFO
     <div className="flex items-center gap-5 bg-zinc-800/40 p-4 rounded-2xl border border-zinc-700/50 w-full hover:bg-zinc-800 transition-colors">
       <BatteryGraphic percentage={percentage} color={color} />
       <BatteryText isOver={isOver} remaining={remaining} goal={goal} />

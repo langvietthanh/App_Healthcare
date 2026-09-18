@@ -21,22 +21,23 @@ const ExerciseProvider = ({ children }) => {
                     category: e.category || 'Strength',
                     muscles: e.targetMuscles ? e.targetMuscles.map(m => muscleMapEV[m.muscle] || m.muscle) : [],
                     targetMuscles: e.targetMuscles || [],
-                    level: 'Trung bình', // Fallback level UI
                     description: e.description || '',
                     instructions: e.instructions ? e.instructions.map(ins => ins.text) : [''],
-                    image: e.imgURL || '',
+                    image: e.imgURL ? `http://localhost:3000${e.imgURL}` : '',
                     isPublic: e.isPublic || false,
+                    creator: e.creatorId ? 'Người dùng' : 'Hệ thống',
                 }));
                 dispatch({ type: 'SET_EXERCISES', payload: mapped });
             }
+            console.log(data);
         } catch (err) {
             console.error('Error fetching exercises:', err);
             dispatch({ type: 'SET_LOADING', payload: false });
         }
     };
 
-    const handleSave = async () => {
-        const { form, editItem } = state;
+    const handleSave = async (form) => {
+        const { editItem } = state;
         if (!form.name.trim()) return;
 
         // Map instructions and target muscles for Backend
@@ -49,20 +50,29 @@ const ExerciseProvider = ({ children }) => {
             rating: m.rating || 5
         }));
 
-        const payload = {
-            name: form.name,
-            category: form.category,
-            description: form.description,
-            instructions: instructionsMapped,
-            targetMuscles: targetMusclesMapped,
-            imgURL: form.image,
-        };
+        const formData = new FormData();
+        formData.append('name', form.name);
+        formData.append('category', form.category);
+        formData.append('description', form.description);
+        formData.append('instructions', JSON.stringify(instructionsMapped));
+        formData.append('targetMuscles', JSON.stringify(targetMusclesMapped));
+
+        if (form.imageFile) {
+            formData.append('image', form.imageFile);
+        } else if (form.image) {
+            // Keep existing image URL if not replacing
+            formData.append('imgURL', form.image);
+        }
 
         try {
             if (editItem) {
-                await axiosClient.put(`/exercises/${editItem.id}`, payload);
+                await axiosClient.put(`/exercises/${editItem.id}?type=exercise`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
             } else {
-                await axiosClient.post('/exercises', payload);
+                await axiosClient.post('/exercises?type=exercise', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
             }
             dispatch({ type: 'CLOSE_FORM' });
             fetchExercises(); // reload
@@ -99,42 +109,14 @@ const ExerciseProvider = ({ children }) => {
     const toggleFilter = () => dispatch({ type: 'TOGGLE_FILTER' });
     const setFilterCategory = (val) => dispatch({ type: 'SET_FILTER_CATEGORY', payload: val });
     const setFilterMuscle = (val) => dispatch({ type: 'SET_FILTER_MUSCLE', payload: val });
-    
+
     const setDeleteId = (id) => dispatch({ type: 'SET_DELETE_ID', payload: id });
-    
+
     const openAdd = () => dispatch({ type: 'OPEN_ADD_FORM' });
     const openEdit = (item) => dispatch({ type: 'OPEN_EDIT_FORM', payload: item });
     const closeForm = () => dispatch({ type: 'CLOSE_FORM' });
-    
-    // Form handlers
-    const setForm = (val) => {
-        const newForm = typeof val === 'function' ? val(state.form) : val;
-        dispatch({ type: 'SET_FORM', payload: newForm });
-    };
-    const addStep = () => dispatch({ type: 'SET_FORM', payload: { ...state.form, instructions: [...state.form.instructions, ''] } });
-    const removeStep = (i) => dispatch({ type: 'SET_FORM', payload: { ...state.form, instructions: state.form.instructions.filter((_, idx) => idx !== i) } });
-    const updateStep = (i, val) => dispatch({ type: 'SET_FORM', payload: { ...state.form, instructions: state.form.instructions.map((s, idx) => idx === i ? val : s) } });
-    const toggleMuscle = (m) => dispatch({ 
-        type: 'SET_FORM', 
-        payload: { 
-            ...state.form, 
-            targetMuscles: state.form.targetMuscles.some(x => x.muscle === m) 
-                ? state.form.targetMuscles.filter(x => x.muscle !== m) 
-                : [...state.form.targetMuscles, { muscle: m, rating: 5 }] 
-        } 
-    });
-    
-    const updateMuscleRating = (m, rating) => dispatch({
-        type: 'SET_FORM',
-        payload: {
-            ...state.form,
-            targetMuscles: state.form.targetMuscles.map(x => x.muscle === m ? { ...x, rating } : x)
-        }
-    });
-    const handleImageFile = (e) => { 
-        const file = e.target.files[0]; 
-        if (file) dispatch({ type: 'SET_FORM', payload: { ...state.form, image: URL.createObjectURL(file) } }); 
-    };
+
+    // Form handlers are now inside local component (ExerciseFormModal)
 
     const value = {
         state,
@@ -143,7 +125,7 @@ const ExerciseProvider = ({ children }) => {
         handleSave,
         handleDelete,
         handleTogglePublic,
-        
+
         // Helpers
         setTab,
         setSearch,
@@ -153,14 +135,7 @@ const ExerciseProvider = ({ children }) => {
         setDeleteId,
         openAdd,
         openEdit,
-        closeForm,
-        setForm,
-        addStep,
-        removeStep,
-        updateStep,
-        toggleMuscle,
-        updateMuscleRating,
-        handleImageFile
+        closeForm
     };
 
     return <ExerciseContext.Provider value={value}>

@@ -1,17 +1,13 @@
-/**
- * Tác dụng của file: Điều phối và sắp xếp bố cục chính cho trang Profile cá nhân của người dùng
- * File này dùng cho component cha nào là chính: App.jsx (qua tệp barrel export pages/user/index.js)
- */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ProfileHeader from './ProfileHeader';
-import ProfileAvatar from './ProfileAvatar';
-import ProfileStats from './ProfileStats';
-import HealthIndexes from './HealthIndexes';
-import ProfileGoals from './ProfileGoals';
-import MacronutrientGoals from './MacronutrientGoals';
-import EditProfileModal from './EditProfileModal';
-import { useDailyLog } from '../../../providers/user/dailyLog';
+import ProfileHeader from './components/layout/ProfileHeader';
+import ProfileAvatar from './components/layout/ProfileAvatar';
+import ProfileStats from './components/stats/ProfileStats';
+import HealthIndexes from './components/stats/HealthIndexes';
+import ProfileGoals from './components/stats/ProfileGoals';
+import MacronutrientGoals from './components/stats/MacronutrientGoals';
+import EditProfileModal from './components/modal/EditProfileModal';
+import { useDailyLog } from '../../../providers/user';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -26,6 +22,7 @@ const Profile = () => {
     }
   }, [user]);
   return (
+    // GIAO DIỆN PROFILE
     <div className="flex flex-col min-h-full pb-10 text-white bg-transparent">
       {/* Header */}
       <ProfileHeader onBack={() => navigate(-1)} onEdit={() => setIsEditOpen(true)} />

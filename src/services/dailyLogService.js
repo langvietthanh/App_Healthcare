@@ -15,10 +15,9 @@ class DailyLogService {
      */
     async getOrCreateDailyLog(userId, dateString) {
         let log = await DailyLog.findOne({ userId, date: dateString });
-        
+
         if (!log) {
             log = new DailyLog({ userId, date: dateString });
-            // Tạm cấp phát DailyLog Document mới nếu hệ thống chưa Index thời gian chỉ định
             await log.save();
         }
         return log;
@@ -88,7 +87,7 @@ class DailyLogService {
             carbs: actualCarbs,
             fat: actualFat
         });
-        
+
         await newEntry.save();
 
         // Ứng dụng kỹ thuật Atomic Operators ($inc) đảm bảo dữ liệu xử lý song song không ngắt quãng
@@ -141,7 +140,7 @@ class DailyLogService {
      */
     async addExerciseEntry({ userId, data }) {
         const { date, exerciseId, name, durationMinutes, sets, reps, weight, time } = data;
-        
+
         const log = await this.getOrCreateDailyLog(userId, date);
 
         const newEntry = new DailyExerciseEntry({
@@ -156,7 +155,7 @@ class DailyLogService {
             weight,
             time
         });
-        
+
         await newEntry.save();
         return newEntry;
     }
@@ -177,11 +176,11 @@ class DailyLogService {
         const { date, workoutPlanId, sessionId } = data;
 
         const plan = await WorkoutPlan.findOne({ _id: workoutPlanId, userId })
-            .populate('sessions.exercises.exerciseId'); 
-            
+            .populate('sessions.exercises.exerciseId');
+
         if (!plan) throw new AppError('Chỉ mục Workspace ID hệ thống không hợp lệ', 404);
 
-        const session = plan.sessions.id(sessionId); 
+        const session = plan.sessions.id(sessionId);
         if (!session) throw new AppError('Biến tham chiếu Target Session ID thất bại', 404);
 
         const log = await this.getOrCreateDailyLog(userId, date);
@@ -194,10 +193,10 @@ class DailyLogService {
                 date,
                 exerciseId: exItem.exerciseId ? exItem.exerciseId._id : null,
                 name: exItem.exerciseId ? exItem.exerciseId.name : "Bài tập tự chọn",
-                workoutPlanId: plan._id, 
+                workoutPlanId: plan._id,
                 workoutSessionId: session._id,
                 durationMinutes: exItem.targetDurationMinutes,
-                sets: exItem.targetSets,                       
+                sets: exItem.targetSets,
                 reps: exItem.targetReps,
                 time: new Date()
             };

@@ -1,19 +1,16 @@
-/**
- * Tác dụng của file: Điều phối chính và quản lý State (activeMeal, selectedFood, activeTab, lượng ăn) cho tính năng thực đơn hàng ngày của người dùng, sử dụng Context & Reducer tập trung.
- * File này dùng cho component cha nào là chính: App.jsx (qua tệp barrel export pages/user/index.js)
- */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Coffee, Sun, Moon, Cookie, ChevronRight, ChevronLeft, Heart } from 'lucide-react';
-import { useDailyLog } from '../../../providers/user/dailyLog';
-import { useMealPlan } from '../../../providers/user/mealplan';
+import { Coffee, Sun, Moon, Cookie, ChevronRight, ChevronLeft, Heart, Send, Clock, CheckCircle, Trash2, Edit3 } from 'lucide-react';
+import { useDailyLog, useMealPlan } from '../../../providers/user';
+import axiosClient from '../../../config/axiosClient';
 
-import MealCard from './MealCard';
-import CustomFoodForm from './CustomFoodForm';
-import FoodSearchList from './FoodSearchList';
-import PortionDetailForm from './PortionDetailForm';
+import MealCard from './components/cards/MealCard';
+import CustomFoodForm from './components/forms/CustomFoodForm';
+import FoodSearchList from './components/search/FoodSearchList';
+import PortionDetailForm from './components/forms/PortionDetailForm';
 
 const MealPlanHeader = ({ displayMonth, displayDay }) => (
+  // GIAO DIỆN MEAL PLAN HEADER
   <div className="px-8 mb-10 flex justify-between items-center">
     <div>
       <h1 className="text-4xl font-black mb-2 tracking-tight">
@@ -28,28 +25,33 @@ const MealPlanHeader = ({ displayMonth, displayDay }) => (
   </div>
 );
 
-const SummaryBanner = ({ totalCaloriesLogged, targetCalories, navigate }) => (
-  <div className="px-8 mb-8">
-    <div className="bg-gradient-to-r from-[#c8f31d]/20 to-transparent border border-[#c8f31d]/30 rounded-2xl p-6 flex justify-between items-center">
-      <div>
-        <p className="text-zinc-300 text-sm font-medium mb-1">Tổng lượng Calo đã nạp</p>
-        <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-black text-[#c8f31d]">{totalCaloriesLogged}</span>
-          <span className="text-zinc-500 font-bold">/ {targetCalories} kcal</span>
+const SummaryBanner = ({ totalCaloriesLogged, targetCalories }) => {
+  const navigate = useNavigate();
+  return (
+    // GIAO DIỆN SUMMARY BANNER
+    <div className="px-8 mb-8">
+      <div className="bg-gradient-to-r from-[#c8f31d]/20 to-transparent border border-[#c8f31d]/30 rounded-2xl p-6 flex justify-between items-center">
+        <div>
+          <p className="text-zinc-300 text-sm font-medium mb-1">Tổng lượng Calo đã nạp</p>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black text-[#c8f31d]">{totalCaloriesLogged}</span>
+            <span className="text-zinc-500 font-bold">/ {targetCalories} kcal</span>
+          </div>
         </div>
+        <button
+          className="w-10 h-10 bg-[#c8f31d] text-black rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-lg"
+          onClick={() => navigate('/diary')}
+          title="Trở về Nhật ký"
+        >
+          <ChevronRight size={24} strokeWidth={3} />
+        </button>
       </div>
-      <button
-        className="w-10 h-10 bg-[#c8f31d] text-black rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-lg"
-        onClick={() => navigate('/diary')}
-        title="Trở về Nhật ký"
-      >
-        <ChevronRight size={24} strokeWidth={3} />
-      </button>
     </div>
-  </div>
-);
+  )
+};
 
-const MealsList = ({ getMealCalories, targetCalories, getMealItems, handleAddFood, handleRemoveLogItem, Coffee, Sun, Moon, Cookie }) => (
+const MealsList = ({ getMealCalories, targetCalories, getMealItems, handleAddFood, handleRemoveLogItem }) => (
+  // GIAO DIỆN MEALS LIST
   <div className="px-8">
     <MealCard
       id="breakfast"
@@ -94,22 +96,58 @@ const MealsList = ({ getMealCalories, targetCalories, getMealItems, handleAddFoo
   </div>
 );
 
-const OverlayHeader = ({ handleCloseSearch, isCreatingFood, selectedFood, activeMeal, handleToggleFavorite, isFavorite }) => (
+const OverlayHeader = ({ handleCloseSearch, isCreatingFood, isEditingFood, selectedFood, activeMeal, handleToggleFavorite, isFavorite, activeTab, handleRequestApproval, handleDeleteCustomFood, handleEditCustomFood }) => (
+  // GIAO DIỆN OVERLAY HEADER
   <div className="flex items-center justify-between p-6 border-b border-zinc-800 bg-[#1a1a1a]">
     <button onClick={handleCloseSearch} className="text-zinc-400 hover:text-white transition-colors bg-zinc-800 p-2 rounded-full">
       <ChevronLeft size={24} />
     </button>
     <h2 className="text-xl font-bold text-white">
-      {isCreatingFood ? 'Tạo món cá nhân' : selectedFood ? 'Chi tiết món ăn' : `Thêm món - ${activeMeal?.title}`}
+      {isCreatingFood ? 'Tạo món cá nhân' : isEditingFood ? 'Sửa món ăn' : selectedFood ? 'Chi tiết món ăn' : `Thêm món - ${activeMeal?.title}`}
     </h2>
-    {selectedFood && !isCreatingFood ? (
-      <button
-        onClick={handleToggleFavorite}
-        className={`p-2 rounded-full transition-colors ${isFavorite ? 'bg-rose-500/20 text-rose-500' : 'bg-zinc-800 text-zinc-400 hover:text-white'
-          }`}
-      >
-        <Heart size={24} fill={isFavorite ? 'currentColor' : 'none'} />
-      </button>
+    {selectedFood && !isCreatingFood && !isEditingFood ? (
+      activeTab === 'custom' ? (
+        <div className="flex gap-2">
+          {selectedFood.verifyStatus === 'pending' ? (
+            <div className="p-2 text-amber-500 bg-amber-500/10 rounded-full" title="Đang chờ duyệt">
+              <Clock size={24} />
+            </div>
+          ) : selectedFood.verifyStatus === 'approved' || selectedFood.isPublic ? (
+            <div className="p-2 text-[#c8f31d] bg-[#c8f31d]/10 rounded-full" title="Đã được duyệt public">
+              <CheckCircle size={24} />
+            </div>
+          ) : (
+            <button
+              onClick={handleRequestApproval}
+              className="p-2 rounded-full transition-colors bg-[#c8f31d]/20 text-[#c8f31d] hover:bg-[#c8f31d]/40"
+              title="Gửi cho Admin duyệt để chia sẻ cộng đồng"
+            >
+              <Send size={24} />
+            </button>
+          )}
+          <button
+            onClick={handleEditCustomFood}
+            className="p-2 rounded-full transition-colors bg-blue-500/20 text-blue-500 hover:bg-blue-500/40"
+            title="Sửa món ăn này"
+          >
+            <Edit3 size={24} />
+          </button>
+          <button
+            onClick={handleDeleteCustomFood}
+            className="p-2 rounded-full transition-colors bg-rose-500/20 text-rose-500 hover:bg-rose-500/40"
+            title="Xóa món ăn này"
+          >
+            <Trash2 size={24} />
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={handleToggleFavorite}
+          className={`p-2 rounded-full transition-colors ${isFavorite ? 'bg-rose-500/20 text-rose-500' : 'bg-zinc-800 text-zinc-400 hover:text-white'}`}
+        >
+          <Heart size={24} fill={isFavorite ? 'currentColor' : 'none'} />
+        </button>
+      )
     ) : (
       <div className="w-10"></div>
     )}
@@ -117,8 +155,6 @@ const OverlayHeader = ({ handleCloseSearch, isCreatingFood, selectedFood, active
 );
 
 const MealPlan = () => {
-  const navigate = useNavigate();
-
   const {
     state,
     fetchDailyOverview,
@@ -153,16 +189,18 @@ const MealPlan = () => {
   const [unit, setUnit] = useState('g');
   const [isFavorite, setIsFavorite] = useState(false);
   const [isCreatingFood, setIsCreatingFood] = useState(false);
+  const [isEditingFood, setIsEditingFood] = useState(false);
 
-  const todayDateStr = state.selectedDate.toISOString().slice(0, 10);
+  const formatLocal = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  const todayDateStr = formatLocal(state.selectedDate);
   const displayMonth = state.selectedDate.toLocaleDateString('vi-VN', { month: 'short' });
   const displayDay = state.selectedDate.getDate();
-
-  // Fetch search food options based on current activeTab and keyword
+  // Lấy danh sách gợi ý món ăn dựa trên tab hiện tại và từ khóa tìm kiếm
   useEffect(() => {
     fetchDailyOverview();
     fetchUserTarget();
     fetchFavoriteFoodsList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -172,6 +210,7 @@ const MealPlan = () => {
       }
     }, 300);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, activeTab, activeMeal]);
 
   const handleAddFood = (id, title) => {
@@ -182,8 +221,9 @@ const MealPlan = () => {
   };
 
   const handleCloseSearch = () => {
-    if (isCreatingFood) {
+    if (isCreatingFood || isEditingFood) {
       setIsCreatingFood(false);
+      setIsEditingFood(false);
     } else if (selectedFood) {
       setSelectedFood(null);
     } else {
@@ -196,12 +236,12 @@ const MealPlan = () => {
     setAmount(String(food.amount || 100));
     setUnit(food.unit || 'g');
 
-    // Check if this food item is already in user's favorites
+    // Kiểm tra xem món ăn này đã có trong danh sách yêu thích chưa
     const isAlreadyFav = favoriteFoodsList.some(fav => fav._id === food.id || fav.id === food.id);
     setIsFavorite(isAlreadyFav);
   };
 
-  // Toggle favorite food in database using Context
+  // Bật/tắt trạng thái món ăn yêu thích trong cơ sở dữ liệu thông qua Context
   const handleToggleFavorite = async () => {
     if (!selectedFood) return;
     try {
@@ -213,7 +253,38 @@ const MealPlan = () => {
     }
   };
 
-  // Confirm logging food to server using Context
+  // Gửi yêu cầu cho Admin duyệt để món ăn được hiển thị công khai
+  const handleRequestApproval = async () => {
+    if (!selectedFood) return;
+    if (!window.confirm("Bạn muốn gửi món ăn này cho Admin duyệt để chia sẻ cho mọi người cùng dùng chung?")) return;
+
+    try {
+      await axiosClient.patch(`/foods/${selectedFood.id}`, { isPublic: true });
+      alert('Đã gửi yêu cầu duyệt thành công!');
+      fetchFoodOptions(search, activeTab); // Làm mới danh sách
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Có lỗi xảy ra khi gửi yêu cầu duyệt');
+    }
+  };
+
+  // Xóa món ăn tự tạo
+  const handleDeleteCustomFood = async () => {
+    if (!selectedFood) return;
+    if (!window.confirm("Bạn có chắc chắn muốn xóa món ăn cá nhân này? Thao tác này không thể hoàn tác.")) return;
+
+    try {
+      await axiosClient.delete(`/foods/${selectedFood.id}`);
+      alert('Đã xóa món ăn thành công!');
+      handleCloseSearch(); // Trở về danh sách
+      fetchFoodOptions(search, activeTab); // Làm mới danh sách
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Có lỗi xảy ra khi xóa món ăn');
+    }
+  };
+
+  // Xác nhận lưu món ăn vào nhật ký trên Server thông qua Context
   const handleLogFoodSubmit = async () => {
     if (!selectedFood) return;
 
@@ -235,7 +306,7 @@ const MealPlan = () => {
     }
   };
 
-  // Remove food log using Context
+  // Xóa món ăn đã ghi nhận khỏi nhật ký thông qua Context
   const handleRemoveLogItem = async (entryId) => {
     try {
       await deleteLogFood(entryId);
@@ -245,7 +316,7 @@ const MealPlan = () => {
     }
   };
 
-  // Map meal items for MealCard
+  // Ánh xạ dữ liệu món ăn để truyền vào MealCard
   const getMealItems = (type) => {
     return foodsLogged
       .filter(f => f.mealType?.toLowerCase() === type.toLowerCase())
@@ -257,7 +328,7 @@ const MealPlan = () => {
       }));
   };
 
-  // Get total calories per meal type
+  // Lấy tổng lượng Calo nạp vào theo từng bữa ăn
   const getMealCalories = (type) => {
     return Math.round(
       foodsLogged
@@ -269,6 +340,7 @@ const MealPlan = () => {
   const totalCaloriesLogged = Math.round(dailyLog?.totals?.caloriesIn || 0);
 
   return (
+    // GIAO DIỆN MEAL PLAN
     <div className="h-full bg-[#111] text-white relative font-sans overflow-hidden flex flex-col">
       {/* Scrollable Main Content */}
       <div className="flex-1 overflow-y-auto pt-10 pb-20 scrollbar-hide">
@@ -277,7 +349,6 @@ const MealPlan = () => {
         <SummaryBanner
           totalCaloriesLogged={totalCaloriesLogged}
           targetCalories={targetCalories}
-          navigate={navigate}
         />
 
         <MealsList
@@ -286,10 +357,6 @@ const MealPlan = () => {
           getMealItems={getMealItems}
           handleAddFood={handleAddFood}
           handleRemoveLogItem={handleRemoveLogItem}
-          Coffee={Coffee}
-          Sun={Sun}
-          Moon={Moon}
-          Cookie={Cookie}
         />
       </div>
 
@@ -306,14 +373,22 @@ const MealPlan = () => {
           <OverlayHeader
             handleCloseSearch={handleCloseSearch}
             isCreatingFood={isCreatingFood}
+            isEditingFood={isEditingFood}
             selectedFood={selectedFood}
             activeMeal={activeMeal}
             handleToggleFavorite={handleToggleFavorite}
             isFavorite={isFavorite}
+            activeTab={activeTab}
+            handleRequestApproval={handleRequestApproval}
+            handleDeleteCustomFood={handleDeleteCustomFood}
+            handleEditCustomFood={() => setIsEditingFood(true)}
           />
 
-          {isCreatingFood ? (
-            <CustomFoodForm onSave={() => { setIsCreatingFood(false); fetchFoodOptions(); }} />
+          {isCreatingFood || isEditingFood ? (
+            <CustomFoodForm
+              initialData={isEditingFood ? selectedFood : null}
+              onSave={() => { setIsCreatingFood(false); setIsEditingFood(false); setSelectedFood(null); fetchFoodOptions(search, activeTab); }}
+            />
           ) : !selectedFood ? (
             <FoodSearchList
               activeTab={activeTab}

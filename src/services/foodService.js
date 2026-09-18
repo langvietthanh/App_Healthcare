@@ -10,7 +10,7 @@ const {
 
 class FoodService{
     async createNewFood({data, userId, role}) {
-        const {name, protein, carbs, fat, unit, amount, isPublic} = data;
+        const {name, protein, carbs, fat, unit, amount, isPublic, imgURL} = data;
         // Xử lý logic kiểm duyệt
         let finalIsPublic = false;
         let finalVerifyStatus = 'none';
@@ -39,7 +39,8 @@ class FoodService{
             nutrients,
             creatorId: role === 'admin' ? null : userId,
             isPublic : finalIsPublic,
-            verifyStatus : finalVerifyStatus
+            verifyStatus : finalVerifyStatus,
+            imgURL: imgURL || ''
         });
 
         await newFood.save();

@@ -1,7 +1,8 @@
-import { createContext, useContext, useReducer } from "react"
+import { useReducer, createContext, useContext } from "react"
 import { initState, reducer } from "./reducer";
 import axiosClient from "../../../config/axiosClient";
 import * as ACTIONS from './types';
+
 const MealPlanContext = createContext();
 
 const MealPlanProvider = ({ children }) => {
@@ -30,7 +31,9 @@ const MealPlanProvider = ({ children }) => {
                     unit: e.servingSize?.unit || 'g',
                     amount: e.servingSize?.amount || 100,
                     desc: `${e.servingSize?.amount || 100}${e.servingSize?.unit || 'g'}`,
-                    image: e.imgURL || ''
+                    image: e.imgURL ? `http://localhost:3000${e.imgURL}` : '',
+                    verifyStatus: e.verifyStatus || 'none',
+                    isPublic: e.isPublic || false
                 }));
                 dispatch({ type: ACTIONS.FETCH_FOODS_SUCCESS, payload: mapped });
             }
@@ -64,14 +67,15 @@ const MealPlanProvider = ({ children }) => {
     </MealPlanContext.Provider>
 }
 
-const useMealPlan = () => {
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const useMealPlan = () => {
     const context = useContext(MealPlanContext);
     if (!context) {
         throw new Error('useMealPlan must be used within MealPlanProvider');
     }
     return context;
-}
+};
+
 
 export default MealPlanProvider;
-export { useMealPlan };
-

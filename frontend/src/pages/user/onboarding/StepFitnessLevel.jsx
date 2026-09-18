@@ -27,6 +27,7 @@ const StepFitnessLevel = ({ fitnessLevel, setFitnessLevel, onNext, onPrev }) => 
   ];
 
   return (
+    // GIAO DIỆN STEP FITNESS LEVEL
     <div className="flex flex-col items-center w-full max-w-2xl mx-auto">
       <h2 className="text-3xl font-bold mb-2 text-center text-white">Mức độ thể lực?</h2>
       <p className="text-zinc-500 text-sm mb-8 text-center">Chọn mức độ phù hợp nhất với trạng thái thể chất hiện tại của bạn.</p>
@@ -36,6 +37,7 @@ const StepFitnessLevel = ({ fitnessLevel, setFitnessLevel, onNext, onPrev }) => 
         {levels.map((lvl) => {
           const isSelected = fitnessLevel === lvl.id;
           return (
+            // GIAO DIỆN STEP FITNESS LEVEL
             <button
               key={lvl.id}
               type="button"

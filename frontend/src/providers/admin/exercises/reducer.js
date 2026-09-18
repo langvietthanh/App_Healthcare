@@ -1,6 +1,6 @@
 import * as TYPES from './types.js'
 import { muscleMapEV } from '../../../constants';
-export const emptyForm = { name: '', category: 'Strength', targetMuscles: [], level: 'Trung bình', description: '', instructions: [''], image: '' };
+export const emptyForm = { name: '', category: 'Strength', targetMuscles: [], level: 'Trung bình', description: '', instructions: [''], image: '', imageFile: null };
 
 const initialState = {
     tab: 'all',
@@ -46,7 +46,8 @@ const reducer = (state, action) => {
                     })) : [],
                     description: action.payload.description || '',
                     instructions: action.payload.instructions?.length ? action.payload.instructions : [''],
-                    image: action.payload.image || ''
+                    image: action.payload.image || '',
+                    imageFile: null
                 },
                 showForm: true
             };

@@ -5,6 +5,7 @@ const exerciseRouter = require("./exerciseRouter");
 const dailyLogRouter = require("./dailyLogRouter");
 const workoutPlanRouter = require("./workoutPlanRouter");
 const reportRouter = require("./reportRouter");
+const uploadRouter = require("./uploadRouter");
 
 function router(app) {
     app.use('/api/auth', authRouter);
@@ -14,6 +15,7 @@ function router(app) {
     app.use('/api/daily-logs', dailyLogRouter);
     app.use('/api/workout-plans', workoutPlanRouter);
     app.use('/api/reports', reportRouter);
+    app.use('/api/upload', uploadRouter);
 }
 
 module.exports = router;

@@ -171,9 +171,6 @@ class UserService {
             { upsert: true, new: true }
         );
 
-        // Đồng bộ user.physicalDetail.weight
-        await User.findByIdAndUpdate(userId, { $set: { 'physicalDetail.weight': weight } });
-
         return record;
     }
 

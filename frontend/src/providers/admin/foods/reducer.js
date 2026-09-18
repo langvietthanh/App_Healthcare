@@ -1,4 +1,4 @@
-const emptyForm = { name: '', calories: '', protein: '', carbs: '', fat: '', unit: 'g', amount: '100', image: '' };
+const emptyForm = { name: '', calories: '', protein: '', carbs: '', fat: '', unit: 'g', amount: '100', image: '', imageFile: null };
 
 const initialState = {
     tab: 'all', // 'all' | 'pending'
@@ -9,6 +9,7 @@ const initialState = {
     foods: [],
     hiddenCount: 0,
     pendingCount: 0,
+    userCount: 0,
     totalCount: 0,
     loading: false,
     showForm: false,
@@ -31,6 +32,7 @@ const reducer = (state, action) => {
                 foods: action.payload.mapped, 
                 hiddenCount: action.payload.hiddenCount, 
                 pendingCount: action.payload.pendingCount, 
+                userCount: action.payload.userCount,
                 totalCount: action.payload.totalCount,
                 loading: false 
             };
@@ -51,7 +53,8 @@ const reducer = (state, action) => {
                     carbs: String(action.payload.carbs),
                     fat: String(action.payload.fat),
                     amount: String(action.payload.amount),
-                    image: action.payload.image || ''
+                    image: action.payload.image || '',
+                    imageFile: null
                 }
             };
         case 'CLOSE_FORM': return { ...state, showForm: false };

@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer } from 'react';
+import { useReducer, createContext, useContext } from 'react';
 import { initState, reducer } from './reducers';
 import { muscleMapEV } from '../../../constants';
 import * as ACTIONS from './types';
@@ -29,7 +29,8 @@ const WorkoutProvider = ({ children }) => {
 
     const logExerciseEntry = async (exerciseData) => {
         try {
-            const date = new Date().toISOString().slice(0, 10);
+            const formatLocal = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+            const date = formatLocal(new Date());
             const payload = {
                 date,
                 exerciseId: exerciseData.id,
@@ -65,18 +66,19 @@ const WorkoutProvider = ({ children }) => {
             let baseUrl = '/exercises';
             if (state.isFavorite) {
                 baseUrl = '/exercises/favorites';
-            } else if (state.isCustom) {
-                baseUrl = '/exercises/my-exercises';
             }
 
             let url = `${baseUrl}?category=${encodeURIComponent(state.activeTab)}`;
             if (state.search.trim()) {
                 url += `&q=${encodeURIComponent(state.search)}`;
             }
+            if (state.isCustom) {
+                url += `&origin=user`;
+            }
 
             const response = await axiosClient.get(url);
             const data = response.data || response;
-            
+
             if (Array.isArray(data)) {
                 // Xử lý trường hợp endpoint /favorites trả về populate { _id, exerciseId: {...} }
                 const rawExercises = data.map(item => item.exerciseId ? item.exerciseId : item);
@@ -87,11 +89,12 @@ const WorkoutProvider = ({ children }) => {
                     rating: e.targetMuscles?.[0]?.rating || 4.8,
                     time: '15 phút', // Fallback display time
                     kcal: e.category === 'Cardio' ? 300 : 180,
-                    img: e.imgURL || (e.category === 'Cardio' ? '🏃‍♂️' : '🏋️'),
+                    img: e.imgURL ? `http://localhost:3000${e.imgURL}` : (e.category === 'Cardio' ? '🏃‍♂️' : '🏋️'),
                     type: e.category || 'Strength',
                     description: e.description || '',
                     instructions: e.instructions?.map(ins => ins.text) || [],
-                    muscles: e.targetMuscles?.map(m => muscleMapEV[m.muscle] || m.muscle) || []
+                    muscles: e.targetMuscles?.map(m => muscleMapEV[m.muscle] || m.muscle) || [],
+                    creatorId: e.creatorId || null
                 }));
 
                 // Frontend fallback filtering cho các filter không được hỗ trợ truyền qua URL
@@ -102,6 +105,10 @@ const WorkoutProvider = ({ children }) => {
                     if (state.search.trim()) {
                         const q = state.search.toLowerCase();
                         mapped = mapped.filter(e => e.name.toLowerCase().includes(q));
+                    }
+                    if (state.isFavorite && state.isCustom) {
+                        // Nếu đang ở màn Favorite mà tích thêm Tự tạo thì lọc cục bộ
+                        mapped = mapped.filter(e => e.creatorId !== null);
                     }
                 }
 
@@ -158,7 +165,8 @@ const WorkoutProvider = ({ children }) => {
     );
 };
 
-const useWorkout = () => {
+// eslint-disable-next-line react-refresh/only-export-components
+export const useWorkout = () => {
     const context = useContext(WorkoutContext);
     if (!context) {
         throw new Error('useWorkout must be used within a WorkoutProvider');
@@ -166,5 +174,5 @@ const useWorkout = () => {
     return context;
 };
 
+
 export default WorkoutProvider;
-export { useWorkout };

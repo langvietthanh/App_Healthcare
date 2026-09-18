@@ -34,6 +34,7 @@ class ExerciseService {
         const keyword = data.q;
         const category = data.category;
         const muscle = data.muscle;
+        const origin = data.origin;
 
         // Chỉ lấy bài tập Public HOẶC bài do chính user tạo
         // Nếu là admin thì lấy toàn bộ
@@ -41,11 +42,19 @@ class ExerciseService {
             isDeleted: false
         };
 
-        if (role !== 'admin') {
-            query.$or = [
-                { isPublic: true },
-                { creatorId: userId }
-            ];
+        if (origin === 'system') {
+            query.isPublic = true;
+        } else if (origin === 'user') {
+            query.creatorId = userId;
+            console.log('user', userId);
+        } else {
+            // Lấy tất cả (phân quyền theo role)
+            if (role !== 'admin') {
+                query.$or = [
+                    { isPublic: true },
+                    { creatorId: userId }
+                ];
+            }
         }
 
         if (keyword) {
@@ -74,8 +83,17 @@ class ExerciseService {
         return detailExercise;
     }
 
-    async updateExercise({ exerciseId, data }) {
+    async updateExercise({ exerciseId, userId, role, data }) {
         const { name, category, targetMuscles, description, instructions, isPublic, imgURL } = data;
+
+        const exercise = await Exercise.findById(exerciseId);
+        if (!exercise) throw new AppError('Không tìm thấy bài tập', 404);
+
+        if (exercise.isPublic && role !== 'admin') {
+            throw new AppError('Bài tập này là của hệ thống. Chỉ Admin mới được phép chỉnh sửa!', 403);
+        } else if (role !== 'admin' && (!exercise.creatorId || exercise.creatorId.toString() !== userId)) {
+            throw new AppError('Bạn không có quyền sửa bài tập của người khác!', 403);
+        }
 
         const updateFields = {};
         if (name !== undefined) updateFields.name = name;
@@ -96,10 +114,16 @@ class ExerciseService {
         return updatedExercise;
     }
 
-    async deleteExercise({ exerciseId }) {
+    async deleteExercise({ exerciseId, userId, role }) {
         const exercise = await Exercise.findById(exerciseId);
         if (!exercise) {
             throw new AppError('Không tìm thấy bài tập', 404);
+        }
+
+        if (exercise.isPublic && role !== 'admin') {
+            throw new AppError('Bài tập này là của hệ thống. Chỉ Admin mới được phép xóa!', 403);
+        } else if (role !== 'admin' && (!exercise.creatorId || exercise.creatorId.toString() !== userId)) {
+            throw new AppError('Bạn không có quyền xóa bài tập của người khác!', 403);
         }
         exercise.isDeleted = true;
         await exercise.save();
@@ -156,8 +180,8 @@ class ExerciseService {
         // Chỉ lấy những bài tập chưa bị xóa mềm
         const validFavorites = favorites.filter(fav => fav.exerciseId && !fav.exerciseId.isDeleted);
         return validFavorites.map(fav => {
-            const { _id, name, category } = fav.exerciseId;
-            return { _id, name, category };
+            const { _id, name, category, creatorId, imgURL, description, instructions, targetMuscles } = fav.exerciseId;
+            return { _id, name, category, creatorId, imgURL, description, instructions, targetMuscles };
         });
     }
 

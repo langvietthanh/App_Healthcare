@@ -19,6 +19,16 @@ router.get('/weight',
 );
 
 /**
+ * @route   [GET] /api/reports/calories
+ * @desc    Biểu đồ Calo tiêu thụ và thặng dư
+ * @query   ?from=...&to=...&viewMode=...&goalKcal=...
+ */
+router.get('/calories',
+    authMiddleware,
+    ReportController.getCalorieReport
+);
+
+/**
  * @route   [GET] /api/reports/weekly
  * @desc    Thống kê tổng hợp 7 ngày gần nhất (auto)
  */
